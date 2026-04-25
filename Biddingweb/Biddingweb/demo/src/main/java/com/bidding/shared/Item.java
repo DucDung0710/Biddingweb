@@ -4,11 +4,13 @@ public class Item {
     private String ItemName;
     private String description;
     private String status; // Trạng thái: "Pending", "Approved", "Rejected"
+    private double firstprice ;
 
-    public Item(String ItemName, String description) {
+    public Item(String ItemName, String description, double price) {
         this.ItemName = ItemName;
         this.description = description;
         this.status = "Pending"; // Mặc định trạng thái là "Pending"
+        this.firstprice = price; // Mặc định giá khởi điểm là 0
     }  
 
     public String getItemName() {
@@ -33,5 +35,13 @@ public class Item {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public double getFirstprice() {
+        return firstprice;
+    }
+
+    public void setFirstprice(double firstprice) {
+        this.firstprice = firstprice;
     }
 }

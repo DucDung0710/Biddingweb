@@ -92,7 +92,7 @@ public class UserManager {
 
 }
 
-    public void deleteUser(Users currentUser, String targetUsername) {
+    public void deleteUser(Users currentUser, String targetId, ItemManager itemManager) {
         // 1. Kiểm tra quyền Admin
         if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin")) {
             System.out.println("Lỗi: Không có quyền xóa người dùng!");
@@ -100,15 +100,35 @@ public class UserManager {
         }
 
         // 2. Không cho phép Admin tự xóa chính mình 
-        if (currentUser.getUsername().equals(targetUsername)) {
+        if (currentUser.getId().equals(targetId)) {
             System.out.println("Lỗi: Bạn không thể tự xóa tài khoản của chính mình!");
             return;
         }
 
-        // 3. Thực hiện xóa
-        if (allUsers.containsKey(targetUsername)) {
-            allUsers.remove(targetUsername);
-            System.out.println("Đã xóa người dùng: " + targetUsername);
+        // 3. Tìm người dùng cần xóa
+        Users user = null;
+        for (Users u : allUsers.values()) {
+            if (u.getId().equals(targetId)) {
+                user = u;
+                break;
+            }
+        }
+
+        if (user == null) {
+            System.out.println("Lỗi: Người dùng không tồn tại.");
+            return;
+        }
+
+        if (user.getRole().equalsIgnoreCase("Admin")) {
+            System.out.println("Lỗi: Admin không có quyền xóa các Admin khác.");
+            return;
+        }
+
+        // 4. Thực hiện xóa
+        if (allUsers.containsKey(targetId)) {
+            itemManager.deleteItemsByUserId(targetId); // Xóa sản phẩm liên quan đến người dùng này (nếu có)
+            allUsers.remove(targetId);
+            System.out.println("Đã xóa người dùng: " + targetId);
         } else {
             System.out.println("Lỗi: Người dùng không tồn tại.");
         }

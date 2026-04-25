@@ -7,13 +7,13 @@ public class ItemManager {
     private HashMap<String, Item> allItems = new HashMap<>();
 
     // Hành động: Đăng ký mặt hàng mới khi có Seller mới đăng bán
-    public void registerNewItem(String userId, String itemName, String description) {
+    public void registerNewItem(String userId, String itemName, String description, double price) {
         if (!allItems.containsKey(userId)) {
-            allItems.put(userId, new Item(itemName, description));
+            allItems.put(userId, new Item(itemName, description, price));
         }
     }
 
-    // Hành động: "Link" - Tìm mặt hàng dựa trên ID người bán
+    // Hành động: Tìm mặt hàng dựa trên ID người bán
     public Item getItemByUserId(String userId) {
         return allItems.get(userId);
     }
@@ -36,14 +36,14 @@ public class ItemManager {
         return;
     }
 
-    // BƯỚC 2: Kiểm tra quyền 
+    // Kiểm tra quyền 
     // Lưu ý: getRole() đã viết trong class Users
     if (!currentUser.getRole().equalsIgnoreCase("Admin")) {
         System.out.println("Lỗi: Chỉ Admin mới có quyền phê duyệt sản phẩm!");
         return;
     }
 
-    // BƯỚC 3: Nếu đúng là Admin thì mới thực hiện thay đổi trạng thái
+    // Nếu đúng là Admin thì mới thực hiện thay đổi trạng thái
     Item item = getItemByUserId(userId); // Hàm tìm item theo ID trong list
     if (item != null) {
         if (approve) {
@@ -61,6 +61,29 @@ public class ItemManager {
         System.out.println("Lỗi: Không tìm thấy sản phẩm này.");
     }
 }
+    
+ // Hành động: Xóa mặt hàng khi người bán bị xóa hoặc Admin từ chối sản phẩm   
+    public void deleteItemsByUserId(String userId) {
+        if (allItems.containsKey(userId)) {
+            allItems.remove(userId);
+            System.out.println("Đã xóa tất cả mặt hàng liên quan đến người dùng ID: " + userId);
+        }
+    }
 
+    public void updateItemPriceByAdmin(Users currentUser, String itemId, double newPrice) {
+    // 1. Kiểm tra xem người đang thao tác có phải Admin không
+    if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin")) {
+        System.out.println("Lỗi: Bạn không có quyền thực hiện thao tác này!");
+        return;
+        }
 
+    // 2. Nếu đúng là Admin, gọi ItemManager để đổi giá
+    Item item = getItemByUserId(itemId);
+    if (item != null) {
+        item.setFirstprice(newPrice);
+        }
+     else {
+        System.out.println("Lỗi: Không tìm thấy sản phẩm này.");
+     }
+    }
 }
