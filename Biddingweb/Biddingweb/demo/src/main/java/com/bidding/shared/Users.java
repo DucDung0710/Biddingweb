@@ -1,7 +1,12 @@
 package com.bidding.shared;
 
-// class Cha Users đại diện cho người dùng chung, có thể là Bidder, Seller hoặc Admin
-public class Users {
+//AuctionObserver: Giao diện để các loại người dùng có thể nhận thông báo từ hệ thống đấu giá
+interface AuctionObserver {
+    void update(String message);
+    String getUserId();
+}
+
+public class Users implements AuctionObserver {
     private String username;
     private String password;
     private String id;
@@ -54,6 +59,17 @@ public class Users {
         this.role = role;
     }
 
+    @Override
+    public void update(String message) {
+        // Ở đây bạn có thể thêm logic để xử lý thông báo, ví dụ: hiển thị trên UI hoặc lưu vào lịch sử thông báo của người dùng
+        System.out.println("Thông báo cho " + username + ": " + message);
+    }
+
+    @Override
+    public String getUserId() {
+        return id;
+    }
+
 }
 
 // Các lớp con kế thừa từ Users, đại diện cho các loại người dùng cụ thể
@@ -76,4 +92,5 @@ class Admin extends Users {
         super(username, password, id, email);
         setRole("Admin");  
     }
+
 }
