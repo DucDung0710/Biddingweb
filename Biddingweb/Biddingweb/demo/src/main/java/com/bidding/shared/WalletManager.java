@@ -54,9 +54,19 @@ public void depositDirectly(String userId, double amount) {
         Balance toWallet = getWalletByUserId(toUserId);
 
         if (fromWallet != null && toWallet != null) {
+            
             if (fromWallet.withdraw(amount)) { // Rút từ người gửi
-                toWallet.deposit(amount);      // Nạp cho người nhận
-                return true;
+                try { 
+                    toWallet.deposit(amount);      // Nạp cho người nhận
+                    return true;
+                } catch (Exception e) { // Nếu có lỗi khi nạp tiền cho người nhận, hoàn tác giao dịch
+                    System.out.println("Lỗi khi chuyển tiền: " + e.getMessage());
+                    // Hoàn tác giao dịch nếu có lỗi
+                    System.out.println("Hoàn tác giao dịch: Đang hoàn trả tiền về ví người gửi...");
+                    fromWallet.deposit(amount);
+                    System.out.println("Giao dịch đã được hoàn tác.");
+                    return false;
+                }
             }
         }
         return false;

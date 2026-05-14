@@ -8,9 +8,6 @@ public class UserManager {
     // Lưu trữ tất cả người dùng (Key: Username, Value: Đối tượng Users)
     private HashMap<String, Users> allUsers = new HashMap<>();
     
-    // Lưu người dùng hiện đang đăng nhập (Session tạm thời)
-    private Users currentUser = null;
-
     // Danh sách các email "quyền lực" được phép đăng ký Admin
     private final List<String> AUTHORIZED_ADMIN_EMAILS = Arrays.asList(
         "25023196@vnu.edu.vn",
@@ -48,30 +45,16 @@ public class UserManager {
     }
 
     // --- 2. SIGN IN (Đăng nhập) ---
-    public boolean signIn(String username, String password) {
+    public Users signIn(String username, String password) {
         if (allUsers.containsKey(username)) {
             Users user = allUsers.get(username);
             if (user.getPassword().equals(password)) { // So sánh mật khẩu
-                this.currentUser = user;
                 System.out.println("Đăng nhập thành công! Chào " + username);
-                return true;
+                return user;
             }
         }
         System.out.println("Lỗi: Sai tài khoản hoặc mật khẩu!");
-        return false;
-    }
-
-    // --- 3. SIGN OUT (Đăng xuất) ---
-    public void signOut() {
-        if (currentUser != null) {
-            System.out.println("Tạm biệt " + currentUser.getUsername());
-            this.currentUser = null;
-        }
-    }
-
-    // Lấy thông tin người dùng đang dùng máy (để nạp tiền/đấu giá)
-    public Users getCurrentUser() {
-        return currentUser;
+        return null;
     }
 
     public void makeAdmin(Users currentUser, String targetUsername) {
@@ -91,7 +74,7 @@ public class UserManager {
     }
 
 }
-
+    //Xóa người dùng (Chỉ Admin mới có quyền xóa, không cho phép xóa Admin khác hoặc tự xóa chính mình)
     public void deleteUser(Users currentUser, String targetId, ItemManager itemManager) {
         // 1. Kiểm tra quyền Admin
         if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin")) {
@@ -103,7 +86,7 @@ public class UserManager {
         if (currentUser.getId().equals(targetId)) {
             System.out.println("Lỗi: Bạn không thể tự xóa tài khoản của chính mình!");
             return;
-        }
+        }           
 
         // 3. Tìm người dùng cần xóa
         Users user = null;
@@ -125,10 +108,10 @@ public class UserManager {
         }
 
         // 4. Thực hiện xóa
-        if (allUsers.containsKey(targetId)) {
+        if (allUsers.containsKey(user.getUsername())) {
             itemManager.deleteItemsByUserId(targetId); // Xóa sản phẩm liên quan đến người dùng này (nếu có)
-            allUsers.remove(targetId);
-            System.out.println("Đã xóa người dùng: " + targetId);
+            allUsers.remove(user.getUsername());
+            System.out.println("Đã xóa người dùng: " + user.getUsername());
         } else {
             System.out.println("Lỗi: Người dùng không tồn tại.");
         }
