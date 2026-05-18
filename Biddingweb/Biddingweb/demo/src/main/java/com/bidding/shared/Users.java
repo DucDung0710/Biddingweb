@@ -1,17 +1,11 @@
 package com.bidding.shared;
 
-//AuctionObserver: Giao diện để các loại người dùng có thể nhận thông báo từ hệ thống đấu giá
-interface AuctionObserver {
-    void update(String message);
-    String getUserId();
-}
-
-public class Users implements AuctionObserver {
+public abstract class Users implements AuctionObserver {
     private String username;
     private String password;
     private String id;
     private String email;
-    private String role;
+    protected String role;
 
     public Users(String username, String password, String id, String email) {
         this.username = username;
@@ -76,21 +70,21 @@ public class Users implements AuctionObserver {
 class Bidder extends Users {
     public Bidder(String username, String password, String id, String email) {
         super(username, password, id, email);
-        setRole("Bidder");
+        this.role = "Bidder";
     }
 }
 
 class Seller extends Users {
     public Seller(String username, String password, String id, String email) {
         super(username, password, id, email);
-        setRole("Seller");
+        this.role = "Seller";
     }
 }
 
 class Admin extends Users {
     public Admin(String username, String password, String id, String email) {
         super(username, password, id, email);
-        setRole("Admin");  
+        this.role = "Admin";
     }
 
 }
