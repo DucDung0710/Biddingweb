@@ -1,17 +1,37 @@
 package com.bidding.shared;
 
 public class Item {
+    private String itemId;        // ID của sản phẩm (auto-increment)
+    private String userId;        // ID của người bán (chủ sở hữu)
     private String ItemName;
     private String description;
     private String status; // Trạng thái: "Pending", "Approved", "Rejected"
     private double firstprice ;
 
-    public Item(String ItemName, String description, double price) {
+    public Item(String itemId, String userId, String ItemName, String description, double price) {
+        this.itemId = itemId;
+        this.userId = userId;
         this.ItemName = ItemName;
         this.description = description;
         this.status = "Pending"; // Mặc định trạng thái là "Pending"
         this.firstprice = price; // Mặc định giá khởi điểm là 0
     }  
+
+    public String getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     public String getItemName() {
         return ItemName;

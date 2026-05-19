@@ -7,6 +7,7 @@ import java.util.List;
 public class UserManager {
     // Lưu trữ tất cả người dùng (Key: Username, Value: Đối tượng Users)
     private HashMap<String, Users> allUsers = new HashMap<>();
+    private int nextUserId = 1;  // Counter tự động tăng cho userId
     
     // Danh sách các email "quyền lực" được phép đăng ký Admin
     private final List<String> AUTHORIZED_ADMIN_EMAILS = Arrays.asList(
@@ -17,30 +18,34 @@ public class UserManager {
         );
 
     // --- 1. SIGN UP (Đăng ký) ---
-    public boolean signUp(String id, String username, String password, String email, String roleType) {
+    public boolean signUp(String username, String password, String email, String roleType) {
         if (allUsers.containsKey(username)) {
             System.out.println("Lỗi: Tên đăng nhập đã tồn tại!");
             return false;
         }
 
         // 2. Kiểm tra quyền Admin (Logic bạn yêu cầu)
-    if (roleType.equalsIgnoreCase("Admin") && !AUTHORIZED_ADMIN_EMAILS.contains(email)) {
-        System.out.println("Lỗi: Gmail chưa được đăng ký cho tài khoản Admin!");
-        return false;
-    }
+        if (roleType.equalsIgnoreCase("Admin") && !AUTHORIZED_ADMIN_EMAILS.contains(email)) {
+            System.out.println("Lỗi: Gmail chưa được đăng ký cho tài khoản Admin!");
+            return false;
+        }
+        
+        // Tự động gán userId
+        String userId = String.valueOf(nextUserId++);
+        
         Users newUser;
         if (roleType.equalsIgnoreCase("Bidder")) {
-            newUser = new Bidder(username, password, id, email);
+            newUser = new Bidder(username, password, userId, email);
         } else if (roleType.equalsIgnoreCase("Seller")) {
-            newUser = new Seller(username, password, id, email);
+            newUser = new Seller(username, password, userId, email);
         } else if (roleType.equalsIgnoreCase("Admin")) {
-            newUser = new Admin(username, password, id, email);
+            newUser = new Admin(username, password, userId, email);
         } else {
             System.out.println("Lỗi: Loại người dùng không hợp lệ!");
             return false;
         }
         allUsers.put(username, newUser);
-        System.out.println("Đăng ký thành công tài khoản: " + username);
+        System.out.println("Đăng ký thành công tài khoản: " + username + " (ID: " + userId + ")");
         return true;
     }
 
