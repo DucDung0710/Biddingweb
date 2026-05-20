@@ -1,4 +1,4 @@
-package com.bidding.uilogin;
+package com.bidding.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,7 +18,6 @@ public class DBUtils {
     public static boolean loginUser(String email, String password) {
 
         String query = "SELECT * FROM users WHERE email = ? AND password = ?";
-
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
 
@@ -40,8 +39,8 @@ public class DBUtils {
 
                 } else {
 
-                    showErrorAlert("Login Failed", "Email hoặc mật khẩu không đúng!");
-
+                    // Invalid credentials - let the controller handle UI feedback (inline error / alert)
+                    System.out.println("Login failed for: " + email);
                     return false;
 
                 }

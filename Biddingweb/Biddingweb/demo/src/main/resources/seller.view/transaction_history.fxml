@@ -11,8 +11,6 @@
         <!-- TopBar -->
         <HBox alignment="CENTER_LEFT" prefHeight="50" style="-fx-background-color: white; -fx-border-color: #e0e0e0;-fx-border-width: 0 0 1 0; -fx-padding: 0 20;">
             <Label style="-fx-font-size: 15px; -fx-font-weight: bold;" text="Lịch sử giao dịch" />
-            <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="btnExport" onAction="#handleExport" style="-fx-font-size: 12px; -fx-background-color: transparent;-fx-border-color: #cccccc; -fx-border-radius: 6;-fx-cursor: hand; -fx-padding: 6 14;" text="Xuất CSV" />
         </HBox>
 
         <VBox spacing="12" style="-fx-padding: 16 20;" VBox.vgrow="ALWAYS">

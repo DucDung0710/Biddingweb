@@ -1,3 +1,3 @@
-package com.bidding.uilogin;
+package com.bidding.controller.seller;
 
 public class SellerDashboardController {}

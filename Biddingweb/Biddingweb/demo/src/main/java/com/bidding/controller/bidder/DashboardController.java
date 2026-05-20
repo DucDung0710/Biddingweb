@@ -1,4 +1,4 @@
-package com.bidding.uilogin;
+package com.bidding.controller.bidder;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

@@ -7,7 +7,7 @@ import java.util.List;
 public class UserManager {
     // Lưu trữ tất cả người dùng (Key: Username, Value: Đối tượng Users)
     private HashMap<String, Users> allUsers = new HashMap<>();
-    
+
     // Danh sách các email "quyền lực" được phép đăng ký Admin
     private final List<String> AUTHORIZED_ADMIN_EMAILS = Arrays.asList(
         "25023196@vnu.edu.vn",
@@ -67,7 +67,7 @@ public class UserManager {
     // 2. Tìm người dùng cần thăng chức
     Users user = allUsers.get(targetUsername);
         if (user != null) {
-            user.setRole("Admin"); 
+            user.setRole("Admin");
             System.out.println("Đã thăng chức Admin cho: " + targetUsername);
     }   else {
             System.out.println("Lỗi: Không tìm thấy người dùng này.");
@@ -82,11 +82,11 @@ public class UserManager {
             return;
         }
 
-        // 2. Không cho phép Admin tự xóa chính mình 
+        // 2. Không cho phép Admin tự xóa chính mình
         if (currentUser.getId().equals(targetId)) {
             System.out.println("Lỗi: Bạn không thể tự xóa tài khoản của chính mình!");
             return;
-        }           
+        }
 
         // 3. Tìm người dùng cần xóa
         Users user = null;
@@ -117,5 +117,6 @@ public class UserManager {
         }
     }
 }
+
 
 

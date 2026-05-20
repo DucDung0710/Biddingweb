@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.bidder.RealtimeBiddingController">
+
+    <!-- SIDEBAR — copy từ auction_list.fxml -->
+
+    <VBox HBox.hgrow="ALWAYS">
+
+        <!-- TopBar -->
+        <HBox alignment="CENTER_LEFT" prefHeight="50" style="-fx-background-color: white; -fx-border-color: #e0e0e0;                      -fx-border-width: 0 0 1 0; -fx-padding: 0 20;">
+            <Button onAction="#handleBack" style="-fx-background-color: transparent; -fx-border-color: transparent;                            -fx-font-size: 13px; -fx-cursor: hand; -fx-text-fill: #555555;" text="← Quay lại" />
+            <Label fx:id="lblAuctionTitle" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 0 0 0 8;" text="MacBook Pro M3 14&quot; — Đấu giá trực tiếp" />
+            <Region HBox.hgrow="ALWAYS" />
+            <!-- Chấm xanh LIVE -->
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Label fx:id="lblLiveDot" style="-fx-text-fill: #3B6D11; -fx-font-size: 12px;" text="●" />
+                <Label fx:id="lblLiveCount" style="-fx-font-size: 12px; -fx-text-fill: #3B6D11;" text="Live · 14 bidders" />
+            </HBox>
+        </HBox>
+
+        <!-- Giá + Đồng hồ -->
+        <HBox style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+            <VBox style="-fx-padding: 14 20; -fx-border-color: #e0e0e0; -fx-border-width: 0 1 0 0;" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-size: 12px; -fx-text-fill: #888888;" text="Giá hiện tại cao nhất" />
+                <Label fx:id="lblCurrentPrice" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #185FA5; -fx-padding: 4 0 2 0;" text="28,500,000 ₫" />
+                <Label fx:id="lblLeader" style="-fx-font-size: 12px; -fx-text-fill: #555555;" text="bởi nguyen***" />
+            </VBox>
+            <VBox style="-fx-padding: 14 20; -fx-border-color: #e0e0e0; -fx-border-width: 0 1 0 0;" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-size: 12px; -fx-text-fill: #888888;" text="Thời gian còn lại" />
+                <Label fx:id="lblCountdown" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #A32D2D; -fx-padding: 4 0 2 0;" text="01:23:45" />
+                <Label fx:id="lblEndTime" style="-fx-font-size: 12px; -fx-text-fill: #A32D2D;" text="Kết thúc: 10/05/2024 20:00" />
+            </VBox>
+            <VBox style="-fx-padding: 14 20;" HBox.hgrow="ALWAYS">
+                <Label style="-fx-font-size: 12px; -fx-text-fill: #888888;" text="Thông tin phiên" />
+                <Label fx:id="lblBidCount" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 4 0 2 0;" text="14 lượt đặt giá" />
+                <Label fx:id="lblStatus" style="-fx-font-size: 12px; -fx-text-fill: #3B6D11; -fx-font-weight: bold;" text="● RUNNING" />
+            </VBox>
+        </HBox>
+
+        <!-- Nội dung chính: Chart + Bid panel + History -->
+        <HBox style="-fx-background-color: #f5f5f5;" VBox.vgrow="ALWAYS">
+
+            <!-- Cột trái: Biểu đồ giá + Form đặt giá -->
+            <VBox prefWidth="560" style="-fx-padding: 14; -fx-spacing: 12;">
+
+                <!-- Biểu đồ đường giá realtime (LineChart) -->
+                <VBox style="-fx-background-color: white; -fx-background-radius: 10;                              -fx-border-color: #e8e8e8; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" prefHeight="38" style="-fx-padding: 0 14; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
+                        <Label style="-fx-font-size: 13px; -fx-font-weight: bold;" text="Biểu đồ giá realtime" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #aaaaaa;" text="Cập nhật mỗi khi có bid mới" />
+                    </HBox>
+                    <!-- LineChart được inject từ Controller -->
+                    <LineChart fx:id="priceChart" animated="true" legendVisible="false" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                        <xAxis>
+                            <CategoryAxis label="Thời gian" fx:id="xAxis" />
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis fx:id="yAxis" autoRanging="true" label="Giá (₫)" />
+                        </yAxis>
+                    </LineChart>
+                </VBox>
+
+                <!-- Form đặt giá -->
+                <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 10;                              -fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 14 16;">
+                    <Label style="-fx-font-size: 13px; -fx-font-weight: bold;" text="Đặt giá của bạn" />
+
+                    <!-- Nhập giá thủ công -->
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <TextField fx:id="txtBidAmount" promptText="Nhập giá đấu..." style="-fx-font-size: 14px; -fx-background-radius: 8;                                           -fx-border-color: #185FA5; -fx-border-radius: 8; -fx-padding: 8 12;" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnBid" onAction="#handlePlaceBid" style="-fx-background-color: #185FA5; -fx-text-fill: white;                                        -fx-font-size: 13px; -fx-font-weight: bold;                                        -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 8 18;" text="Đặt giá ngay" />
+                    </HBox>
+                    <Label fx:id="lblMinBid" style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Giá tối thiểu: 29,000,000 ₫  " />
+
+                    <!-- Auto-bid -->
+                    <VBox spacing="8" style="-fx-background-color: #F7F9FD; -fx-background-radius: 8;                                  -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-padding: 10 12;">
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <CheckBox fx:id="chkAutoBid" onAction="#handleToggleAutoBid" style="-fx-font-size: 13px; -fx-font-weight: bold;" text="Bật Auto-Bid" />
+                            <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="(Hệ thống tự đặt giá thay bạn)" />
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <VBox spacing="4">
+                                <Label style="-fx-font-size: 11px; -fx-text-fill: #555555;" text="Giá tối đa (maxBid)" />
+                                <TextField fx:id="txtMaxBid" disable="true" prefWidth="160" promptText="VD: 35,000,000" style="-fx-font-size: 12px; -fx-background-radius: 6;                                                   -fx-border-color: #dddddd; -fx-border-radius: 6; -fx-padding: 6 10;" />
+                            </VBox>
+                            <VBox spacing="4">
+                                <Label style="-fx-font-size: 11px; -fx-text-fill: #555555;" text="Bước giá (increment)" />
+                                <TextField fx:id="txtIncrement" disable="true" prefWidth="140" promptText="VD: 500,000" style="-fx-font-size: 12px; -fx-background-radius: 6;                                                   -fx-border-color: #dddddd; -fx-border-radius: 6; -fx-padding: 6 10;" />
+                            </VBox>
+                            <Button fx:id="btnSetAutoBid" disable="true" onAction="#handleSetAutoBid" style="-fx-font-size: 12px; -fx-background-color: #3B6D11;                                            -fx-text-fill: white; -fx-background-radius: 6;                                            -fx-cursor: hand; -fx-padding: 7 14;" text="Lưu Auto-Bid" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Thông báo lỗi -->
+                    <Label fx:id="lblBidError" managed="false" style="-fx-text-fill: #A32D2D; -fx-font-size: 12px;" text="" visible="false" />
+                </VBox>
+            </VBox>
+
+            <!-- Cột phải: Lịch sử bid realtime -->
+            <VBox style="-fx-padding: 14 14 14 0; -fx-spacing: 10;" HBox.hgrow="ALWAYS">
+                <VBox style="-fx-background-color: white; -fx-background-radius: 10;                              -fx-border-color: #e8e8e8; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" prefHeight="38" style="-fx-padding: 0 14; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
+                        <Label style="-fx-font-size: 13px; -fx-font-weight: bold;" text="Lịch sử đặt giá" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="lblBidCountSmall" style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="14 lượt" />
+                    </HBox>
+                    <!-- Danh sách bid được inject động từ Controller -->
+                    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                        <VBox fx:id="bidHistoryContainer" spacing="0" />
+                    </ScrollPane>
+                </VBox>
+
+                <!-- Thông tin sản phẩm tóm tắt -->
+                <VBox spacing="6" style="-fx-background-color: white; -fx-background-radius: 10;                              -fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 12 14;">
+                    <Label style="-fx-font-size: 12px; -fx-font-weight: bold;" text="Thông tin sản phẩm" />
+                    <HBox>
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #888888;" text="Giá khởi điểm: " />
+                        <Label fx:id="lblStartPrice" style="-fx-font-size: 12px; -fx-font-weight: bold;" text="20,000,000 ₫" />
+                    </HBox>
+                    <HBox>
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #888888;" text="Loại: " />
+                        <Label fx:id="lblType" style="-fx-font-size: 12px;" text="Electronics" />
+                    </HBox>
+                    <HBox>
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #888888;" text="Người bán: " />
+                        <Label fx:id="lblSeller" style="-fx-font-size: 12px;" text="Trần Thị Lan" />
+                    </HBox>
+                </VBox>
+            </VBox>
+        </HBox>
+    </VBox>
+</HBox>
