@@ -88,6 +88,10 @@ class Seller extends Users {
 }
 
 class Admin extends Users {
+
+
+
+
     public Admin(String username, String password, String id, String email) {
         super(username, password, id, email);
         setRole("Admin");  

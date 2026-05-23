@@ -1,0 +1,114 @@
+package com.bidding.controller.admin;
+
+import com.bidding.util.SceneManager;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import java.io.IOException;
+
+public class AdminAuctionController {
+
+    @FXML private HBox navOverview, navUsers, navProducts, navAuctions, navWallet, navNotifications, navAuctionHistory, btnLogout;
+    @FXML private Label lblPendingBadge; // Badge thông báo số lượng đơn ví chờ duyệt
+
+    @FXML private TextField txtSearchAuction; // [cite: 88]
+    @FXML private ComboBox<String> cmbAucStatus; // [cite: 89]
+    @FXML private ComboBox<String> cmbAucType; // [cite: 90]
+    @FXML private DatePicker dpFilter; // [cite: 91]
+    @FXML private TableView<?> tblAuctions;
+
+    @FXML
+    public void initialize() {
+        // --- LIÊN KẾT SIDEBAR ---
+
+        navOverview.setOnMouseClicked(e -> {
+            try {
+                SceneManager.switchToAdminDashboard();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.err.println("Lỗi: Không không thể tải màn hình Dashboard Admin!");
+            }
+        });
+
+        navProducts.setOnMouseClicked(e -> {
+            try {
+                SceneManager.switchToAdminProductManagement();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                System.err.println("Lỗi: Không thể tải màn hình Quản lý sản phẩm Admin!");
+            }
+        });
+
+        // Cài đặt nút bấm bổ sung trên dashboard (Xem tất cả)
+        //btnViewAllUsers.setOnAction(e -> { try { SceneManager.switchToAdminUserManagement(); } catch (IOException ex) {} });
+        //btnViewAllAuctions.setOnAction(e -> { try { SceneManager.switchToAdminAuctionManagement(); } catch (IOException ex) {} });
+
+
+        navUsers.setOnMouseClicked(e -> {
+            try {
+                SceneManager.switchToAdminUserManagement();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        // Mục navAuctions đang active ở màn hình này nên không cần bắt sự kiện tự chuyển cảnh
+
+        navWallet.setOnMouseClicked(e -> {
+            try {
+                SceneManager.switchToAdminWalletManagement();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        navAuctionHistory.setOnMouseClicked(e -> {
+            try {
+                SceneManager.switchToAdminAuctionHistory();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        navNotifications.setOnMouseClicked(e -> {
+            try {
+                SceneManager.switchToAdminNotifications();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        navAuctions.setOnMouseClicked(e -> {
+            try {
+                SceneManager.switchToAdminAuctionManagement();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+
+
+        btnLogout.setOnMouseClicked(e -> {
+            try {
+                SceneManager.switchToLogin();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        // --- CÀI ĐẶT BỘ LỌC ---
+        cmbAucStatus.getItems().addAll("Tất cả trạng thái", "OPEN", "RUNNING", "FINISHED", "SUSPENDED");
+        cmbAucType.getItems().addAll("Tất cả loại", "Đấu giá truyền thống", "Đấu giá xu");
+
+        // Đổ số liệu mẫu cho Badge ví tiền trên Sidebar [cite: 13]
+        if (lblPendingBadge != null) {
+            lblPendingBadge.setText("3");
+        }
+    }
+
+    @FXML
+    private void handleFilterAuctions() {
+        System.out.println("Đang lọc danh sách phiên đấu giá theo yêu cầu: " + txtSearchAuction.getText()); // [cite: 88, 94]
+        // Thực hiện cập nhật bảng tblAuctions [cite: 94]
+    }
+}

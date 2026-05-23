@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    wallet_bidder.fxml
+    Giao diện Ví tiền cho Bidder (Người đặt giá)
+    Controller: com.bidding.controller.wallet.WalletBidderController
+-->
+<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f5f5f5;"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bidding.controller.wallet.WalletBidderController">
+
+    <!-- ==================== SIDEBAR (copy từ dashboard.fxml) ==================== -->
+    <VBox minWidth="220" prefWidth="220" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 1 0 0;">
+        <VBox style="-fx-padding: 20 20 16 20; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+            <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="🔨 BidOnline" />
+            <Label style="-fx-font-size: 11px; -fx-text-fill: #888888; -fx-padding: 2 0 0 0;" text="Hệ thống đấu giá trực tuyến" />
+        </VBox>
+        <VBox spacing="2" style="-fx-padding: 12 10 12 10;" VBox.vgrow="ALWAYS">
+            <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="CHÍNH" />
+            <HBox fx:id="navDashboard" alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="📊" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Tổng quan" />
+            </HBox>
+            <HBox fx:id="navAuctions" alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="🔍" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Phiên đấu giá" />
+            </HBox>
+            <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="TÀI KHOẢN" />
+            <HBox alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="🕐" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Lịch sử đấu giá" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="🔔" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Thông báo" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="lblNotifBadge" style="-fx-background-color: #E6F1FB; -fx-text-fill: #185FA5;
+                       -fx-font-size: 10px; -fx-padding: 1 7; -fx-background-radius: 20;" text="3" />
+            </HBox>
+            <!-- Ví đang active -->
+            <HBox alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-background-color: #E6F1FB; -fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="💰" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #185FA5; -fx-font-weight: bold;" text="Ví của tôi" />
+            </HBox>
+            <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="HỆ THỐNG" />
+            <HBox fx:id="btnLogout" alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="🚪" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Đăng xuất" />
+            </HBox>
+        </VBox>
+        <HBox alignment="CENTER_LEFT" spacing="10"
+              style="-fx-padding: 14; -fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0;">
+            <Label style="-fx-background-color: #B5D4F4; -fx-text-fill: #185FA5;
+                   -fx-background-radius: 50; -fx-min-width: 34; -fx-min-height: 34;
+                   -fx-max-width: 34; -fx-max-height: 34;
+                   -fx-alignment: center; -fx-font-weight: bold; -fx-font-size: 13px;" text="B" />
+            <VBox spacing="2">
+                <Label fx:id="lblUserName" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Nguyễn Văn A" />
+                <Label fx:id="lblUserRole" style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Bidder" />
+            </VBox>
+        </HBox>
+    </VBox>
+    <!-- ==================== END SIDEBAR ==================== -->
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <VBox style="-fx-background-color: #f5f5f5;" HBox.hgrow="ALWAYS">
+
+        <!-- TopBar -->
+        <HBox alignment="CENTER_LEFT" prefHeight="52"
+              style="-fx-background-color: white; -fx-border-color: #e0e0e0;
+                     -fx-border-width: 0 0 1 0; -fx-padding: 0 24;">
+            <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Ví của tôi" />
+        </HBox>
+
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background-color: transparent; -fx-background: transparent;"
+                    VBox.vgrow="ALWAYS">
+            <VBox spacing="16" style="-fx-padding: 20 24;">
+
+                <!-- ===== BALANCE CARD ===== -->
+                <HBox spacing="12">
+                    <!-- Số dư khả dụng -->
+                    <VBox spacing="6" prefWidth="260"
+                          style="-fx-background-color: #185FA5; -fx-background-radius: 12; -fx-padding: 18 20;">
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #B5D4F4;" text="Số dư khả dụng" />
+                        <Label fx:id="lblCurrentBalance"
+                               style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;"
+                               text="0 ₫" />
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #B5D4F4;" text="Có thể sử dụng để đặt giá" />
+                    </VBox>
+
+                    <!-- Số dư bị khóa -->
+                    <VBox spacing="6" prefWidth="220"
+                          style="-fx-background-color: white; -fx-background-radius: 12;
+                                 -fx-border-color: #e8e8e8; -fx-border-radius: 12; -fx-padding: 18 20;"
+                          HBox.hgrow="ALWAYS">
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #888888;" text="🔒 Đang bị khóa (đặt cọc)" />
+                        <Label fx:id="lblLockedBalance"
+                               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #A32D2D;"
+                               text="0 ₫" />
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #aaaaaa;" text="Đang được giữ cho phiên đấu giá" />
+                    </VBox>
+
+                    <!-- Tổng cộng -->
+                    <VBox spacing="6" prefWidth="220"
+                          style="-fx-background-color: white; -fx-background-radius: 12;
+                                 -fx-border-color: #e8e8e8; -fx-border-radius: 12; -fx-padding: 18 20;"
+                          HBox.hgrow="ALWAYS">
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #888888;" text="💼 Tổng tài sản" />
+                        <Label fx:id="lblTotalBalance"
+                               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #3B6D11;"
+                               text="0 ₫" />
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #aaaaaa;" text="Khả dụng + Đang bị khóa" />
+                    </VBox>
+                </HBox>
+
+                <!-- ===== ACTION ROW ===== -->
+                <HBox spacing="12">
+
+                    <!-- Panel Nạp tiền -->
+                    <VBox spacing="12" prefWidth="360"
+                          style="-fx-background-color: white; -fx-background-radius: 10;
+                                 -fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 16 18;">
+                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"
+                               text="💳 Nạp tiền vào ví" />
+
+                        <!-- Chọn phương thức -->
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Phương thức nạp tiền" />
+                        <ComboBox fx:id="cmbDepositMethod" maxWidth="Infinity"
+                                  promptText="-- Chọn phương thức --"
+                                  style="-fx-font-size: 13px; -fx-background-radius: 6;" />
+
+                        <!-- Panel thẻ cào (ẩn/hiện theo ComboBox) -->
+                        <VBox fx:id="paneCardMethod" spacing="8" managed="false" visible="false">
+                            <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Mã thẻ cào" />
+                            <TextField fx:id="txtCardCode"
+                                       promptText="Nhập mã thẻ (VD: NAP50000)"
+                                       style="-fx-font-size: 13px; -fx-background-radius: 6;
+                                              -fx-border-color: #e0e0e0; -fx-border-radius: 6;
+                                              -fx-padding: 7 10;" />
+                        </VBox>
+
+                        <!-- Panel admin (ẩn/hiện theo ComboBox) -->
+                        <VBox fx:id="paneAdminMethod" spacing="8" managed="false" visible="false">
+                            <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Số tiền muốn nạp (VNĐ)" />
+                            <TextField fx:id="txtDepositAmount"
+                                       promptText="VD: 500000"
+                                       style="-fx-font-size: 13px; -fx-background-radius: 6;
+                                              -fx-border-color: #e0e0e0; -fx-border-radius: 6;
+                                              -fx-padding: 7 10;" />
+                            <Label style="-fx-font-size: 11px; -fx-text-fill: #888888; -fx-wrap-text: true;"
+                                   text="⚠ Yêu cầu sẽ được gửi cho Admin xét duyệt. Vui lòng chờ thông báo xác nhận." />
+                        </VBox>
+
+                        <Button fx:id="btnDeposit" maxWidth="Infinity"
+                                style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                       -fx-background-color: #185FA5; -fx-text-fill: white;
+                                       -fx-background-radius: 8; -fx-padding: 9 0; -fx-cursor: hand;"
+                                text="Nạp tiền" />
+
+                        <!-- Kết quả phản hồi -->
+                        <Label fx:id="lblDepositResult"
+                               style="-fx-font-size: 12px; -fx-text-fill: #3B6D11; -fx-wrap-text: true;"
+                               text="" />
+                    </VBox>
+
+                    <!-- Panel lịch sử giao dịch -->
+                    <VBox spacing="0" HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: white; -fx-background-radius: 10;
+                                 -fx-border-color: #e8e8e8; -fx-border-radius: 10;">
+                        <HBox alignment="CENTER_LEFT" prefHeight="44"
+                              style="-fx-padding: 0 16; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
+                            <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"
+                                   text="📋 Lịch sử giao dịch" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="cmbTxFilter"
+                                      style="-fx-font-size: 11px; -fx-background-radius: 6;" />
+                        </HBox>
+
+                        <TableView fx:id="tblTransactions"
+                                   style="-fx-background-color: transparent; -fx-border-color: transparent;"
+                                   VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colTxTime"   prefWidth="130" text="Thời gian" />
+                                <TableColumn fx:id="colTxType"   prefWidth="110" text="Loại GD" />
+                                <TableColumn fx:id="colTxAmount" prefWidth="130" text="Số tiền" />
+                                <TableColumn fx:id="colTxStatus" prefWidth="110" text="Trạng thái" />
+                                <TableColumn fx:id="colTxNote"   prefWidth="160" text="Ghi chú" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </VBox>
+    <!-- ==================== END MAIN CONTENT ==================== -->
+
+</HBox>
