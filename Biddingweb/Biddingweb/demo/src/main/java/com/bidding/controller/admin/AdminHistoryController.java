@@ -32,15 +32,13 @@ public class AdminHistoryController {
     @FXML
     public void initialize() {
         // --- LIÊN KẾT ĐIỀU HƯỚNG SIDEBAR ---
-        navOverview.setOnMouseClicked(e -> { try { SceneManager.switchToAdminDashboard(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navUsers.setOnMouseClicked(e -> { try { SceneManager.switchToAdminUserManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navAuctions.setOnMouseClicked(e -> { try { SceneManager.switchToAdminAuctionManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navWallet.setOnMouseClicked(e -> { try { SceneManager.switchToAdminWalletManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navNotifications.setOnMouseClicked(e -> { try { SceneManager.switchToAdminNotifications(); } catch (IOException ex) { ex.printStackTrace(); } });
-        btnLogout.setOnMouseClicked(e -> { try { SceneManager.switchToLogin(); } catch (IOException ex) { ex.printStackTrace(); } });
-
-        // (Bỏ comment nếu bạn đã dựng xong view cho sản phẩm)
-        // navProducts.setOnMouseClicked(e -> { try { SceneManager.switchToAdminProductManagement(); } catch (IOException ex) {} });
+        navOverview.setOnMouseClicked(e -> { SceneManager.switchToAdminDashboard();  });
+        navUsers.setOnMouseClicked(e -> { SceneManager.switchToAdminUserManagement(); });
+        navAuctions.setOnMouseClicked(e -> { SceneManager.switchToAdminAuctionManagement(); });
+        navWallet.setOnMouseClicked(e -> { SceneManager.switchToAdminWalletManagement();});
+        navNotifications.setOnMouseClicked(e -> { SceneManager.switchToAdminNotifications(); });
+        btnLogout.setOnMouseClicked(e -> { SceneManager.switchToLogin(); });
+        navProducts.setOnMouseClicked(e ->{ SceneManager.switchToAdminProductManagement(); });
 
         // --- ĐỒNG BỘ MAPPING CỘT BẢNG VỚI PROPERTIES CỦA MODEL ---
         colHisId.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -66,8 +64,6 @@ public class AdminHistoryController {
         historyList.add(new AuctionHistory("#AUC-6102", "Giày Jordan 1 Retro High", "tram", "5,400,000 ₫", "19/05/2026 15:44:03"));
 
         tblAuctionHistory.setItems(historyList);
-
-        // Cập nhật số lượng thông báo hoặc tác vụ ví đang chờ (nếu cần)
         lblPendingBadge.setText("3");
     }
 
@@ -86,7 +82,6 @@ public class AdminHistoryController {
         }
 
         System.out.println("Đang thực hiện lọc lịch sử từ: " + startDate + " đến: " + endDate);
-        // Ở đây bạn sẽ viết logic gọi xuống Database hoặc filter trực tiếp trên ObservableList.
     }
 
     /**
@@ -99,6 +94,5 @@ public class AdminHistoryController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION, "Xuất dữ liệu Excel thành công!", ButtonType.OK);
         alert.setHeaderText(null);
         alert.showAndWait();
-        // Sau này bạn tích hợp thư viện Apache POI để ghi file Excel thật ở đây nhé.
     }
 }

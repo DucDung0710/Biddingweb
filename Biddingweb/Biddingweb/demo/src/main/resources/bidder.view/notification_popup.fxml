@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="320.0" prefHeight="400.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.bidder.NotificationPopupController">
+    <children>
+        <HBox alignment="CENTER_LEFT" style="-fx-padding: 12 14; -fx-border-color: #f0f0f0; -fx-border-width: 0 0 1 0;">
+            <children>
+                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Thông báo gần đây" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button onAction="#handleMarkAllAsRead" style="-fx-background-color: transparent; -fx-font-size: 11px; -fx-text-fill: #185FA5; -fx-cursor: hand; -fx-padding: 0;" text="Đánh dấu đã đọc" />
+            </children>
+        </HBox>
+
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox fx:id="vboxNotificationList" spacing="0.0" style="-fx-padding: 0;">
+                    <children>
+
+                        <VBox style="-fx-padding: 12 14; -fx-border-color: #f9f9f9; -fx-border-width: 0 0 1 0; -fx-background-color: #FDF6F6;">
+                            <children>
+                                <HBox spacing="8.0">
+                                    <children>
+                                        <Label style="-fx-font-size: 14px;" text="🚨" />
+                                        <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Label style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Bạn đã bị vượt giá!" wrapText="true" />
+                                                <Label style="-fx-font-size: 11px; -fx-text-fill: #555555;" text="Sản phẩm 'MacBook Pro M3' đã có lượt đặt giá mới cao hơn." wrapText="true" />
+                                                <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa;" text="2 phút trước" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <VBox style="-fx-padding: 12 14; -fx-border-color: #f9f9f9; -fx-border-width: 0 0 1 0; -fx-background-color: white;">
+                            <children>
+                                <HBox spacing="8.0">
+                                    <children>
+                                        <Label style="-fx-font-size: 14px;" text="🎉" />
+                                        <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Label style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #3B6D11;" text="Chúc mừng! Bạn đã thắng cuộc" wrapText="true" />
+                                                <Label style="-fx-font-size: 11px; -fx-text-fill: #555555;" text="Phiên đấu giá 'iPhone 15 Pro' đã kết thúc. Vui lòng thanh toán." wrapText="true" />
+                                                <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa;" text="1 giờ trước" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</VBox>

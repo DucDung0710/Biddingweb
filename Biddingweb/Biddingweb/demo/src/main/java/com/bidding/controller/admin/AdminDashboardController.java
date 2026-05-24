@@ -33,70 +33,40 @@ public class AdminDashboardController {
         btnViewAllAuctions.setOnAction(e -> handleSwitchAuctionManagement());
         btnViewAllUsers.setOnAction(e -> handleSwitchUserManagement());
 
-        // Đổ dữ liệu thống kê ban đầu (Có thể kết nối Service/Database tại đây)
+        // Đổ dữ liệu thống kê ban đầu
         lblTotalUsers.setText("1,248");
         lblActiveAuctions.setText("18");
         lblIssues.setText("3");
 
-        // Cài đặt số hiển thị mẫu cho Badge ví tiền (Ví dụ: Đang có 3 phiếu chờ xử lý)
+        // Cài đặt số hiển thị mẫu cho Badge ví tiền
         if (lblPendingBadge != null) {
             lblPendingBadge.setText("3");
         }
     }
 
-    private void handleSwitchUserManagement() {
-        try {
-            SceneManager.switchToAdminUserManagement();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    private void handleSwitchUserManagement() {SceneManager.switchToAdminUserManagement();}
 
     private void handleSwitchAuctionManagement() {
-        try {
             SceneManager.switchToAdminAuctionManagement();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void handleSwitchProductManagement() {
-        try {
             SceneManager.switchToAdminProductManagement();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void handleSwitchWalletManagement() {
-        try {
             SceneManager.switchToAdminWalletManagement();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void handleSwitchNotifications() {
-        try {
             SceneManager.switchToAdminNotifications();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void handleSwitchAuctionHistory() {
-        try {
             SceneManager.switchToAdminAuctionHistory();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void handleLogout() {
-        try {
             SceneManager.switchToLogin();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

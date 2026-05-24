@@ -4,7 +4,7 @@ import com.bidding.shared.Item;
 import com.bidding.shared.ItemManager;
 import com.bidding.shared.Users;
 import com.bidding.util.SceneManager;
-import com.bidding.util.SessionStore; // Import file lưu phiên đăng nhập của bạn vào
+import com.bidding.util.SessionStore;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -35,19 +35,18 @@ public class AdminProductController {
     private final ObservableList<Item> tableData = FXCollections.observableArrayList();
     private FilteredList<Item> filteredData;
 
-    // ĐÃ SỬA: Xóa bỏ dòng khởi tạo giả lập gây lỗi gạch đỏ cũ đi!
 
     @FXML
     public void initialize() {
         // 1. LIÊN KẾT SIDEBAR MENU
-        navOverview.setOnMouseClicked(e -> { try { SceneManager.switchToAdminDashboard(); } catch (IOException ex) {} });
-        navUsers.setOnMouseClicked(e -> { try { SceneManager.switchToAdminUserManagement(); } catch (IOException ex) {} });
-        navAuctions.setOnMouseClicked(e -> { try { SceneManager.switchToAdminAuctionManagement(); } catch (IOException ex) {} });
-        navWallet.setOnMouseClicked(e -> { try { SceneManager.switchToAdminWalletManagement(); } catch (IOException ex) {} });
-        navProducts.setOnMouseClicked(e -> { try { SceneManager.switchToAdminProductManagement(); } catch (IOException ex) {} });
-        navAuctionHistory.setOnMouseClicked(e -> { try { SceneManager.switchToAdminAuctionHistory(); } catch (IOException ex) {} });
-        navNotifications.setOnMouseClicked(e -> { try { SceneManager.switchToAdminNotifications(); } catch (IOException ex) {} });
-        btnLogout.setOnMouseClicked(e -> { try { SceneManager.switchToLogin(); } catch (IOException ex) {} });
+        navOverview.setOnMouseClicked(e -> { SceneManager.switchToAdminDashboard(); });
+        navUsers.setOnMouseClicked(e -> { SceneManager.switchToAdminUserManagement(); });
+        navAuctions.setOnMouseClicked(e -> { SceneManager.switchToAdminAuctionManagement(); });
+        navWallet.setOnMouseClicked(e -> { SceneManager.switchToAdminWalletManagement(); });
+        navProducts.setOnMouseClicked(e -> { SceneManager.switchToAdminProductManagement(); });
+        navAuctionHistory.setOnMouseClicked(e -> { SceneManager.switchToAdminAuctionHistory(); });
+        navNotifications.setOnMouseClicked(e -> { SceneManager.switchToAdminNotifications(); });
+        btnLogout.setOnMouseClicked(e -> { SceneManager.switchToLogin(); });
 
         // 2. ĐỒNG BỘ CÁC CỘT
         colProdName.setCellValueFactory(new PropertyValueFactory<>("ItemName"));
@@ -79,8 +78,6 @@ public class AdminProductController {
         for (Item item : itemManager.getItemByUserId("USER_KHANH")) { /* Duyệt map mẫu */ }
         tableData.addAll(itemManager.getItemByUserId("USER_KHANH"));
 
-        // Đoạn này lấy danh sách tổng hợp từ cấu trúc quản lý 1-Nhiều đổ lên bảng
-        // (Nếu bạn đã thêm hàm getAllItemsInSystem vào ItemManager bước trước thì gọi tại đây)
         tblProducts.refresh();
     }
 
@@ -110,7 +107,6 @@ public class AdminProductController {
                 btnApprove.setOnAction(event -> {
                     Item currentItem = getTableView().getItems().get(getIndex());
 
-                    // SỬA ĐÚNG: Gọi trực tiếp SessionStore lấy Admin thật vừa đăng nhập từ MySQL ra để duyệt!
                     Users activeAdmin = SessionStore.getCurrentUser();
                     if (activeAdmin != null) {
                         itemManager.reviewItem(activeAdmin, currentItem.getItemId(), true);

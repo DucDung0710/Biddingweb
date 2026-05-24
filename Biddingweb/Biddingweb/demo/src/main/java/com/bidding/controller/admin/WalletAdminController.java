@@ -16,19 +16,13 @@ public class WalletAdminController {
     @FXML
     public void initialize() {
         // --- LIÊN KẾT SIDEBAR ---
-        navOverview.setOnMouseClicked(e -> { try { SceneManager.switchToAdminDashboard(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navUsers.setOnMouseClicked(e -> { try { SceneManager.switchToAdminUserManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navAuctions.setOnMouseClicked(e -> { try { SceneManager.switchToAdminAuctionManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navNotifications.setOnMouseClicked(e -> { try { SceneManager.switchToAdminNotifications(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navProducts.setOnMouseClicked(e -> { try { SceneManager.switchToAdminProductManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navAuctionHistory.setOnMouseClicked(e -> { try { SceneManager.switchToAdminAuctionHistory(); } catch (IOException ex) { ex.printStackTrace(); } });
-        btnLogout.setOnMouseClicked(e -> { try { SceneManager.switchToLogin(); } catch (IOException ex) { ex.printStackTrace(); } });
-
-        // Mục navWallet đang active ở màn hình này nên không cần gán sự kiện click chuyển cảnh
-
-        btnLogout.setOnMouseClicked(e -> {
-            try { SceneManager.switchToLogin(); } catch (IOException ex) { ex.printStackTrace(); }
-        });
+        navOverview.setOnMouseClicked(e -> { SceneManager.switchToAdminDashboard(); });
+        navUsers.setOnMouseClicked(e -> { SceneManager.switchToAdminUserManagement(); });
+        navAuctions.setOnMouseClicked(e -> { SceneManager.switchToAdminAuctionManagement(); });
+        navNotifications.setOnMouseClicked(e -> { SceneManager.switchToAdminNotifications(); });
+        navProducts.setOnMouseClicked(e -> { SceneManager.switchToAdminProductManagement(); });
+        navAuctionHistory.setOnMouseClicked(e -> { SceneManager.switchToAdminAuctionHistory(); });
+        btnLogout.setOnMouseClicked(e -> { SceneManager.switchToLogin(); });
 
         // --- CÁC CHỨC NĂNG CHÍNH ---
         btnRefresh.setOnAction(e -> handleRefreshRequests()); // [cite: 44]

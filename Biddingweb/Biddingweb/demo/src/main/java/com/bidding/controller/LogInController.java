@@ -61,7 +61,6 @@ public class LogInController {
             SessionStore.setCurrentUser(user);
             clearFields();
             hideInlineError();
-            try {
                 String role = user.getRole();
                 if (role == null) role = "Bidder";
                 if (role.equalsIgnoreCase("Admin")) {
@@ -71,10 +70,7 @@ public class LogInController {
                 } else {
                     SceneManager.switchToDashboard();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                DBUtils.showErrorAlert("Error", "Không thể mở Dashboard");
-            }
+
         } else {
             showInlineError("Email hoặc mật khẩu không đúng!");
         }
@@ -85,10 +81,9 @@ public class LogInController {
     private void handleSignUp(ActionEvent event) {
         try {
             SceneManager.switchToSignUp();
-        } catch (IOException e) {
-            e.printStackTrace();
-            DBUtils.showErrorAlert("Error", "Không thể thực hiện hành động!");
-        }
+        } catch (Exception e) {
+            System.err.println("Lỗi chuyển sang màn hình đăng ký: " + e.getMessage());
+            e.printStackTrace();}
     }
 
     private void clearFields() {

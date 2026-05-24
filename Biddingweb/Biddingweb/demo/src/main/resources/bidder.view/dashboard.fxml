@@ -35,13 +35,13 @@
             <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="TÀI KHOẢN" />
 
             <!-- Nav: Lịch sử -->
-            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+            <HBox fx:id="navAuctionHistory" alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 15px;" text="🕐" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Lịch sử đấu giá" />
             </HBox>
 
             <!-- Nav: Thông báo -->
-            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+            <HBox fx:id="navNotifications" alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 15px;" text="🔔" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Thông báo" />
                 <Region HBox.hgrow="ALWAYS" />
@@ -49,7 +49,7 @@
             </HBox>
 
             <!-- Nav: Ví -->
-            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+            <HBox fx:id="navWallet" alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 15px;" text="💰" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Ví của tôi" />
             </HBox>

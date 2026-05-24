@@ -1,9 +1,17 @@
 package com.bidding.controller.admin; // Đã đồng bộ đúng package quản lý admin của bạn
 
 import com.bidding.util.SceneManager;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+
 import java.io.IOException;
 
 public class AdminUserController {
@@ -22,76 +30,29 @@ public class AdminUserController {
     public void initialize() {
         // --- LIÊN KẾT SIDEBAR ---
 
-        navOverview.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminDashboard();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
-        // Mục navUsers đang active ở màn hình này nên không cần bắt sự kiện tự chuyển cảnh [cite: 219, 220, 221, 222]
+        navOverview.setOnMouseClicked(e -> {SceneManager.switchToAdminDashboard();});
+        // Mục navUsers đang active ở màn hình này nên không cần bắt sự kiện tự chuyển cảnh
 
-        navAuctions.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminAuctionManagement();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
-        navProducts.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminProductManagement();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        navAuctions.setOnMouseClicked(e -> {SceneManager.switchToAdminAuctionManagement();});
 
-        navUsers.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminUserManagement();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        navProducts.setOnMouseClicked(e -> {SceneManager.switchToAdminProductManagement();});
 
-        navAuctionHistory.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminAuctionHistory();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        navUsers.setOnMouseClicked(e -> {SceneManager.switchToAdminUserManagement();});
 
-        navNotifications.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminNotifications();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        navAuctionHistory.setOnMouseClicked(e -> {SceneManager.switchToAdminAuctionHistory();});
+
+        navNotifications.setOnMouseClicked(e -> {SceneManager.switchToAdminNotifications();});
 
 
-        navWallet.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminWalletManagement();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        navWallet.setOnMouseClicked(e -> {SceneManager.switchToAdminWalletManagement();});
 
-        btnLogout.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToLogin();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        btnLogout.setOnMouseClicked(e -> {SceneManager.switchToLogin();});
 
         // --- CÀI ĐẶT BỘ LỌC DỮ LIỆU ---
         cmbRoleFilter.getItems().addAll("Tất cả vai trò", "Bidder", "Seller", "Admin"); // [cite: 220]
         cmbStatusFilter.getItems().addAll("Tất cả trạng thái", "Hoạt động", "Bị khóa"); // [cite: 221]
 
-        // Đổ số liệu mẫu cho Badge ví tiền trên Sidebar [cite: 219, 220, 221, 222]
+        // Đổ số liệu mẫu cho Badge ví tiền trên Sidebar
         if (lblPendingBadge != null) {
             lblPendingBadge.setText("3");
         }
@@ -99,17 +60,47 @@ public class AdminUserController {
 
     @FXML
     private void handleFilterUsers() {
-        String search = txtSearchUser.getText(); // [cite: 219]
-        String role = cmbRoleFilter.getValue(); // [cite: 220]
-        String status = cmbStatusFilter.getValue(); // [cite: 221]
+        String search = txtSearchUser.getText();
+        String role = cmbRoleFilter.getValue();
+        String status = cmbStatusFilter.getValue();
 
         System.out.println("Thực hiện tìm kiếm User: " + search + " | " + role + " | " + status);
-        // Thêm code lọc dữ liệu từ CSDL của bạn ở đây
     }
 
     @FXML
-    private void handleAddUser() {
-        System.out.println("Mở Form/Dialog thêm User mới"); // [cite: 198]
-        // Có thể dùng một Alert hoặc Stage phụ để làm form popup
-    }
-}
+    private void handleAddUser(ActionEvent event) {
+        try {
+            // 1. Nạp file FXML bằng URL
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/admin.view/admin-add-user-dialog.fxml"));
+            Parent root = loader.load();
+            // 2. Tạo một Stage mới cho cửa sổ Pop-up
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Thêm người dùng mới - BidOnline");
+
+            dialogStage.initStyle(StageStyle.UTILITY);
+
+            // Ngăn người dùng tương tác với màn hình chính phía sau khi pop-up đang mở
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+
+            // Định vị pop-up phụ thuộc vào màn hình chính hiện tại
+            Stage mainStage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            dialogStage.initOwner(mainStage);
+
+            // 3. Thiết lập Scene và hiển thị cửa sổ
+            Scene scene = new Scene(root);
+            dialogStage.setScene(scene);
+
+            // Ngăn không cho kéo giãn kích thước cửa sổ nhập liệu này
+            dialogStage.setResizable(false);
+
+            // Hiển thị và đợi cho đến khi người dùng đóng cửa sổ này (bấm Lưu hoặc Hủy)
+            dialogStage.showAndWait();
+
+            // 5. Thêm logic làm mới (refresh) lại TableView danh sách người dùng ở đây sau khi đóng pop-up nếu muốn
+            // handleFilterUsers();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Không thể mở giao diện Thêm người dùng. Hãy kiểm tra lại đường dẫn file FXML.");
+        }
+}}

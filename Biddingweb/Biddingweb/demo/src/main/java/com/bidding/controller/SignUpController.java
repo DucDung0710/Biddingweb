@@ -67,12 +67,7 @@ public class SignUpController {
         boolean ok = userService.register(fullName,email, password, confirmPassword, selectedRole);
         if (ok) {
             clearFields();
-            try {
-                SceneManager.switchToLogin();
-            } catch (IOException e) {
-                e.printStackTrace();
-                DBUtils.showErrorAlert("Error", "Không thể thực hiện hành động!");
-            }
+            SceneManager.switchToLogin();
         } else {
             showError("Đăng ký thất bại. Vui lòng thử lại.");
         }
@@ -80,12 +75,7 @@ public class SignUpController {
 
     @FXML
     private void handleLogIn(ActionEvent event) {
-        try {
             SceneManager.switchToLogin();
-        } catch (IOException e) {
-            e.printStackTrace();
-            DBUtils.showErrorAlert("Error", "Không thể thực hiện hành động!");
-        }
     }
 
     private void clearFields() {

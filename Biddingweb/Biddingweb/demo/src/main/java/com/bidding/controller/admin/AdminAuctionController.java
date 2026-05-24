@@ -21,86 +21,37 @@ public class AdminAuctionController {
     public void initialize() {
         // --- LIÊN KẾT SIDEBAR ---
 
-        navOverview.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminDashboard();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                System.err.println("Lỗi: Không không thể tải màn hình Dashboard Admin!");
-            }
-        });
+        navOverview.setOnMouseClicked(e -> {SceneManager.switchToAdminDashboard();});
 
-        navProducts.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminProductManagement();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                System.err.println("Lỗi: Không thể tải màn hình Quản lý sản phẩm Admin!");
-            }
-        });
+        navProducts.setOnMouseClicked(e -> {SceneManager.switchToAdminProductManagement();});
 
         // Cài đặt nút bấm bổ sung trên dashboard (Xem tất cả)
         //btnViewAllUsers.setOnAction(e -> { try { SceneManager.switchToAdminUserManagement(); } catch (IOException ex) {} });
         //btnViewAllAuctions.setOnAction(e -> { try { SceneManager.switchToAdminAuctionManagement(); } catch (IOException ex) {} });
 
 
-        navUsers.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminUserManagement();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+        navUsers.setOnMouseClicked(e ->{SceneManager.switchToAdminUserManagement();
         });
 
         // Mục navAuctions đang active ở màn hình này nên không cần bắt sự kiện tự chuyển cảnh
 
-        navWallet.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminWalletManagement();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        navWallet.setOnMouseClicked(e -> {SceneManager.switchToAdminWalletManagement();});
 
-        navAuctionHistory.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminAuctionHistory();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        navAuctionHistory.setOnMouseClicked(e -> {SceneManager.switchToAdminAuctionHistory();});
 
-        navNotifications.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminNotifications();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        navNotifications.setOnMouseClicked(e -> {SceneManager.switchToAdminNotifications();});
 
-        navAuctions.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToAdminAuctionManagement();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        navAuctions.setOnMouseClicked(e -> {SceneManager.switchToAdminAuctionManagement();});
 
 
 
-        btnLogout.setOnMouseClicked(e -> {
-            try {
-                SceneManager.switchToLogin();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        btnLogout.setOnMouseClicked(e -> {SceneManager.switchToLogin();});
 
         // --- CÀI ĐẶT BỘ LỌC ---
         cmbAucStatus.getItems().addAll("Tất cả trạng thái", "OPEN", "RUNNING", "FINISHED", "SUSPENDED");
         cmbAucType.getItems().addAll("Tất cả loại", "Đấu giá truyền thống", "Đấu giá xu");
 
-        // Đổ số liệu mẫu cho Badge ví tiền trên Sidebar [cite: 13]
+        // Đổ số liệu mẫu cho Badge ví tiền trên Sidebar
         if (lblPendingBadge != null) {
             lblPendingBadge.setText("3");
         }

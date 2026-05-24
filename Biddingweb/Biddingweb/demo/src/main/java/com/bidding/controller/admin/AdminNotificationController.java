@@ -30,15 +30,21 @@ public class AdminNotificationController {
     @FXML
     public void initialize() {
         // 1. LIÊN KẾT CHUYỂN CẢNH SIDEBAR MENU
-        navOverview.setOnMouseClicked(e -> { try { SceneManager.switchToAdminDashboard(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navUsers.setOnMouseClicked(e -> { try { SceneManager.switchToAdminUserManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navAuctions.setOnMouseClicked(e -> { try { SceneManager.switchToAdminAuctionManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navWallet.setOnMouseClicked(e -> { try { SceneManager.switchToAdminWalletManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navNotifications.setOnMouseClicked(e -> { try { SceneManager.switchToAdminNotifications(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navProducts.setOnMouseClicked(e -> { try { SceneManager.switchToAdminProductManagement(); } catch (IOException ex) { ex.printStackTrace(); } });
-        navAuctionHistory.setOnMouseClicked(e -> { try { SceneManager.switchToAdminAuctionHistory(); } catch (IOException ex) { ex.printStackTrace(); } });
+        navOverview.setOnMouseClicked(e -> {SceneManager.switchToAdminDashboard();  });
 
-        btnLogout.setOnMouseClicked(e -> { try { SceneManager.switchToLogin(); } catch (IOException ex) { ex.printStackTrace(); } });
+        navUsers.setOnMouseClicked(e -> {  SceneManager.switchToAdminUserManagement();  });
+
+        navAuctions.setOnMouseClicked(e -> { SceneManager.switchToAdminAuctionManagement(); });
+
+        navWallet.setOnMouseClicked(e -> { SceneManager.switchToAdminWalletManagement();  });
+
+        navNotifications.setOnMouseClicked(e -> { SceneManager.switchToAdminNotifications(); });
+
+        navProducts.setOnMouseClicked(e -> { SceneManager.switchToAdminProductManagement(); });
+
+        navAuctionHistory.setOnMouseClicked(e -> { SceneManager.switchToAdminAuctionHistory();  });
+
+        btnLogout.setOnMouseClicked(e -> { SceneManager.switchToLogin(); });
 
         // 2. KẾT NỐI CÁC CỘT BẢNG VỚI MODEL DATA
         colNotiTime.setCellValueFactory(new PropertyValueFactory<>("time"));
