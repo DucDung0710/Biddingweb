@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
+import com.bidding.util.DataContext;
 
 public class AuctionListController extends BaseBidderController {
 
@@ -17,7 +18,7 @@ public class AuctionListController extends BaseBidderController {
 
     @FXML
     public void initialize() {
-        // 1. Gọi thiết lập Sidebar chung của lớp cha
+        // 1. Gọi thiết lập Sidebar chung của lớp cha (Lắng nghe sự kiện chuyển trang)
         super.setupSidebarBehavior();
 
         // 2. TỐI ƯU UX: Đang ở trang danh sách thì vô hiệu hóa sự kiện click lại chính trang này
@@ -25,8 +26,25 @@ public class AuctionListController extends BaseBidderController {
             navAuctions.setOnMouseClicked(null); // Xóa bỏ sự kiện click chuyển trang trùng lặp
         }
 
+        // 3. Khởi tạo các giá trị cho bộ lọc ComboBox (Trạng thái, Loại sản phẩm)
         initFilterComboboxes();
-        loadAllAuctionItems();
+
+        // 4. KẾT NỐI TÌM KIẾM TỪ DASHBOARD: Kiểm tra xem có từ khóa chuyển giao sang không
+        String externalKeyword = com.bidding.util.DataContext.getSearchKeyword();
+
+        if (externalKeyword != null && !externalKeyword.trim().isEmpty()) {
+            // Nếu có từ khóa, đổ text vào thanh tìm kiếm của trang danh sách
+            txtSearch.setText(externalKeyword);
+
+            // Xóa từ khóa trong DataContext để không bị tự động lọc ở các lần sau
+            com.bidding.util.DataContext.clear();
+
+            // Gọi hàm lọc để hiển thị ngay kết quả tìm kiếm ra màn hình
+            handleFilter();
+        } else {
+            // Nếu không có từ khóa tìm kiếm nhanh, nạp toàn bộ sản phẩm mặc định như cũ
+            loadAllAuctionItems();
+        }
     }
 
     private void initFilterComboboxes() {

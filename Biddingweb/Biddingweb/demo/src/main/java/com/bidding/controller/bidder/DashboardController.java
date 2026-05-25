@@ -5,12 +5,15 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import com.bidding.util.SceneManager;
+import com.bidding.util.DataContext;
 
 public class DashboardController extends BaseBidderController {
+    @FXML private Button txtTopSearch;
 
     // --- CÁC THÀNH PHẦN THỐNG KÊ (STATS ROW) ---
     @FXML private Label lblStatActive;
@@ -28,6 +31,20 @@ public class DashboardController extends BaseBidderController {
 
     // --- KHỐI BIỂU ĐỒ 7 NGÀY ---
     @FXML private StackPane chartPlaceholder;
+
+    @FXML
+    private void handleTopSearch() {
+        if (txtTopSearch != null) {
+            String keyword = txtTopSearch.getText().trim();
+            if (!keyword.isEmpty()) {
+                // 1. Lưu từ khóa vào ngữ cảnh chung
+                DataContext.setSearchKeyword(keyword);
+
+                // 2. Điều hướng sang trang danh sách sản phẩm
+                SceneManager.switchToAuctionList();
+            }
+        }
+    }
 
     @FXML
     public void initialize() {

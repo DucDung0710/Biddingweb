@@ -94,14 +94,14 @@
                             <children>
                                 <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 10;" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <TableView fx:id="tblAuctionHistory" minHeight="500.0" style="-fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
+                                        <TableView fx:id="tblAuctionHistory" minHeight="500.0" prefHeight="500.0" prefWidth="839.0" style="-fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
                                             <columns>
-                                                <TableColumn fx:id="colItemName" prefWidth="220.0" text="Sản phẩm" />
-                                                <TableColumn fx:id="colMyLastBid" prefWidth="140.0" text="Giá bạn đặt cuối" />
-                                                <TableColumn fx:id="colCurrentHighest" prefWidth="140.0" text="Giá hiện tại cao nhất" />
-                                                <TableColumn fx:id="colStatus" prefWidth="130.0" text="Trạng thái phiên" />
-                                                <TableColumn fx:id="colResult" prefWidth="120.0" text="Vị thế của bạn" />
-                                                <TableColumn fx:id="colAction" prefWidth="100.0" text="Hành động" />
+                                                <TableColumn fx:id="colItemName" prefWidth="206.33332180976868" text="Sản phẩm" />
+                                                <TableColumn fx:id="colMyLastBid" prefWidth="114.99996948242188" text="Giá bạn đặt cuối" />
+                                                <TableColumn fx:id="colCurrentHighest" prefWidth="136.6666259765625" text="Giá hiện tại cao nhất" />
+                                                <TableColumn fx:id="colStatus" prefWidth="108.00006103515625" text="Trạng thái phiên" />
+                                                <TableColumn fx:id="colResult" prefWidth="97.3333740234375" text="Vị thế của bạn" />
+                                                <TableColumn fx:id="colAction" prefWidth="193.333251953125" text="Hành động" />
                                             </columns>
                                         </TableView>
                                     </children>

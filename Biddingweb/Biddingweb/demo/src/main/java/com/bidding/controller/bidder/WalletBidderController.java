@@ -12,7 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 public class WalletBidderController extends BaseBidderController {
-    
+
     @FXML private Label lblCurrentBalance;
     @FXML private Label lblLockedBalance;
     @FXML private Label lblTotalBalance;

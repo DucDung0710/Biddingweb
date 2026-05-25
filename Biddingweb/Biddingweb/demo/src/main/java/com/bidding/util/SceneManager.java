@@ -39,7 +39,6 @@ public class SceneManager {
         } catch (IOException e) {
             System.err.println("Không thể tải hoặc tìm thấy file FXML tại đường dẫn: " + fxmlPath);
             e.printStackTrace();
-            // Bạn có thể hiển thị một Alert thông báo lỗi giao diện tại đây nếu cần
         }
     }
 
@@ -63,35 +62,35 @@ public class SceneManager {
     }
 
     /**
-     * BỔ SUNG: Chuyển đến màn hình Danh sách phiên đấu giá
+     * Chuyển đến màn hình Danh sách phiên đấu giá
      */
     public static void switchToAuctionList() {
         navigate("/bidder.view/auction_list.fxml");
     }
 
     /**
-     * BỔ SUNG: Chuyển đến màn hình Chi tiết sản phẩm trước khi đấu giá
+     * Chuyển đến màn hình Chi tiết sản phẩm trước khi đấu giá
      */
     public static void switchToProductDetail() {
         navigate("/bidder.view/product_detail.fxml");
     }
 
     /**
-     * BỔ SUNG: Chuyển đến phòng Đấu giá trực tiếp Realtime
+     * Chuyển đến phòng Đấu giá trực tiếp Realtime
      */
     public static void switchToRealtimeBidding() {
         navigate("/bidder.view/realtime.bidding.fxml");
     }
 
     /**
-     * BỔ SUNG: Chuyển đến màn hình Lịch sử đấu giá của Bidder
+     * Chuyển đến màn hình Lịch sử đấu giá của Bidder
      */
     public static void switchToAuctionHistory() {
         navigate("/bidder.view/auction_history.fxml");
     }
 
     /**
-     * BỔ SUNG: Chuyển đến màn hình Ví tiền cá nhân của Bidder
+     *Chuyển đến màn hình Ví tiền cá nhân của Bidder
      */
     public static void switchToBidderWallet() {
         navigate("/bidder.view/wallet_bidder.fxml");
