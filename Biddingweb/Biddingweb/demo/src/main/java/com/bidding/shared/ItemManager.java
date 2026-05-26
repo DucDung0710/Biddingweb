@@ -1,5 +1,6 @@
 package com.bidding.shared;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,7 +110,7 @@ public class ItemManager {
         // 2. Nếu đúng là Admin, tìm và cập nhật giá
         Item item = getItemById(itemId);
         if (item != null) {
-            item.setFirstprice(newPrice);
+            item.setFirstprice(BigDecimal.valueOf(newPrice));
             System.out.println("Cập nhật giá mặt hàng thành công!");
         } else {
             System.out.println("Lỗi: Không tìm thấy sản phẩm này.");

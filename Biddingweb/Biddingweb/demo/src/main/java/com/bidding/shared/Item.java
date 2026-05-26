@@ -1,21 +1,27 @@
 package com.bidding.shared;
 
+import java.math.BigDecimal;
+
 public class Item {
     private String itemId;        // ID của sản phẩm (auto-increment)
     private String userId;        // ID của người bán (chủ sở hữu)
     private String ItemName;
     private String description;
     private String status; // Trạng thái: "Pending", "Approved", "Rejected"
-    private double firstprice ;
+    private BigDecimal firstprice;
 
     public Item(String itemId, String userId, String ItemName, String description, double price) {
+        this(itemId, userId, ItemName, description, BigDecimal.valueOf(price));
+    }
+
+    public Item(String itemId, String userId, String ItemName, String description, BigDecimal price) {
         this.itemId = itemId;
         this.userId = userId;
         this.ItemName = ItemName;
         this.description = description;
         this.status = "Pending"; // Mặc định trạng thái là "Pending"
-        this.firstprice = price; // Mặc định giá khởi điểm là 0
-    }  
+        this.firstprice = price != null && price.compareTo(BigDecimal.ZERO) >= 0 ? price : BigDecimal.ZERO;
+    }
 
     public String getItemId() {
         return itemId;
@@ -57,11 +63,14 @@ public class Item {
         this.status = status;
     }
 
-    public double getFirstprice() {
+    public BigDecimal getFirstprice() {
         return firstprice;
     }
 
-    public void setFirstprice(double firstprice) {
+    public void setFirstprice(BigDecimal firstprice) {
+        if (firstprice == null || firstprice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Giá khởi điểm phải là số không âm.");
+        }
         this.firstprice = firstprice;
     }
 }

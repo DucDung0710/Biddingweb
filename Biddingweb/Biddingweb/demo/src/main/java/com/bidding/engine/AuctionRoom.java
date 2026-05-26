@@ -1,10 +1,10 @@
 package com.bidding.engine;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.bidding.shared.AuctionObserver;
 import com.bidding.shared.Item;
@@ -24,6 +24,10 @@ public class AuctionRoom {
 
     // Item liên quan đến phòng đấu giá này
     private final Item item;  //AuctionRoom gắn cho 1 item
+    private final String sellerUserId; // Id của người bán
+    private final String sellerUsername; // Tên người bán
+    private long scheduledStartTimeMillis; // Thời điểm bắt đầu đấu giá đã được hẹn trước
+
     // Thông tin phòng
     private String roomId;
     private String password;
@@ -33,20 +37,27 @@ public class AuctionRoom {
     private long approvedTimeMillis;
 
     // Danh sách observers (users sẽ nhận thông báo mời) — dùng interface để giảm coupling
-    private final List<AuctionObserver> observers = new ArrayList<>();
+    private final List<AuctionObserver> observers = new CopyOnWriteArrayList<>();
     // Danh sách userId đã được chấp nhận vào phòng
-    private final Set<String> acceptedUserIds = new HashSet<>();
+    private final Set<String> acceptedUserIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     /**
      * Khởi tạo AuctionRoom với một Item cụ thể
      * @param item Item cần đấu giá
      */
     public AuctionRoom(Item item) {
+        this(item, null);
+    }
+
+    public AuctionRoom(Item item, Users seller) {
         this.item = item;
+        this.sellerUserId = seller != null ? seller.getId() : item.getUserId();
+        this.sellerUsername = seller != null ? seller.getUsername() : "";
         this.approved = false;
         this.roomId = "";
         this.password = "";
         this.approvedTimeMillis = 0;
+        this.scheduledStartTimeMillis = 0;
     }
 
     /**
@@ -79,13 +90,13 @@ public class AuctionRoom {
     }
 
     /**
-     * Bước Admin: duyệt item và tạo phòng đấu giá
+     * Bước Admin: duyệt phép bán item và tạo phòng đấu giá
      * - Chỉ Admin mới được gọi
-     * - Cập nhật tên + mô tả của Item
+     * - Không chỉnh sửa tên/mô tả item tại đây
      * - Thiết lập roomId, password, thời điểm duyệt
      * - Gửi lời mời tới tất cả observers
      */
-    public boolean adminApproveItem(Users admin, String newItemName, String newDescription, String roomId, String password) {
+    public boolean adminApproveItem(Users admin, String roomId, String password) {
         if (admin == null || !"Admin".equalsIgnoreCase(admin.getRole())) {
             System.out.println("Lỗi: Chỉ Admin mới có quyền duyệt item và tạo phòng đấu giá.");
             return false;
@@ -95,9 +106,7 @@ public class AuctionRoom {
             return false;
         }
 
-        // Cập nhật thông tin Item theo yêu cầu
-        item.setItemName(newItemName);
-        item.setDescription(newDescription);
+        // Chỉ cập nhật trạng thái bán/duyệt để item được phép đưa vào auction
         item.setStatus("Approved");
 
         // Thiết lập phòng đấu giá
@@ -109,8 +118,10 @@ public class AuctionRoom {
 
         // Thông điệp mời (hiển thị tóm tắt cho users)
         String inviteMessage = String.format(
-            "Item '%s' đã được duyệt. Phòng đấu giá '%s' đã tạo. Mật khẩu: %s. Thời hạn tham gia: 5 tiếng. Giới hạn: %d người.",
-            newItemName,
+            "Item '%s' (ID: %s) của người bán '%s' đã được duyệt. Phòng đấu giá '%s' đã tạo. Mật khẩu: %s. Thời hạn tham gia: 5 tiếng. Giới hạn: %d người.",
+            item.getItemName(),
+            item.getItemId(),
+            sellerUsername.isEmpty() ? sellerUserId : sellerUsername,
             roomId,
             password,
             MAX_PARTICIPANTS
@@ -130,8 +141,11 @@ public class AuctionRoom {
         registerObserver(user);
         if (approved) {
             user.update(String.format(
-                "Mời bạn tham gia phòng đấu giá '%s'. Mật khẩu: %s. Thời hạn 5 tiếng. Giới hạn %d người.",
+                "Mời bạn tham gia phòng đấu giá '%s' cho item '%s' (ID: %s). Seller: %s. Mật khẩu: %s. Thời hạn 5 tiếng. Giới hạn %d người.",
                 roomId,
+                item.getItemName(),
+                item.getItemId(),
+                sellerUsername.isEmpty() ? sellerUserId : sellerUsername,
                 password,
                 MAX_PARTICIPANTS
             ));
@@ -149,8 +163,11 @@ public class AuctionRoom {
             return false;
         }
         notifyObservers(String.format(
-            "Lời mời tham gia phòng đấu giá '%s'. Mật khẩu: %s. Thời hạn 5 tiếng. Giới hạn %d người.",
+            "Lời mời tham gia phòng đấu giá '%s' cho item '%s' (ID: %s), Seller: %s. Mật khẩu: %s. Thời hạn 5 tiếng. Giới hạn %d người.",
             roomId,
+            item.getItemName(),
+            item.getItemId(),
+            sellerUsername.isEmpty() ? sellerUserId : sellerUsername,
             password,
             MAX_PARTICIPANTS
         ));
@@ -163,36 +180,34 @@ public class AuctionRoom {
      * - Kiểm tra thời hạn 5 tiếng
      * - Kiểm tra giới hạn 100 người
      */
-    public boolean acceptInvitation(AuctionObserver user, String roomId, String password) {
+    public InvitationResult acceptInvitationWithResult(AuctionObserver user, String roomId, String password) {
         if (!approved) {
-            System.out.println("Lỗi: Phòng đấu giá chưa được tạo hoặc item chưa được duyệt.");
-            return false;
+            return new InvitationResult(false, "Lỗi: Phòng đấu giá chưa được tạo hoặc item chưa được duyệt.");
         }
         if (user == null) {
-            System.out.println("Lỗi: Người dùng không hợp lệ.");
-            return false;
+            return new InvitationResult(false, "Lỗi: Người dùng không hợp lệ.");
         }
         if (!this.roomId.equals(roomId) || !this.password.equals(password)) {
-            System.out.println("Lỗi: Room ID hoặc mật khẩu không đúng.");
-            return false;
+            return new InvitationResult(false, "Lỗi: Room ID hoặc mật khẩu không đúng.");
         }
         if (isExpired()) {
-            System.out.println("Lỗi: Thời gian tham gia phòng đấu giá đã hết (5 tiếng).");
-            return false;
+            return new InvitationResult(false, "Lỗi: Thời gian tham gia phòng đấu giá đã hết (5 tiếng).");
         }
         if (acceptedUserIds.size() >= MAX_PARTICIPANTS) {
-            System.out.println("Lỗi: Phòng đấu giá đã đầy, không thể chấp nhận thêm người tham gia.");
-            return false;
+            return new InvitationResult(false, "Lỗi: Phòng đấu giá đã đầy, không thể chấp nhận thêm người tham gia.");
         }
         if (acceptedUserIds.contains(user.getUserId())) {
-            System.out.println("Bạn đã tham gia phòng đấu giá này trước đó.");
-            return true;
+            return new InvitationResult(true, "Bạn đã tham gia phòng đấu giá này trước đó.");
         }
 
         // Thêm user vào danh sách tham gia
         acceptedUserIds.add(user.getUserId());
         user.update(String.format("Bạn đã được chấp nhận vào phòng đấu giá '%s'. Chúc bạn may mắn!", this.roomId));
-        return true;
+        return new InvitationResult(true, String.format("Bạn đã được chấp nhận vào phòng đấu giá '%s'. Chúc bạn may mắn!", this.roomId));
+    }
+
+    public boolean acceptInvitation(AuctionObserver user, String roomId, String password) {
+        return acceptInvitationWithResult(user, roomId, password).isAccepted();
     }
 
     /**
@@ -212,6 +227,24 @@ public class AuctionRoom {
         return System.currentTimeMillis() - approvedTimeMillis > INVITATION_DURATION_MS;
     }
 
+    public static class InvitationResult {
+        private final boolean accepted;
+        private final String message;
+
+        public InvitationResult(boolean accepted, String message) {
+            this.accepted = accepted;
+            this.message = message;
+        }
+
+        public boolean isAccepted() {
+            return accepted;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
     // Các getter tiện lợi
     public int getAcceptedCount() {
         return acceptedUserIds.size();
@@ -223,6 +256,26 @@ public class AuctionRoom {
 
     public String getRoomId() {
         return roomId;
+    }
+
+    public String getSellerUserId() {
+        return sellerUserId;
+    }
+
+    public String getSellerUsername() {
+        return sellerUsername;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public long getScheduledStartTimeMillis() {
+        return scheduledStartTimeMillis;
+    }
+
+    public void setScheduledStartTimeMillis(long scheduledStartTimeMillis) {
+        this.scheduledStartTimeMillis = scheduledStartTimeMillis;
     }
 
     public boolean isApproved() {
