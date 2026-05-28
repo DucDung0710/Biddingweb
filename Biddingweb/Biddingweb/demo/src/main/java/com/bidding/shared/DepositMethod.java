@@ -1,8 +1,5 @@
-package com.bidding.shared;;
-import java.util.HashMap;
-import java.util.Map;
+package com.bidding.shared;
 
-// 2. Lớp cha định nghĩa khung nạp tiền
 public abstract class DepositMethod {
     protected String methodName;
 
@@ -10,7 +7,9 @@ public abstract class DepositMethod {
         this.methodName = methodName;
     }
 
-    // Phương thức này sẽ được gọi trong WalletManager
     public abstract void processDeposit(int userId, double amount, WalletManager manager);
-}
 
+    public String getMethodName() {
+        return methodName;
+    }
+}

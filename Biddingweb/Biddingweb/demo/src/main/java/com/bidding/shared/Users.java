@@ -1,18 +1,15 @@
 package com.bidding.shared;
 
-//AuctionObserver: Giao diện để các loại người dùng có thể nhận thông báo từ hệ thống đấu giá
-interface AuctionObserver {
-    void update(String message);
-    int getUserId();
-}
-
-public class Users implements AuctionObserver {
+/**
+ * Lớp Users đại diện cho một người dùng trong hệ thống đấu giá.
+ */
+public abstract class Users implements AuctionObserver {
     private String username;
     private String password;
     private int id;
     private String email;
-    private String role;
-    private double balance; // Số dư tài khoản của người dùng
+    protected String role;
+    private double balance;
 
     public Users(String username, String password, int id, String email) {
         this.username = username;
@@ -22,7 +19,6 @@ public class Users implements AuctionObserver {
     }
 
     public Users() {
-
     }
 
     public String getUsername() {
@@ -41,7 +37,7 @@ public class Users implements AuctionObserver {
         this.password = password;
     }
 
-     public int getId(){
+    public int getId() {
         return id;
     }
 
@@ -60,6 +56,7 @@ public class Users implements AuctionObserver {
     public String getRole() {
         return role;
     }
+
     public void setRole(String role) {
         this.role = role;
     }
@@ -67,13 +64,13 @@ public class Users implements AuctionObserver {
     public double getBalance() {
         return balance;
     }
+
     public void setBalance(double balance) {
         this.balance = balance;
     }
 
     @Override
     public void update(String message) {
-        // Ở đây bạn có thể thêm logic để xử lý thông báo, ví dụ: hiển thị trên UI hoặc lưu vào lịch sử thông báo của người dùng
         System.out.println("Thông báo cho " + username + ": " + message);
     }
 
@@ -81,32 +78,25 @@ public class Users implements AuctionObserver {
     public int getUserId() {
         return id;
     }
-
 }
 
-// Các lớp con kế thừa từ Users, đại diện cho các loại người dùng cụ thể
 class Bidder extends Users {
     public Bidder(String username, String password, int id, String email) {
         super(username, password, id, email);
-        setRole("Bidder");
+        this.role = "Bidder";
     }
 }
 
 class Seller extends Users {
     public Seller(String username, String password, int id, String email) {
         super(username, password, id, email);
-        setRole("Seller");
+        this.role = "Seller";
     }
 }
 
 class Admin extends Users {
-
-
-
-
     public Admin(String username, String password, int id, String email) {
         super(username, password, id, email);
-        setRole("Admin");  
+        this.role = "Admin";
     }
-
 }
