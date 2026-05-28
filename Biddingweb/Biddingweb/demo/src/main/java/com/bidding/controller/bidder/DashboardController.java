@@ -22,6 +22,7 @@ import java.util.List;
 
 public class DashboardController extends BaseBidderController {
     @FXML private Button txtTopSearch;
+    @FXML private Button btnViewAll;
 
     @FXML private Label lblStatActive;
     @FXML private Label lblStatLeading;
@@ -105,19 +106,44 @@ public class DashboardController extends BaseBidderController {
             return;
         }
 
-        // Tiến hành lặp và nạp động các View Card như bình thường
-        for (AuctionDisplayDTO auction : activeAuctions) {
+        // Duyệt thủ công từng phần tử JSON để đảm bảo không một trường nào bị bỏ sót hay sai tên biến
+        for (int i = 0; i < jsonArray.size(); i++) {
             try {
+                JsonObject obj = jsonArray.get(i).getAsJsonObject();
+                AuctionDisplayDTO dto = new AuctionDisplayDTO();
+
+                // Đọc chính xác các trường cốt lõi
+                dto.setAuctionId(obj.get("auctionId").getAsInt());
+                dto.setItemId(obj.get("itemId").getAsInt());
+                dto.setItemName(obj.get("itemName").getAsString());
+
+                // Đọc các trường chi tiết (Thủ phạm gây trống dữ liệu)
+                dto.setDescription(obj.has("description") && !obj.get("description").isJsonNull() ? obj.get("description").getAsString() : "");
+                dto.setType(obj.has("type") && !obj.get("type").isJsonNull() ? obj.get("type").getAsString() : "Chưa phân loại");
+                dto.setSellerName(obj.has("sellerName") && !obj.get("sellerName").isJsonNull() ? obj.get("sellerName").getAsString() : "Ẩn danh");
+
+                // Đọc thông tin giá cả và thời gian
+                dto.setStartPrice(obj.get("startPrice").getAsDouble());
+                dto.setCurrentPrice(obj.get("currentPrice").getAsDouble());
+                dto.setStartTime(obj.has("startTime") && !obj.get("startTime").isJsonNull() ? obj.get("startTime").getAsString() : "");
+                dto.setEndTime(obj.has("endTime") && !obj.get("endTime").isJsonNull() ? obj.get("endTime").getAsString() : "");
+                dto.setStatus(obj.get("status").getAsString());
+                dto.setWinnerId(obj.has("winnerId") && !obj.get("winnerId").isJsonNull() ? obj.get("winnerId").getAsInt() : 0);
+
+                // Nạp và hiển thị lên giao diện Card
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/bidder.view/item_card.fxml"));
                 Parent cardNode = loader.load();
 
                 ItemCardController cardController = loader.getController();
-                cardController.setAuctionData(auction);
+                cardController.setAuctionData(dto); // Truyền DTO đã bóc tách đầy đủ vào đây
 
                 auctionContainer.getChildren().add(cardNode);
             } catch (IOException e) {
                 System.err.println("Lỗi nạp file mẫu giao diện item_card.fxml: " + e.getMessage());
                 e.printStackTrace();
+            } catch (Exception ex) {
+                System.err.println("Lỗi phân rã cấu trúc JSON sản phẩm: " + ex.getMessage());
+                ex.printStackTrace();
             }
         }
     }
@@ -132,9 +158,7 @@ public class DashboardController extends BaseBidderController {
             }
         }
     }
-
-    @FXML
-    private void handleViewAllAuctions() {
+    @FXML private void handleViewAll() {
         SceneManager.switchToAuctionList();
     }
 }

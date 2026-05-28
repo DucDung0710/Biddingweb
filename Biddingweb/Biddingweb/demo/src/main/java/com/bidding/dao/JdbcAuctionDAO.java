@@ -2,6 +2,7 @@ package com.bidding.dao;
 
 import com.bidding.database.DatabaseConnection;
 import com.bidding.model.AuctionDisplayDTO;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,59 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JdbcAuctionDAO {
-
-    // Lấy chi tiết một phiên đấu giá theo ID kèm thông tin sản phẩm, người bán, người dẫn đầu và lượt bid
-    public AuctionDisplayDTO findById(int auctionId) {
-        String q = "SELECT a.id, " +
-                "       i.ItemName, " +
-                "       i.type AS item_type, " +
-                "       a.item_id, " +
-                "       a.start_price, " +
-                "       a.current_price, " +
-                "       a.start_time, " +
-                "       a.end_time, " +
-                "       a.status, " +
-                "       a.winner_id, " +
-                "       u_seller.username AS seller_name, " +
-                "       u_winner.username AS leader_name, " +
-                "       (SELECT COUNT(*) FROM bid_transactions WHERE auction_id = a.id) AS bid_count " +
-                "FROM auctions a " +
-                "JOIN items i ON a.item_id = i.id " +
-                "JOIN users u_seller ON i.seller_id = u_seller.id " +
-                "LEFT JOIN users u_winner ON a.winner_id = u_winner.id " +
-                "WHERE a.id = ?";
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            try (PreparedStatement ps = conn.prepareStatement(q)) {
-                ps.setInt(1, auctionId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        AuctionDisplayDTO dto = new AuctionDisplayDTO();
-                        dto.setAuctionId(rs.getInt("id"));
-                        dto.setItemName(rs.getString("ItemName"));
-                        dto.setItemId(rs.getInt("item_id"));
-                        dto.setStartPrice(rs.getDouble("start_price"));
-                        dto.setCurrentPrice(rs.getDouble("current_price"));
-                        dto.setStartTime(rs.getString("start_time"));
-                        dto.setEndTime(rs.getString("end_time"));
-                        dto.setStatus(rs.getString("status"));
-                        dto.setWinnerId(rs.getInt("winner_id"));
-                        dto.setItemType(rs.getString("item_type"));
-                        dto.setSellerName(rs.getString("seller_name"));
-
-                        String leader = rs.getString("leader_name");
-                        dto.setLeaderName(leader != null ? leader : "Chưa có");
-                        dto.setBidCount(rs.getInt("bid_count"));
-
-                        return dto;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     // 1. Hàm đếm số phiên đang chạy (Status = 'RUNNING')
     public int countActiveAuctions() {
@@ -96,62 +44,61 @@ public class JdbcAuctionDAO {
         return 0;
     }
 
-    // 3. LẤY TOÀN BỘ PHIÊN ĐANG CHẠY ĐỂ ĐỔ LÊN GIAO DIỆN (Kèm thông tin mở rộng)
+    // 3. LẤY TOÀN BỘ PHIÊN ĐANG CHẠY ĐỂ ĐỔ LÊN GIAO DIỆN
     public List<AuctionDisplayDTO> getActiveAuctionsWithItems() {
         List<AuctionDisplayDTO> list = new ArrayList<>();
-        String q = "SELECT a.id, i.ItemName, i.type AS item_type, a.item_id, a.start_price, a.current_price, " +
-                "a.start_time, a.end_time, a.status, a.winner_id, " +
-                "u_seller.username AS seller_name, u_winner.username AS leader_name, " +
-                "(SELECT COUNT(*) FROM bid_transactions WHERE auction_id = a.id) AS bid_count " +
+
+        String q = "SELECT a.id AS auction_id, i.id AS item_id, i.ItemName, i.description, i.type, " +
+                "u.username AS seller_name, a.start_price, a.current_price, " +
+                "a.start_time, a.end_time, a.status, a.winner_id " +
                 "FROM auctions a " +
-                "JOIN items i ON a.item_id = i.id " +
-                "JOIN users u_seller ON i.seller_id = u_seller.id " +
-                "LEFT JOIN users u_winner ON a.winner_id = u_winner.id " +
+                "INNER JOIN items i ON a.item_id = i.id " +
+                "INNER JOIN users u ON i.seller_id = u.id " +
                 "WHERE a.status = 'RUNNING'";
+
         try {
             Connection conn = DatabaseConnection.getInstance().getConnection();
             try (PreparedStatement ps = conn.prepareStatement(q);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     AuctionDisplayDTO dto = new AuctionDisplayDTO();
-                    dto.setAuctionId(rs.getInt("id"));
-                    dto.setItemName(rs.getString("ItemName"));
+
+                    dto.setAuctionId(rs.getInt("auction_id"));
                     dto.setItemId(rs.getInt("item_id"));
+                    dto.setItemName(rs.getString("ItemName"));
+                    dto.setDescription(rs.getString("description"));
+                    dto.setType(rs.getString("type"));
+                    dto.setSellerName(rs.getString("seller_name"));
                     dto.setStartPrice(rs.getDouble("start_price"));
                     dto.setCurrentPrice(rs.getDouble("current_price"));
                     dto.setStartTime(rs.getString("start_time"));
                     dto.setEndTime(rs.getString("end_time"));
                     dto.setStatus(rs.getString("status"));
                     dto.setWinnerId(rs.getInt("winner_id"));
-                    dto.setItemType(rs.getString("item_type"));
-                    dto.setSellerName(rs.getString("seller_name"));
-
-                    String leader = rs.getString("leader_name");
-                    dto.setLeaderName(leader != null ? leader : "Chưa có");
-                    dto.setBidCount(rs.getInt("bid_count"));
 
                     list.add(dto);
                 }
             }
         } catch (SQLException e) {
+            System.err.println("Lỗi nghiêm trọng tại hàm getActiveAuctionsWithItems:");
             e.printStackTrace();
         }
         return list;
     }
-
-    // 4. Hàm lọc phiên đấu giá từ SQLite dựa trên từ khóa, trạng thái và loại sản phẩm
+    /**
+     * 4. Hàm lọc phiên đấu giá từ SQLite dựa trên từ khóa, trạng thái và loại sản phẩm
+     **/
     public List<AuctionDisplayDTO> getAuctionsByFilter(String keyword, String status, String type) {
         List<AuctionDisplayDTO> list = new ArrayList<>();
 
+        // Sử dụng Alias rõ ràng: a (auctions), i (items), u (users) để tránh xung đột cột 'id'
         StringBuilder sql = new StringBuilder(
-                "SELECT a.id, i.ItemName, i.type AS item_type, a.item_id, a.start_price, a.current_price, " +
-                        "a.start_time, a.end_time, a.status, a.winner_id, " +
-                        "u_seller.username AS seller_name, u_winner.username AS leader_name, " +
-                        "(SELECT COUNT(*) FROM bid_transactions WHERE auction_id = a.id) AS bid_count " +
+                "SELECT a.id AS auction_id, i.id AS item_id, i.ItemName, i.description, i.type, " +
+                        "u.username AS seller_name, a.start_price, a.current_price, a.start_time, a.end_time, a.status, a.winner_id " +
                         "FROM auctions a " +
-                        "JOIN items i ON a.item_id = i.id " +
-                        "JOIN users u_seller ON i.seller_id = u_seller.id " +
-                        "LEFT JOIN users u_winner ON a.winner_id = u_winner.id WHERE 1=1 "
+                        "INNER JOIN items i ON a.item_id = i.id " +
+                        "INNER JOIN users u ON i.seller_id = u.id " +
+                        "WHERE 1=1 "
         );
 
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -188,28 +135,27 @@ public class JdbcAuctionDAO {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         AuctionDisplayDTO dto = new AuctionDisplayDTO();
-                        dto.setAuctionId(rs.getInt("id"));
-                        dto.setItemName(rs.getString("ItemName"));
+
+                        // Ánh xạ chính xác theo các Alias đã định nghĩa ở câu lệnh SELECT
+                        dto.setAuctionId(rs.getInt("auction_id"));
                         dto.setItemId(rs.getInt("item_id"));
+                        dto.setItemName(rs.getString("ItemName"));
+                        dto.setDescription(rs.getString("description"));
+                        dto.setType(rs.getString("type"));
+                        dto.setSellerName(rs.getString("seller_name"));
                         dto.setStartPrice(rs.getDouble("start_price"));
                         dto.setCurrentPrice(rs.getDouble("current_price"));
                         dto.setStartTime(rs.getString("start_time"));
                         dto.setEndTime(rs.getString("end_time"));
                         dto.setStatus(rs.getString("status"));
                         dto.setWinnerId(rs.getInt("winner_id"));
-                        dto.setItemType(rs.getString("item_type"));
-                        dto.setSellerName(rs.getString("seller_name"));
-
-                        String leader = rs.getString("leader_name");
-                        dto.setLeaderName(leader != null ? leader : "Chưa có");
-                        dto.setBidCount(rs.getInt("bid_count"));
 
                         list.add(dto);
                     }
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Lỗi lọc dữ liệu tại hàm getAuctionsByFilter:");
+            System.err.println("Lỗi thực thi dữ liệu tại hàm getAuctionsByFilter:");
             e.printStackTrace();
         }
         return list;
@@ -251,7 +197,7 @@ public class JdbcAuctionDAO {
         }
     }
 
-    // 7. Tạm giữ tiền đóng băng của người dùng khi ra giá cao nhất
+    // 7. Nghiệp vụ Ví tiền: Đóng băng/Tạm giữ tiền của người dùng khi ra giá cao nhất
     public boolean holdWalletMoney(int userId, int auctionId, double amount, String createdAt) {
         String insertHold = "INSERT INTO wallet_holds (user_id, auction_id, amount, status) VALUES (?, ?, ?, 'ACTIVE')";
         String insertLog = "INSERT INTO wallet_transactions (user_id, type, amount, balance_after, ref_id, note, created_at) "
@@ -261,17 +207,20 @@ public class JdbcAuctionDAO {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getInstance().getConnection();
+            // BẬT TRANSACTIONS: Đảm bảo tính toàn vẹn dữ liệu ví tiền
             conn.setAutoCommit(false);
 
             try (PreparedStatement ps1 = conn.prepareStatement(insertHold);
                  PreparedStatement ps2 = conn.prepareStatement(insertLog);
                  PreparedStatement ps3 = conn.prepareStatement(updateUser)) {
 
+                // 1. Thêm vào bảng holds
                 ps1.setInt(1, userId);
                 ps1.setInt(2, auctionId);
                 ps1.setDouble(3, amount);
                 ps1.executeUpdate();
 
+                // 2. Ghi log lịch sử giao dịch ví
                 ps2.setInt(1, userId);
                 ps2.setDouble(2, amount);
                 ps2.setInt(3, userId);
@@ -280,6 +229,7 @@ public class JdbcAuctionDAO {
                 ps2.setString(6, createdAt);
                 ps2.executeUpdate();
 
+                // 3. Trừ số dư khả dụng ở bảng users
                 ps3.setDouble(1, amount);
                 ps3.setInt(2, userId);
                 ps3.executeUpdate();
@@ -287,14 +237,58 @@ public class JdbcAuctionDAO {
                 conn.commit();
                 return true;
             } catch (SQLException e) {
-                if (conn != null) conn.rollback();
+                if (conn != null) {
+                    conn.rollback();
+                }
                 throw e;
             } finally {
-                if (conn != null) conn.setAutoCommit(true);
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    // THÊM: 8. LẤY CHI TIẾT MỘT PHIÊN ĐẤU GIÁ THEO ID
+    public AuctionDisplayDTO getAuctionById(int auctionId) {
+        String q = "SELECT a.id AS auction_id, i.id AS item_id, i.ItemName, i.description, i.type, " +
+                "u.username AS seller_name, a.start_price, a.current_price, " +
+                "a.start_time, a.end_time, a.status, a.winner_id " +
+                "FROM auctions a " +
+                "INNER JOIN items i ON a.item_id = i.id " +
+                "INNER JOIN users u ON i.seller_id = u.id " +
+                "WHERE a.id = ?";
+
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            try (PreparedStatement ps = conn.prepareStatement(q)) {
+                ps.setInt(1, auctionId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        AuctionDisplayDTO dto = new AuctionDisplayDTO();
+                        dto.setAuctionId(rs.getInt("auction_id"));
+                        dto.setItemId(rs.getInt("item_id"));
+                        dto.setItemName(rs.getString("ItemName"));
+                        dto.setDescription(rs.getString("description"));
+                        dto.setType(rs.getString("type"));
+                        dto.setSellerName(rs.getString("seller_name"));
+                        dto.setStartPrice(rs.getDouble("start_price"));
+                        dto.setCurrentPrice(rs.getDouble("current_price"));
+                        dto.setStartTime(rs.getString("start_time"));
+                        dto.setEndTime(rs.getString("end_time"));
+                        dto.setStatus(rs.getString("status"));
+                        dto.setWinnerId(rs.getInt("winner_id"));
+                        return dto;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi lấy chi tiết phiên đấu giá:");
+            e.printStackTrace();
+        }
+        return null;
     }
 }

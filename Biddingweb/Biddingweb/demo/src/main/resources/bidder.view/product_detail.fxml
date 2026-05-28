@@ -155,12 +155,15 @@
                                                         <RowConstraints minHeight="24.0" />
                                                     </rowConstraints>
                                                     <children>
+                                                        <!-- Danh mục sản phẩm -->
                                                         <Label style="-fx-font-size: 13px; -fx-text-fill: #888888;" text="Danh mục:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                                        <Label fx:id="lblCategory" style="-fx-font-size: 13px; -fx-font-weight: bold;" text="Electronics" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                                        <Label fx:id="lblType" style="-fx-font-size: 13px; -fx-font-weight: bold;" text="Chưa phân loại" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
+                                                        <!-- Người bán -->
                                                         <Label style="-fx-font-size: 13px; -fx-text-fill: #888888;" text="Người bán:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                                        <Label fx:id="lblSellerName" style="-fx-font-size: 13px;" text="Trần Thị Lan (Uy tín: ⭐ 4.9)" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                        <Label fx:id="lblSellerName" style="-fx-font-size: 13px;" text="Chưa cập nhật" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
+                                                        <!-- Trạng thái -->
                                                         <Label style="-fx-font-size: 13px; -fx-text-fill: #888888;" text="Trạng thái phiên:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                                         <Label fx:id="lblAuctionStatus" style="-fx-font-size: 13px; -fx-text-fill: green; -fx-font-weight: bold;" text="🔴 ĐANG DIỄN RA" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                                     </children>
