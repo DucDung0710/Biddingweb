@@ -7,7 +7,7 @@ package com.bidding.shared;
         }
 
         @Override
-        public void processDeposit(String userId, double amount, WalletManager manager) {
+        public void processDeposit(int userId, double amount, WalletManager manager) {
             // Tạo phiếu nạp mới với requestId tự tăng
             DepositRequest req = new DepositRequest(userId, amount);
 

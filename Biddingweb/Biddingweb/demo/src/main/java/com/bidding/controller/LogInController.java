@@ -1,6 +1,7 @@
 package com.bidding.controller;
 
-import java.io.IOException;
+import com.google.gson.JsonObject;
+import com.bidding.util.SocketClient;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -11,9 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import com.bidding.service.UserService;
-import com.bidding.util.DBUtils;
 import com.bidding.util.SceneManager;
-import com.bidding.util.SessionStore;
 
 public class LogInController {
 
@@ -54,29 +53,31 @@ public class LogInController {
             return;
         }
 
-        com.bidding.shared.Users user = userService.login(email, password);
-        if (user != null) {
-            System.out.println("Login successful: " + email);
-            // store in session (use SessionStore to avoid touching shared.UserSession)
-            SessionStore.setCurrentUser(user);
-            clearFields();
-            hideInlineError();
-                String role = user.getRole();
-                if (role == null) role = "Bidder";
-                if (role.equalsIgnoreCase("Admin")) {
-                    SceneManager.switchToAdminDashboard();
-                } else if (role.equalsIgnoreCase("Seller")) {
-                    SceneManager.switchToSellerDashboard();
-                } else {
-                    SceneManager.switchToDashboard();
-                }
+        // Tạo request JSON gửi lên server
+        JsonObject request = new JsonObject();
+        request.addProperty("action",   "LOGIN");
+        request.addProperty("email",    email);
+        request.addProperty("password", password);
 
+        JsonObject response = SocketClient.getInstance().sendRequest(request);
+        if ("OK".equals(response.get("status").getAsString())) {
+            com.bidding.shared.Users user = new com.bidding.shared.Users();
+            user.setId(response.get("id").getAsInt());
+            user.setUsername(response.get("username").getAsString());
+            user.setEmail(response.get("email").getAsString());
+            user.setRole(response.get("role").getAsString());
+            user.setBalance(response.get("balance").getAsDouble());
+
+            com.bidding.shared.UserSession.getInstance().setLoggedInUser(user);
+
+            String role = user.getRole();
+            if (role.equalsIgnoreCase("Admin"))       SceneManager.switchToAdminDashboard();
+            else if (role.equalsIgnoreCase("Seller")) SceneManager.switchToSellerDashboard();
+            else                                      SceneManager.switchToDashboard();
         } else {
-            showInlineError("Email hoặc mật khẩu không đúng!");
+            showInlineError(response.get("message").getAsString());
         }
     }
-
-    // Chuyển sang màn hình đăng ký khi người dùng nhấn nút "Sign Up", đồng thời xử lý lỗi nếu không thể chuyển
     @FXML
     private void handleSignUp(ActionEvent event) {
         try {

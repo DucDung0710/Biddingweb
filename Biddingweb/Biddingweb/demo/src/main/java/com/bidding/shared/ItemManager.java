@@ -6,13 +6,13 @@ import java.util.List;
 
 public class ItemManager {
   // Kho chứa tất cả mặt hàng của hệ thống (Key: userID, Value: Đối tượng Item)
-  private HashMap<String, List<Item>> allItems = new HashMap<>();
+  private HashMap<Integer, List<Item>> allItems = new HashMap<>();
 
   // Hành động: Đăng ký mặt hàng mới khi có Seller mới đăng bán
   public void registerNewItem(
-      String itemId, String userId, String itemName, String description, double price) {
+      int itemId, int userId, String itemName, String description, String type, double price) {
     // Bước 1: Tạo đối tượng Item mới
-    Item newItem = new Item(itemId, userId, itemName, description, price);
+    Item newItem = new Item(itemId, userId, itemName, type, description, price);
 
     // Bước 2: Nếu userId này chưa từng đăng bán, tự động khởi tạo 1 danh sách (List) rỗng cho họ
     allItems.computeIfAbsent(userId, k -> new ArrayList<>());
@@ -22,7 +22,7 @@ public class ItemManager {
 
     // Bước 4: Kiểm tra xem mã sản phẩm (itemId) này đã tồn tại trong kho của họ chưa
     for (Item item : sellerItems) {
-      if (item.getItemId().equals(itemId)) {
+      if (item.getItemId() == itemId) {
         System.out.println("Lỗi: Mã sản phẩm " + itemId + " đã tồn tại cho người dùng này!");
         return; // Trùng mã thì dừng lại, không thêm nữa
       }
@@ -39,7 +39,7 @@ public class ItemManager {
   }
 
   // Hành động: Cập nhật thông tin mặt hàng ( SELLER)
-  public void updateItem(String userId, String itemId, String newItemName, String newDescription) {
+  public void updateItem(int userId, int itemId, String newItemName, String newDescription) {
     // Bước 1: Lấy ra toàn bộ danh sách sản phẩm của User này
     List<Item> sellerItems = allItems.get(userId);
 
@@ -51,7 +51,7 @@ public class ItemManager {
 
     // Bước 2: Duyệt qua danh sách để tìm chính xác sản phẩm có itemId cần sửa
     for (Item item : sellerItems) {
-      if (item.getItemId().equals(itemId)) {
+      if (item.getItemId() == itemId) {
         // Bước 3: Tiến hành cập nhật thông tin mới
         item.setItemName(newItemName);
         item.setDescription(newDescription);
@@ -70,7 +70,7 @@ public class ItemManager {
         "Lỗi: Không tìm thấy sản phẩm mã " + itemId + " thuộc sở hữu của User " + userId);
   }
 
-  public void reviewItem(Users currentUser, String itemId, boolean approve) {
+  public void reviewItem(Users currentUser, int itemId, boolean approve) {
     // BƯỚC 1: Kiểm tra xem có ai đang đăng nhập không
     if (currentUser == null) {
       System.out.println("Lỗi: Bạn phải đăng nhập để thực hiện thao tác này!");
@@ -88,7 +88,7 @@ public class ItemManager {
     // Duyệt qua toàn bộ kho đồ để tìm sản phẩm có itemId trùng khớp
     for (List<Item> sellerList : allItems.values()) {
       for (Item item : sellerList) {
-        if (item.getItemId().equals(itemId)) {
+        if (item.getItemId() == itemId) {
           if (approve) {
             item.setStatus("APPROVED");
             System.out.println("Sản phẩm [" + item.getItemName() + "] đã ĐƯỢC DUYỆT.");

@@ -76,7 +76,7 @@ public class Balance {
     public Users getUser() {
         return user;
     }
-    public String getUserId() {
+    public int getUserId() {
         return user.getId();
     }
 

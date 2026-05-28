@@ -11,7 +11,7 @@ public class AuctionHistoryController extends BaseBidderController {
     @FXML private TextField txtSearchHistory;
     @FXML private ComboBox<String> cmbHistoryStatus;
 
-    @FXML private TableView<Object> tblAuctionHistory; // Thay Object bằng Entity Class của nhóm (ví dụ: AuctionLog)
+    @FXML private TableView<Object> tblAuctionHistory;
     @FXML private TableColumn<Object, String> colItemName;
     @FXML private TableColumn<Object, Double> colMyLastBid;
     @FXML private TableColumn<Object, Double> colCurrentHighest;

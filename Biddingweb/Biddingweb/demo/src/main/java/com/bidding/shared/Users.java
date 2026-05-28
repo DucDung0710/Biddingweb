@@ -3,21 +3,26 @@ package com.bidding.shared;
 //AuctionObserver: Giao diện để các loại người dùng có thể nhận thông báo từ hệ thống đấu giá
 interface AuctionObserver {
     void update(String message);
-    String getUserId();
+    int getUserId();
 }
 
 public class Users implements AuctionObserver {
     private String username;
     private String password;
-    private String id;
+    private int id;
     private String email;
     private String role;
+    private double balance; // Số dư tài khoản của người dùng
 
-    public Users(String username, String password, String id, String email) {
+    public Users(String username, String password, int id, String email) {
         this.username = username;
         this.password = password;
         this.id = id;
         this.email = email;
+    }
+
+    public Users() {
+
     }
 
     public String getUsername() {
@@ -36,11 +41,11 @@ public class Users implements AuctionObserver {
         this.password = password;
     }
 
-     public String getId(){
+     public int getId(){
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -59,6 +64,13 @@ public class Users implements AuctionObserver {
         this.role = role;
     }
 
+    public double getBalance() {
+        return balance;
+    }
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
     @Override
     public void update(String message) {
         // Ở đây bạn có thể thêm logic để xử lý thông báo, ví dụ: hiển thị trên UI hoặc lưu vào lịch sử thông báo của người dùng
@@ -66,7 +78,7 @@ public class Users implements AuctionObserver {
     }
 
     @Override
-    public String getUserId() {
+    public int getUserId() {
         return id;
     }
 
@@ -74,14 +86,14 @@ public class Users implements AuctionObserver {
 
 // Các lớp con kế thừa từ Users, đại diện cho các loại người dùng cụ thể
 class Bidder extends Users {
-    public Bidder(String username, String password, String id, String email) {
+    public Bidder(String username, String password, int id, String email) {
         super(username, password, id, email);
         setRole("Bidder");
     }
 }
 
 class Seller extends Users {
-    public Seller(String username, String password, String id, String email) {
+    public Seller(String username, String password, int id, String email) {
         super(username, password, id, email);
         setRole("Seller");
     }
@@ -92,7 +104,7 @@ class Admin extends Users {
 
 
 
-    public Admin(String username, String password, String id, String email) {
+    public Admin(String username, String password, int id, String email) {
         super(username, password, id, email);
         setRole("Admin");  
     }

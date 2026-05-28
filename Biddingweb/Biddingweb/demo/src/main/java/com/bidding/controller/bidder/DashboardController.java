@@ -1,141 +1,138 @@
 package com.bidding.controller.bidder;
 
+import com.bidding.model.AuctionDisplayDTO;
+import com.bidding.shared.Users;
+import com.bidding.util.DataContext;
+import com.bidding.util.SocketClient;
+import com.bidding.util.SceneManager;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import javafx.fxml.FXML;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import com.bidding.util.SceneManager;
-import com.bidding.util.DataContext;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DashboardController extends BaseBidderController {
     @FXML private Button txtTopSearch;
 
-    // --- CÁC THÀNH PHẦN THỐNG KÊ (STATS ROW) ---
     @FXML private Label lblStatActive;
     @FXML private Label lblStatLeading;
     @FXML private Label lblStatTotal;
     @FXML private Label lblStatWon;
 
-    // --- PHẦN PHIÊN ĐẤU GIÁ NỔI BẬT ---
     @FXML private HBox auctionContainer;
-    @FXML private Label lblPriceMacbook;
-    @FXML private Label lblTimerMacbook;
-    @FXML private Label lblPriceHonda;
-    @FXML private Label lblTimerHonda;
-    @FXML private Label lblPriceTranh;
+    private final Gson gson = new Gson();
 
-    // --- KHỐI BIỂU ĐỒ 7 NGÀY ---
-    @FXML private StackPane chartPlaceholder;
+    @FXML
+    public void initialize() {
+        super.setupSidebarBehavior();
+        if (navDashboard!= null) {
+            navDashboard.setOnMouseClicked(null);
+        }
+
+        try {
+            // 1. Lấy trạng thái người dùng hiện tại thông qua SUserSession Singleton
+            com.bidding.shared.Users currentUser = com.bidding.shared.UserSession.getInstance().getLoggedInUser();
+            int currentUserId = (currentUser != null) ? currentUser.getId() : 0;
+
+            // 2. LẤY SỐ LIỆU THỐNG KÊ TỪ SERVER QUA SOCKET
+            JsonObject statRequest = new JsonObject();
+            statRequest.addProperty("action", "GET_DASHBOARD_STATS");
+            statRequest.addProperty("userId", currentUserId);
+
+            JsonObject statResponse = SocketClient.getInstance().sendRequest(statRequest);
+
+            if (statResponse.get("status").getAsString().equals("OK")) {
+                int activeCount = statResponse.get("activeCount").getAsInt();
+                int wonCount = statResponse.get("wonCount").getAsInt();
+
+                lblStatActive.setText(String.valueOf(activeCount));
+                lblStatWon.setText(String.valueOf(wonCount));
+                lblStatLeading.setText(String.valueOf(activeCount)); // logic tạm thời của bạn
+            } else {
+                System.err.println("Không lấy được thống kê từ server: " + statResponse.get("message").getAsString());
+            }
+
+            // Hiển thị số dư
+            if (currentUser != null) {
+                lblStatTotal.setText(String.format("%,.0f ₫", currentUser.getBalance()));
+            } else {
+                lblStatTotal.setText("0 ₫");
+            }
+
+            // 3. ĐỔ SẢN PHẨM THEO KIẾN TRÚC CLIENT - SERVER
+            loadActiveAuctionsWithNetwork();
+
+        } catch (Exception e) {
+            System.err.println("Lỗi nghiêm trọng khi khởi tạo Dashboard: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void loadActiveAuctionsWithNetwork() {
+        auctionContainer.getChildren().clear();
+
+        // Đóng gói yêu cầu lấy danh sách phiên đấu giá đang chạy
+        JsonObject listRequest = new JsonObject();
+        listRequest.addProperty("action", "GET_ACTIVE_AUCTIONS");
+
+        JsonObject listResponse = SocketClient.getInstance().sendRequest(listRequest);
+
+        if (!listResponse.get("status").getAsString().equals("OK")) {
+            Label lblError = new Label("Không thể tải danh sách sản phẩm từ Server.");
+            lblError.setStyle("-fx-text-fill: red; -fx-font-style: italic;");
+            auctionContainer.getChildren().add(lblError);
+            return;
+        }
+
+        // Parse JsonArray từ Server gửi về thành List<AuctionDisplayDTO>
+        JsonArray jsonArray = listResponse.getAsJsonArray("auctions");
+        Type listType = new TypeToken<ArrayList<AuctionDisplayDTO>>(){}.getType();
+        List<AuctionDisplayDTO> activeAuctions = gson.fromJson(jsonArray, listType);
+
+        if (activeAuctions == null || activeAuctions.isEmpty()) {
+            Label lblEmpty = new Label("Hiện tại chưa có mặt hàng nào lên sàn.");
+            lblEmpty.setStyle("-fx-text-fill: #999999; -fx-font-style: italic; -fx-font-size: 13px;");
+            auctionContainer.getChildren().add(lblEmpty);
+            return;
+        }
+
+        // Tiến hành lặp và nạp động các View Card như bình thường
+        for (AuctionDisplayDTO auction : activeAuctions) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/bidder.view/item_card.fxml"));
+                Parent cardNode = loader.load();
+
+                ItemCardController cardController = loader.getController();
+                cardController.setAuctionData(auction);
+
+                auctionContainer.getChildren().add(cardNode);
+            } catch (IOException e) {
+                System.err.println("Lỗi nạp file mẫu giao diện item_card.fxml: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
 
     @FXML
     private void handleTopSearch() {
         if (txtTopSearch != null) {
             String keyword = txtTopSearch.getText().trim();
             if (!keyword.isEmpty()) {
-                // 1. Lưu từ khóa vào ngữ cảnh chung
-                DataContext.setSearchKeyword(keyword);
-
-                // 2. Điều hướng sang trang danh sách sản phẩm
+                DataContext.getInstance().setSearchKeyword(keyword);
                 SceneManager.switchToAuctionList();
             }
         }
     }
 
-    @FXML
-    public void initialize() {
-        // 1. Khởi tạo thanh điều hướng Sidebar kế thừa từ Base class
-        super.setupSidebarBehavior();
-
-        // 2. Nạp dữ liệu số liệu thống kê tổng quan
-        loadDashboardStatistics();
-
-        // 3. Kết nối và cập nhật giá/thời gian thực tế cho các thẻ nổi bật
-        renderFeaturedAuctions();
-
-        // 4. Khởi tạo và vẽ đồ thị hoạt động tuần
-        initActivityChart();
-    }
-
-    /**
-     * Đồng bộ số liệu thống kê từ Service/Cơ sở dữ liệu
-     */
-    private void loadDashboardStatistics() {
-        lblStatActive.setText("4");
-        lblStatLeading.setText("2");
-        lblStatTotal.setText("12,500,000 ₫");
-        lblStatWon.setText("7");
-    }
-
-    /**
-     * Gắn dữ liệu động hoặc gán sự kiện Click trực tiếp cho các Card sản phẩm
-     */
-    private void renderFeaturedAuctions() {
-        // Đồng bộ dữ liệu giả lập/thực tế từ database lên các Label trong card
-        lblPriceMacbook.setText("28,500,000 ₫");
-        lblTimerMacbook.setText("⏱ 01:23:45");
-
-        lblPriceHonda.setText("520,000,000 ₫");
-        lblTimerHonda.setText("⏱ 00:45:10");
-
-        lblPriceTranh.setText("8,200,000 ₫");
-        // Xử lý sự kiện khi người dùng click vào từng Card sản phẩm nổi bật để xem chi tiết
-        if (auctionContainer != null) {
-            auctionContainer.getChildren().forEach(node -> {
-                node.setOnMouseClicked(event -> {
-                    // Chuyển sang màn hình chi tiết sản phẩm
-                    SceneManager.switchToProductDetail();
-                });
-            });
-        }
-    }
-
-    /**
-     * Khởi tạo đồ thị cột JavaFX BarChart thay thế vào vị trí hộp xám trống
-     */
-    private void initActivityChart() {
-        if (chartPlaceholder == null) return;
-
-        // Định nghĩa các trục tọa độ cho đồ thị cột
-        CategoryAxis xAxis = new CategoryAxis();
-        NumberAxis yAxis = new NumberAxis();
-        BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
-
-        // Tinh chỉnh thẩm mỹ đồng bộ phong cách UI chung
-        barChart.setLegendVisible(false);
-        barChart.setAnimated(true);
-        barChart.setStyle("-fx-background-color: transparent;");
-
-        // Ẩn lưới nền và đường trục để giao diện trông phẳng và hiện đại
-        xAxis.setTickLabelsVisible(true);
-        yAxis.setTickLabelsVisible(false);
-        yAxis.setOpacity(0);
-
-        // Tạo tập dữ liệu số lượt đặt giá trong 7 ngày gần nhất (Thứ 2 -> Chủ Nhật)
-        XYChart.Series<String, Number> dataSeries = new XYChart.Series<>();
-        dataSeries.getData().add(new XYChart.Data<>("T2", 3));
-        dataSeries.getData().add(new XYChart.Data<>("T3", 5));
-        dataSeries.getData().add(new XYChart.Data<>("T4", 2));
-        dataSeries.getData().add(new XYChart.Data<>("T5", 7));
-        dataSeries.getData().add(new XYChart.Data<>("T6", 4));
-        dataSeries.getData().add(new XYChart.Data<>("T7", 8));
-        dataSeries.getData().add(new XYChart.Data<>("CN", 6));
-
-        // Nạp dữ liệu vào đồ thị
-        barChart.getData().add(dataSeries);
-
-        // Xóa Label text giữ chỗ tĩnh cũ và nhúng đồ thị JavaFX thật vào giao diện
-        chartPlaceholder.getChildren().clear();
-        chartPlaceholder.getChildren().add(barChart);
-    }
-
-    /**
-     * Trực quan hóa hành động khi click nút "Xem tất cả →"
-     */
     @FXML
     private void handleViewAllAuctions() {
         SceneManager.switchToAuctionList();

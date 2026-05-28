@@ -19,7 +19,7 @@ import java.util.Map;
         }
 
         @Override
-        public void processDeposit(String userId, double amount, WalletManager manager) {
+        public void processDeposit(int userId, double amount, WalletManager manager) {
             System.out.println("[THẺ CÀO] Đang quết mã thẻ ...");
         }
 

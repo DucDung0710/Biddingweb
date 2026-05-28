@@ -14,7 +14,7 @@ import java.util.List;
 public class WalletManager {
 
     // Kho chứa tất cả ví của hệ thống (userId → Balance)
-    private final HashMap<String, Balance> allWallets = new HashMap<>();
+    private final HashMap<Integer, Balance> allWallets = new HashMap<>();
 
     // Danh sách phiếu nạp tiền chờ Admin duyệt
     private List<DepositRequest> pendingRequests = new ArrayList<>();
@@ -31,7 +31,7 @@ public class WalletManager {
     // ─────────────────────────────────────────────────────────────────────────
     // 2. Tìm ví theo ID
     // ─────────────────────────────────────────────────────────────────────────
-    public Balance getWalletByUserId(String userId) {
+    public Balance getWalletByUserId(int userId) {
         return allWallets.get(userId);
     }
 
@@ -40,7 +40,7 @@ public class WalletManager {
     // ─────────────────────────────────────────────────────────────────────────
 
     /** Gọi phương thức nạp tiền được chọn (CardMethod hoặc AdminMethod) */
-    public void execute(String userId, double amount, DepositMethod method) {
+    public void execute(int userId, double amount, DepositMethod method) {
         method.processDeposit(userId, amount, this);
     }
 
@@ -75,7 +75,7 @@ public class WalletManager {
     // ─────────────────────────────────────────────────────────────────────────
     // 4. Chuyển tiền giữa 2 ví (dùng trong thanh toán đấu giá)
     // ─────────────────────────────────────────────────────────────────────────
-    public boolean transferMoney(String fromUserId, String toUserId, double amount) {
+    public boolean transferMoney(int fromUserId, int toUserId, double amount) {
         Balance fromWallet = getWalletByUserId(fromUserId);
         Balance toWallet   = getWalletByUserId(toUserId);
 

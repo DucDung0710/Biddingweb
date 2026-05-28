@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -8,12 +7,7 @@
 <StackPane prefHeight="640" prefWidth="900" style="-fx-background-color: #003366;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.LogInController">
     <children>
 
-        <VBox alignment="TOP_CENTER"
-              maxWidth="-Infinity"
-              maxHeight="-Infinity"
-              prefWidth="480.0"
-              prefHeight="-1.0"
-              style="-fx-background-color: white; -fx-background-radius: 18; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 4);">
+        <VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="-1.0" prefWidth="480.0" style="-fx-background-color: white; -fx-background-radius: 18; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 4);">
             <children>
 
                 <VBox alignment="CENTER" spacing="6" style="-fx-padding: 32 40 22 40; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
@@ -58,14 +52,6 @@
                                 </StackPane>
                             </children>
                         </VBox>
-
-                        <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 20 0;">
-                            <children>
-                                <CheckBox fx:id="chkRemember" style="-fx-font-size: 14px; -fx-text-fill: #444444;" text="Ghi nhớ đăng nhập" />
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Label fx:id="lblForgotPassword" style="-fx-font-size: 14px; -fx-text-fill: #003366; -fx-font-weight: bold; -fx-cursor: hand;" text="Quên mật khẩu?" />
-                            </children>
-                        </HBox>
 
                         <HBox fx:id="boxError" alignment="CENTER_LEFT" managed="false" spacing="8" style="-fx-background-color: #FCEBEB; -fx-border-color: #F7C1C1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 14; -fx-margin: 0 0 15 0;" visible="false">
                             <children>

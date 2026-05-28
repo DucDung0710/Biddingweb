@@ -2,68 +2,48 @@ package com.bidding.service;
 
 import com.bidding.dao.JdbcUserDAO;
 import com.bidding.dao.UserDAO;
-import com.bidding.shared.ItemManager;
 import com.bidding.shared.Users;
-import com.bidding.validator.UserValidator;
+import java.util.UUID;
 
 public class UserService {
-
     private final UserDAO userDao = new JdbcUserDAO();
-    private final UserValidator validator = new UserValidator();
 
-    /**
-     * 1. ĐĂNG NHẬP HỆ THỐNG
-     */
+    // Logic Đăng nhập
     public Users login(String emailOrUsername, String password) {
-        Users u = userDao.findByEmail(emailOrUsername);
+        if (emailOrUsername == null || password == null) return null;
+
+        String input = emailOrUsername.trim();
+        Users u = userDao.findByEmail(input);
         if (u == null) {
-            u = userDao.findByUsername(emailOrUsername);
+            u = userDao.findByUsername(input);
         }
-        if (u == null) return null;
 
-        if (u.getPassword().equals(password)) return u;
-        return null;
+        if (u != null && u.getPassword().equals(password)) {
+            return u;
+        }
+        return null; // Sai mật khẩu hoặc không tồn tại
     }
 
-    /**
-     * 2. ĐĂNG KÝ TÀI KHOẢN MỚI (Lưu MySQL trực tiếp)
-     */
-    public boolean register(String fullName, String email, String password, String confirmPassword, String role) {
-        // Kiểm tra dữ liệu hợp lệ & kiểm tra whitelist Email Admin đặc quyền
-        if (!validator.validateSignUpData(fullName, email, password, confirmPassword, role)) {
-            return false;
-        }
-        // Đảm bảo không trùng tài khoản trong DB
-        if (userDao.existsByEmail(email) || userDao.existsByUsername(fullName)) {
-            return false;
-        }
+    // Logic Đăng ký tài khoản mới
+    public boolean register(String username, String email, String password, String confirmPassword, String role) {
+        // Nghiệp vụ kiểm tra dữ liệu đầu vào
+        if (username == null || username.isBlank()) return false;
+        if (email == null || !email.contains("@")) return false;
+        if (password == null || password.length() < 6) return false;
+        if (!password.equals(confirmPassword)) return false;
 
-        String id = String.valueOf(System.currentTimeMillis());
-        Users user = new Users(fullName, password, id, email);
-        user.setRole(role);
-        return userDao.insert(user);
-    }
+        String trimmedName = username.trim();
+        String trimmedEmail = email.trim();
 
-    /**
-     * 3. XÓA NGƯỜI DÙNG VÀ XÓA SẠCH MẶT HÀNG ĐI KÈM CỦA HỌ
-     * (Dùng cho chức năng Quản lý người dùng của Admin sau này)
-     */
-    public boolean deleteUserWithProducts(Users currentUser, String targetId, ItemManager itemManager) {
-        // Phân quyền bảo mật: Chỉ Admin mới có quyền xóa tài khoản người khác
-        if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin")) {
-            System.out.println("Lỗi: Chỉ Admin mới có quyền xóa người dùng!");
-            return false;
-        }
-        // Chặn hành vi tự xóa tài khoản chính mình
-        if (currentUser.getId().equals(targetId)) {
-            System.out.println("Lỗi: Bạn không thể tự xóa tài khoản của chính mình!");
+        // Kiểm tra trùng lặp bản ghi trong dữ liệu SQLite
+        if (userDao.existsByEmail(trimmedEmail) || userDao.existsByUsername(trimmedName)) {
             return false;
         }
 
-        // Bước 1: Gọi ItemManager quét sạch các sản phẩm trong giỏ của người bán này (nếu có)
-        itemManager.deleteItemsByUserId(targetId);
+        Users newUser = new Users(trimmedName, password, 0, trimmedEmail); // ID sẽ được tự động sinh bởi cơ sở dữ liệu
+        newUser.setRole(role);
+        newUser.setBalance(0.0); // Khởi tạo ví tiền bằng 0
 
-        // Bước 2: Thực hiện lệnh xóa dòng bản ghi trong bảng users của MySQL
-        return userDao.deleteById(targetId);
+        return userDao.insert(newUser);
     }
 }

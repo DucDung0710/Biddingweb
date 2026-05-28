@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 
 <HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.admin.AdminProductController">
@@ -81,11 +82,23 @@
                         </HBox>
                         <TableView fx:id="tblProducts" prefHeight="380" style="-fx-background-color: transparent; -fx-border-color: transparent;">
                             <columns>
-                                <TableColumn fx:id="colProdName" prefWidth="200" text="Tên sản phẩm" />
-                                <TableColumn fx:id="colProdCategory" prefWidth="260" text="Mô tả chi tiết" />
-                                <TableColumn fx:id="colProdPrice" prefWidth="130" text="Giá khởi điểm" />
-                                <TableColumn fx:id="colProdStatus" prefWidth="110" text="Trạng thái" />
-                                <TableColumn fx:id="colProdAction" prefWidth="150" text="Hành động xử lý" />
+                                <TableColumn fx:id="colProdName" prefWidth="200" text="Tên sản phẩm">
+                                    <cellValueFactory><PropertyValueFactory property="ItemName" /></cellValueFactory>
+                                </TableColumn>
+
+                                <TableColumn fx:id="colProdCategory" prefWidth="330.0000457763672" text="Mô tả chi tiết">
+                                    <cellValueFactory><PropertyValueFactory property="description" /></cellValueFactory>
+                                </TableColumn>
+
+                                <TableColumn fx:id="colProdPrice" prefWidth="98.6666259765625" text="Giá khởi điểm">
+                                    <cellValueFactory><PropertyValueFactory property="firstprice" /></cellValueFactory>
+                                </TableColumn>
+
+                                <TableColumn fx:id="colProdStatus" minWidth="0.0" prefWidth="96.33331298828125" text="Trạng thái">
+                                    <cellValueFactory><PropertyValueFactory property="status" /></cellValueFactory>
+                                </TableColumn>
+
+                                <TableColumn fx:id="colProdAction" prefWidth="138.0" text="Hành động" />
                             </columns>
                         </TableView>
                     </VBox>

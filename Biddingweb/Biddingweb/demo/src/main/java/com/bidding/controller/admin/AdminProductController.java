@@ -1,10 +1,13 @@
 package com.bidding.controller.admin;
 
 import com.bidding.shared.Item;
-import com.bidding.shared.ItemManager;
 import com.bidding.shared.Users;
+import com.bidding.shared.UserSession;
 import com.bidding.util.SceneManager;
-import com.bidding.util.SessionStore;
+import com.bidding.util.SocketClient;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -13,15 +16,14 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AdminProductController {
+    @FXML private Label navOverview, navUsers, navAuctions, navWallet, navProducts, navAuctionHistory, navNotifications, btnLogout;
 
-    @FXML private HBox navOverview, navUsers, navAuctions, navProducts, navWallet, navAuctionHistory, navNotifications, btnLogout;
     @FXML private Label lblPendingBadge;
     @FXML private Label lblStatPendingProd, lblStatActiveProd;
-
     @FXML private TextField txtSearchProduct;
     @FXML private TableView<Item> tblProducts;
 
@@ -31,13 +33,11 @@ public class AdminProductController {
     @FXML private TableColumn<Item, Double> colProdPrice;
     @FXML private TableColumn<Item, Void> colProdAction;
 
-    private final ItemManager itemManager = new ItemManager();
-    private final ObservableList<Item> tableData = FXCollections.observableArrayList();
-    private FilteredList<Item> filteredData;
-
+    private final ObservableList<Item> masterData = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
+
         // 1. LIÊN KẾT SIDEBAR MENU
         navOverview.setOnMouseClicked(e -> { SceneManager.switchToAdminDashboard(); });
         navUsers.setOnMouseClicked(e -> { SceneManager.switchToAdminUserManagement(); });
@@ -48,82 +48,123 @@ public class AdminProductController {
         navNotifications.setOnMouseClicked(e -> { SceneManager.switchToAdminNotifications(); });
         btnLogout.setOnMouseClicked(e -> { SceneManager.switchToLogin(); });
 
-        // 2. ĐỒNG BỘ CÁC CỘT
+
+        // 1. Khởi tạo cấu trúc các cột dữ liệu
         colProdName.setCellValueFactory(new PropertyValueFactory<>("ItemName"));
-        colProdStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        colProdPrice.setCellValueFactory(new PropertyValueFactory<>("firstprice"));
         colProdCategory.setCellValueFactory(new PropertyValueFactory<>("description"));
+        colProdPrice.setCellValueFactory(new PropertyValueFactory<>("firstprice"));
+        colProdStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        setupActionColumn();
-        mockDataFromLogic();
-        setupSearchFilter();
+        // 2. Cấu hình cột nút chức năng duyệt/từ chối
+        addButtonToTable();
 
-        lblPendingBadge.setText("3");
-    }
-
-    private void mockDataFromLogic() {
-        itemManager.registerNewItem("PROD_001", "USER_KHANH", "iPhone 15 Pro Max", "Điện thoại Apple chính hãng", 25000000);
-        itemManager.registerNewItem("PROD_002", "USER_LEMINH", "MacBook Pro M3", "Máy tính xách tay cấu hình cao", 45000000);
-        itemManager.registerNewItem("PROD_003", "USER_TRAM", "Giày Jordan 1", "Thời trang Sneaker", 3500000);
-
-        List<Item> tramItems = itemManager.getItemByUserId("USER_TRAM");
-        if (tramItems != null && !tramItems.isEmpty()) {
-            tramItems.get(0).setStatus("APPROVED");
-        }
+        // 3. Tải dữ liệu thật từ Server lên
         refreshTableAndStats();
-    }
 
-    private void refreshTableAndStats() {
-        tableData.clear();
-        for (Item item : itemManager.getItemByUserId("USER_KHANH")) { /* Duyệt map mẫu */ }
-        tableData.addAll(itemManager.getItemByUserId("USER_KHANH"));
-
-        tblProducts.refresh();
-    }
-
-    private void setupSearchFilter() {
-        filteredData = new FilteredList<>(tableData, p -> true);
+        // 4. Cấu hình bộ lọc tìm kiếm thời gian thực (Search filter)
+        FilteredList<Item> filteredData = new FilteredList<>(masterData, p -> true);
         txtSearchProduct.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(item -> {
                 if (newValue == null || newValue.isEmpty()) return true;
-                String filter = newValue.toLowerCase().trim();
-                return item.getItemName().toLowerCase().contains(filter) || item.getDescription().toLowerCase().contains(filter);
+                String lowerCaseFilter = newValue.toLowerCase();
+
+                if (item.getItemName() != null && item.getItemName().toLowerCase().contains(lowerCaseFilter)) return true;
+                if (item.getDescription() != null && item.getDescription().toLowerCase().contains(lowerCaseFilter)) return true;
+                return false;
             });
         });
         tblProducts.setItems(filteredData);
     }
 
-    private void setupActionColumn() {
+    private void refreshTableAndStats() {
+        // Gửi request lấy dữ liệu thật qua Socket mạng
+        JsonObject request = new JsonObject();
+        request.addProperty("action", "GET_ALL_ITEMS");
+
+        JsonObject response = SocketClient.getInstance().sendRequest(request);
+
+        if (response != null && "OK".equals(response.get("status").getAsString())) {
+            JsonArray array = response.getAsJsonArray("data");
+            List<Item> serverItems = new ArrayList<>();
+
+            int pendingCount = 0;
+            int activeCount = 0;
+
+            for (JsonElement elem : array) {
+                JsonObject obj = elem.getAsJsonObject();
+                Item item = new Item();
+                item.setItemId(obj.get("itemId").getAsInt());
+                item.setUserId(obj.get("userId").getAsInt());
+                item.setItemName(obj.get("itemName").getAsString());
+                item.setType(obj.get("type").getAsString());
+                item.setDescription(obj.get("description").getAsString());
+                item.setStatus(obj.get("status").getAsString());
+                item.setFirstprice(obj.get("firstprice").getAsDouble());
+
+                serverItems.add(item);
+
+                // Tính toán nhanh số liệu thống kê badge
+                if (item.getStatus().equalsIgnoreCase("Pending")) pendingCount++;
+                else if (item.getStatus().equalsIgnoreCase("Approved")) activeCount++;
+            }
+
+            // Đổ dữ liệu mới vào TableView
+            masterData.setAll(serverItems);
+
+            // Cập nhật giao diện số liệu
+            if (lblStatPendingProd != null) lblStatPendingProd.setText(String.valueOf(pendingCount));
+            if (lblStatActiveProd != null) lblStatActiveProd.setText(String.valueOf(activeCount));
+            if (lblPendingBadge != null) {
+                lblPendingBadge.setText(String.valueOf(pendingCount));
+                lblPendingBadge.setVisible(pendingCount > 0);
+            }
+        } else {
+            System.err.println("Không thể lấy danh sách sản phẩm từ Server");
+        }
+    }
+
+    private void addButtonToTable() {
         colProdAction.setCellFactory(param -> new TableCell<>() {
             private final Button btnApprove = new Button("Duyệt");
             private final Button btnReject = new Button("Từ chối");
             private final HBox container = new HBox(8, btnApprove, btnReject);
 
             {
+                btnApprove.setStyle("-fx-background-color: #2ec4b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-cursor: hand;");
+                btnReject.setStyle("-fx-background-color: #e71d36; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4; -fx-cursor: hand;");
                 container.setAlignment(Pos.CENTER);
-                btnApprove.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;");
-                btnReject.setStyle("-fx-background-color: #c62828; -fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;");
 
                 btnApprove.setOnAction(event -> {
                     Item currentItem = getTableView().getItems().get(getIndex());
-
-                    Users activeAdmin = SessionStore.getCurrentUser();
-                    if (activeAdmin != null) {
-                        itemManager.reviewItem(activeAdmin, currentItem.getItemId(), true);
-                        refreshTableAndStats();
-                    }
+                    sendReviewRequest(currentItem.getItemId(), true);
                 });
 
                 btnReject.setOnAction(event -> {
                     Item currentItem = getTableView().getItems().get(getIndex());
-
-                    // SỬA ĐÚNG: Lấy dữ liệu thật từ Session
-                    Users activeAdmin = SessionStore.getCurrentUser();
-                    if (activeAdmin != null) {
-                        itemManager.reviewItem(activeAdmin, currentItem.getItemId(), false);
-                        refreshTableAndStats();
-                    }
+                    sendReviewRequest(currentItem.getItemId(), false);
                 });
+            }
+
+            private void sendReviewRequest(int itemId, boolean isApproved) {
+                Users activeAdmin = UserSession.getInstance().getLoggedInUser();
+                if (activeAdmin == null) {
+                    System.err.println("Lỗi: Không tìm thấy phiên đăng nhập của Admin.");
+                    return;
+                }
+
+                // Đóng gói lệnh gửi lên Server duyệt dữ liệu SQLite thật
+                JsonObject reviewReq = new JsonObject();
+                reviewReq.addProperty("action", "REVIEW_ITEM");
+                reviewReq.addProperty("itemId", itemId);
+                reviewReq.addProperty("approved", isApproved);
+                reviewReq.addProperty("adminId", activeAdmin.getId());
+
+                JsonObject response = SocketClient.getInstance().sendRequest(reviewReq);
+                if (response != null && "OK".equals(response.get("status").getAsString())) {
+                    refreshTableAndStats(); // Duyệt xong load lại bảng ngay lập tức
+                } else {
+                    System.err.println("Lỗi xử lý duyệt sản phẩm từ Server");
+                }
             }
 
             @Override
@@ -133,7 +174,8 @@ public class AdminProductController {
                     setGraphic(null);
                 } else {
                     Item currentItem = getTableView().getItems().get(getIndex());
-                    if (currentItem.getStatus().equalsIgnoreCase("Pending")) {
+                    // Chỉ hiện nút duyệt nếu sản phẩm đang ở trạng thái chờ duyệt (Pending)
+                    if (currentItem != null && "Pending".equalsIgnoreCase(currentItem.getStatus())) {
                         setGraphic(container);
                     } else {
                         setGraphic(null);

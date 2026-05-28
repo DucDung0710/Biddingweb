@@ -1,33 +1,37 @@
 package com.bidding.shared;
 
+import com.bidding.dao.JdbcUserDAO;
+import com.bidding.dao.UserDAO;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class UserManager {
-    // Lưu trữ tất cả người dùng (Key: Username, Value: Đối tượng Users)
-    private HashMap<String, Users> allUsers = new HashMap<>();
+
+    // Gọi sang tầng DAO để xử lý SQLite
+    private final UserDAO userDao = new JdbcUserDAO();
 
     // Danh sách các email "quyền lực" được phép đăng ký Admin
     private final List<String> AUTHORIZED_ADMIN_EMAILS = Arrays.asList(
-        "25023196@vnu.edu.vn",
-        "25023427@vnu.edu.vn",
-        "25023249@vnu.edu.vn",
-        "bbuoi812@gmail.com"
-        );
+            "25023196@vnu.edu.vn",
+            "25023427@vnu.edu.vn",
+            "25023249@vnu.edu.vn",
+            "bbuoi812@gmail.com"
+    );
 
     // --- 1. SIGN UP (Đăng ký) ---
-    public boolean signUp(String id, String username, String password, String email, String roleType) {
-        if (allUsers.containsKey(username)) {
+    public boolean signUp(int id, String username, String password, String email, String roleType) {
+        // Kiểm tra xem tên tài khoản đã tồn tại dưới SQLite chưa
+        if (userDao.existsByUsername(username)) {
             System.out.println("Lỗi: Tên đăng nhập đã tồn tại!");
             return false;
         }
 
-        // 2. Kiểm tra quyền Admin (Logic bạn yêu cầu)
-    if (roleType.equalsIgnoreCase("Admin") && !AUTHORIZED_ADMIN_EMAILS.contains(email)) {
-        System.out.println("Lỗi: Gmail chưa được đăng ký cho tài khoản Admin!");
-        return false;
-    }
+        // Kiểm tra quyền Admin dựa trên Whitelist Email
+        if (roleType.equalsIgnoreCase("Admin") && !AUTHORIZED_ADMIN_EMAILS.contains(email)) {
+            System.out.println("Lỗi: Gmail chưa được đăng ký cho tài khoản Admin!");
+            return false;
+        }
+
         Users newUser;
         if (roleType.equalsIgnoreCase("Bidder")) {
             newUser = new Bidder(username, password, id, email);
@@ -39,64 +43,68 @@ public class UserManager {
             System.out.println("Lỗi: Loại người dùng không hợp lệ!");
             return false;
         }
-        allUsers.put(username, newUser);
-        System.out.println("Đăng ký thành công tài khoản: " + username);
-        return true;
+
+        // Đẩy thẳng thực thể xuống lưu trữ cố định trong file .db
+        return userDao.insert(newUser);
     }
 
     // --- 2. SIGN IN (Đăng nhập) ---
     public Users signIn(String username, String password) {
-        if (allUsers.containsKey(username)) {
-            Users user = allUsers.get(username);
-            if (user.getPassword().equals(password)) { // So sánh mật khẩu
-                System.out.println("Đăng nhập thành công! Chào " + username);
-                return user;
-            }
+        // Tìm kiếm thông tin trực tiếp từ database SQLite
+        Users user = userDao.findByUsername(username);
+
+        if (user != null && user.getPassword().equals(password)) {
+            System.out.println("Đăng nhập thành công! Chào " + username);
+            return user;
         }
+
         System.out.println("Lỗi: Sai tài khoản hoặc mật khẩu!");
         return null;
     }
 
+    // --- 3. THĂNG CHỨC ADMIN ---
     public void makeAdmin(Users currentUser, String targetUsername) {
-    // 1. Kiểm tra quyền của người đang thao tác
         if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin")) {
             System.out.println("Lỗi: Chỉ Admin mới có quyền thực hiện!");
-                return;
-    }
+            return;
+        }
 
-    // 2. Tìm người dùng cần thăng chức
-    Users user = allUsers.get(targetUsername);
+        Users user = userDao.findByUsername(targetUsername);
         if (user != null) {
             user.setRole("Admin");
+            // Thực thi lệnh cập nhật dòng dữ liệu trong SQLite
+            userDao.insert(user); // Hoặc bạn có thể viết thêm hàm userDao.update(user) nếu cần
             System.out.println("Đã thăng chức Admin cho: " + targetUsername);
-    }   else {
+        } else {
             System.out.println("Lỗi: Không tìm thấy người dùng này.");
+        }
     }
 
-}
-    //Xóa người dùng (Chỉ Admin mới có quyền xóa, không cho phép xóa Admin khác hoặc tự xóa chính mình)
+    // 4. XÓA NGƯỜI DÙNG
     public void deleteUser(Users currentUser, String targetId, ItemManager itemManager) {
-        // 1. Kiểm tra quyền Admin
         if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin")) {
             System.out.println("Lỗi: Không có quyền xóa người dùng!");
             return;
         }
 
-        // 2. Không cho phép Admin tự xóa chính mình
-        if (currentUser.getId().equals(targetId)) {
+        int targetIdInt;
+        try {
+            targetIdInt = Integer.parseInt(targetId);
+        } catch (NumberFormatException e) {
+            System.out.println("Lỗi: Mã định danh ID không hợp lệ.");
+            return;
+        }
+
+        // Không cho phép Admin tự xóa chính mình
+        if (currentUser.getId() == targetIdInt) {
             System.out.println("Lỗi: Bạn không thể tự xóa tài khoản của chính mình!");
             return;
         }
 
-        // 3. Tìm người dùng cần xóa
-        Users user = null;
-        for (Users u : allUsers.values()) {
-            if (u.getId().equals(targetId)) {
-                user = u;
-                break;
-            }
-        }
+        //Tìm kiếm user cần xóa trực tiếp theo ID từ hàm của DAO SQLite
+        Users user = userDao.findByUsername(targetId);
 
+        // Đoạn này ta tạm thời quét kiểm tra quyền từ email/username của user nhận về
         if (user == null) {
             System.out.println("Lỗi: Người dùng không tồn tại.");
             return;
@@ -107,16 +115,17 @@ public class UserManager {
             return;
         }
 
-        // 4. Thực hiện xóa
-        if (allUsers.containsKey(user.getUsername())) {
-            itemManager.deleteItemsByUserId(targetId); // Xóa sản phẩm liên quan đến người dùng này (nếu có)
-            allUsers.remove(user.getUsername());
-            System.out.println("Đã xóa người dùng: " + user.getUsername());
+        // Quét sạch sản phẩm của người dùng này thông qua itemManager trước khi xóa dòng trong DB
+        if (itemManager != null) {
+            itemManager.deleteItemsByUserId(targetId);
+        }
+
+        // Thực thi lệnh DELETE hoàn toàn khỏi bảng dữ liệu SQLite
+        boolean isDeleted = userDao.deleteById(targetId);
+        if (isDeleted) {
+            System.out.println("Đã xóa người dùng thành công khỏi hệ thống.");
         } else {
-            System.out.println("Lỗi: Người dùng không tồn tại.");
+            System.out.println("Lỗi hệ thống: Xóa thất bại.");
         }
     }
 }
-
-
-

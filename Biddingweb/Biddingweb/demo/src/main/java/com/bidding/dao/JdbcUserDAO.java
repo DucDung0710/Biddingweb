@@ -1,36 +1,28 @@
 package com.bidding.dao;
 
+import com.bidding.database.DatabaseConnection;
 import com.bidding.shared.Users;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class JdbcUserDAO implements UserDAO {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/login?useSSL=false&serverTimezone=UTC";
-    private static final String USER = "root";
-    private static final String PASSWORD = "123456";
+
 
     @Override
     public Users findByEmail(String email) {
-        String q = "SELECT id, username, email, password, role FROM users WHERE email = ?";
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement ps = conn.prepareStatement(q)) {
+        String q = "SELECT id, username, email, password, role, balance FROM users WHERE email = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) { // Sử dụng PreparedStatement để chống SQL Injection
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String id = rs.getString("id");
-                    String username = rs.getString("username");
-                    String pwd = rs.getString("password");
-                    String role = null;
-                    try { role = rs.getString("role"); } catch (Exception ignored) {}
-                    Users u = new Users(username, pwd, id, email);
-                    if (role != null) u.setRole(role);
-                    return u;
+                    return mapRowToUser(rs);
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
@@ -38,23 +30,16 @@ public class JdbcUserDAO implements UserDAO {
 
     @Override
     public Users findByUsername(String username) {
-        String q = "SELECT id, username, email, password, role FROM users WHERE username = ?";
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        String q = "SELECT id, username, email, password, role, balance FROM users WHERE username = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(q)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String id = rs.getString("id");
-                    String email = rs.getString("email");
-                    String pwd = rs.getString("password");
-                    String role = null;
-                    try { role = rs.getString("role"); } catch (Exception ignored) {}
-                    Users u = new Users(username, pwd, id, email);
-                    if (role != null) u.setRole(role);
-                    return u;
+                    return mapRowToUser(rs);
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
@@ -72,17 +57,17 @@ public class JdbcUserDAO implements UserDAO {
 
     @Override
     public boolean insert(Users user) {
-        String q = "INSERT INTO users (id, username, email, password, role) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        String q = "INSERT INTO users (id, username, email, password, role, balance) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(q)) {
-            ps.setString(1, user.getId());
+            ps.setInt(1, user.getId());
             ps.setString(2, user.getUsername());
             ps.setString(3, user.getEmail());
             ps.setString(4, user.getPassword());
             ps.setString(5, user.getRole());
-            int r = ps.executeUpdate();
-            return r > 0;
-        } catch (Exception e) {
+            ps.setDouble(6, user.getBalance());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
@@ -91,15 +76,41 @@ public class JdbcUserDAO implements UserDAO {
     @Override
     public boolean deleteById(String id) {
         String q = "DELETE FROM users WHERE id = ?";
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(q)) {
             ps.setString(1, id);
-            int r = ps.executeUpdate();
-            return r > 0;
-        } catch (Exception e) {
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
-}
 
+    @Override
+    public boolean updateBalance(int userId, double newBalance) {
+        String q = "UPDATE users SET balance = ? WHERE id = ?";
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            try (PreparedStatement ps = conn.prepareStatement(q)) {
+                ps.setDouble(1, newBalance);
+                ps.setInt(2, userId);
+                return ps.executeUpdate() > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Hàm bổ trợ đóng gói ánh xạ dữ liệu từ DB lên Đối tượng Object
+    private Users mapRowToUser(ResultSet rs) throws SQLException {
+        Users u = new Users();
+        u.setId(rs.getInt("id"));
+        u.setUsername(rs.getString("username"));
+        u.setEmail(rs.getString("email"));
+        u.setPassword(rs.getString("password"));
+        u.setRole(rs.getString("role"));
+        u.setBalance(rs.getDouble("balance"));
+        return u;
+    }
+}

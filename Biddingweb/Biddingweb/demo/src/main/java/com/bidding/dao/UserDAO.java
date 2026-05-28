@@ -9,5 +9,6 @@ public interface UserDAO {
     boolean existsByUsername(String username);
     boolean insert(Users user);
     boolean deleteById(String id);
+    boolean updateBalance(int userId, double newBalance);
 }
 

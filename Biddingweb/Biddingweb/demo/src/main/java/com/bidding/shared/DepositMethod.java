@@ -11,6 +11,6 @@ public abstract class DepositMethod {
     }
 
     // Phương thức này sẽ được gọi trong WalletManager
-    public abstract void processDeposit(String userId, double amount, WalletManager manager);
+    public abstract void processDeposit(int userId, double amount, WalletManager manager);
 }
 

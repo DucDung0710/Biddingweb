@@ -4,6 +4,8 @@ module demo {
     requires javafx.graphics;
     requires java.sql;
     requires javafx.base;
+    requires com.google.gson;
+
 
     // 1. Cấu hình các gói Tiện ích & Engine
     exports com.bidding.util;
@@ -28,5 +30,5 @@ module demo {
     opens com.bidding.controller.admin to javafx.fxml, javafx.graphics;
 
     exports com.bidding.model;
-    opens com.bidding.model to javafx.base, javafx.fxml;
+    opens com.bidding.model to javafx.base, javafx.fxml, com.google.gson;
 }

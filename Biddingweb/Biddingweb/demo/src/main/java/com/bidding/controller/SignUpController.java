@@ -1,6 +1,7 @@
 package com.bidding.controller;
 
-import java.io.IOException;
+import com.bidding.util.SocketClient;
+import com.google.gson.JsonObject;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -11,10 +12,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import com.bidding.service.UserService;
-import com.bidding.util.DBUtils;
 import com.bidding.util.SceneManager;
 
-// SignUpController updated to follow MVC: uses UserService and fx:id names match sign-up.fxml
 public class SignUpController {
 
     @FXML
@@ -57,19 +56,33 @@ public class SignUpController {
         String password = txtPassword.getText();
         String confirmPassword = txtConfirmPassword.getText();
         String selectedRole = cmbRole.getValue();
+        if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+            showError("Vui lòng điền đầy đủ tất cả các trường thông tin!");
+            return;
+        }
 
-        // basic validation
         if (!password.equals(confirmPassword)) {
             showError("Mật khẩu xác nhận không khớp!");
             return;
         }
 
-        boolean ok = userService.register(fullName,email, password, confirmPassword, selectedRole);
-        if (ok) {
+        // Tạo request JSON gửi lên server
+        JsonObject request = new JsonObject();
+        request.addProperty("action",          "REGISTER");
+        request.addProperty("fullName",        fullName);
+        request.addProperty("email",           email);
+        request.addProperty("password",        password);
+        request.addProperty("confirmPassword", confirmPassword);
+        request.addProperty("role",            selectedRole);
+
+        // Gửi qua socket
+        JsonObject response = SocketClient.getInstance().sendRequest(request);
+
+        if ("OK".equals(response.get("status").getAsString())) {
             clearFields();
             SceneManager.switchToLogin();
         } else {
-            showError("Đăng ký thất bại. Vui lòng thử lại.");
+            showError(response.get("message").getAsString());
         }
     }
 
