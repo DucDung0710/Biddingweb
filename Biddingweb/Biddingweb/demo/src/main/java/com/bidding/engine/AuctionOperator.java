@@ -18,7 +18,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
 import com.bidding.shared.Balance;
 import com.bidding.shared.Users;
 import com.bidding.shared.WalletManager;
