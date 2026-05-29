@@ -1,5 +1,8 @@
 package com.bidding.database;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -9,12 +12,18 @@ import java.sql.Statement;
 public class DatabaseConnection {
     private static DatabaseConnection instance;
     private final Connection connection;
-    private static final String DB_URL = "jdbc:sqlite:bidding_system.db";
+    private static final Path DB_PATH = Paths.get(System.getProperty("user.home"), "Biddingweb", "bidding_system.db");
+    private static final String DB_URL = "jdbc:sqlite:" + DB_PATH.toAbsolutePath();
 
     private DatabaseConnection() throws SQLException {
+        try {
+            Files.createDirectories(DB_PATH.getParent());
+        } catch (Exception e) {
+            throw new SQLException("Could not create database directory", e);
+        }
+
         connection = DriverManager.getConnection(DB_URL);
-        // DÒNG IN ĐƯỜNG DẪN THỰC TẾ:
-        java.io.File dbFile = new java.io.File("bidding_system.db");
+        java.io.File dbFile = DB_PATH.toFile();
         System.out.println("📌 Đường dẫn SQLite thực tế ứng dụng đang ghi vào: "
                 + dbFile.getAbsolutePath());
         try (Statement stmt = connection.createStatement()) {
