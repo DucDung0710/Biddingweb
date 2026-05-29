@@ -14,7 +14,7 @@ public class DatabaseConnection {
     private static final String DB_PORT = getEnv("DB_PORT", "3306");
     private static final String DB_NAME = getEnv("DB_NAME", "biddingdb");
     private static final String DB_USER = getEnv("DB_USER", "root");
-    private static final String DB_PASSWORD = getEnv("DB_PASSWORD", "");
+    private static final String DB_PASSWORD = getEnv("DB_PASSWORD", "123456");
     private static final String SERVER_URL = String.format("jdbc:mysql://%s:%s/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC", DB_HOST, DB_PORT);
     private static final String DB_URL = String.format("jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC", DB_HOST, DB_PORT, DB_NAME);
 
