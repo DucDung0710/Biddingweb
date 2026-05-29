@@ -40,9 +40,25 @@ public class JdbcAuctionDAO {
         }
         return 0;
     }
+    //Hàm kiểm tra và cập nhật phiên hết hạn
+    public void updateExpiredAuctions() {
+        String q = "UPDATE auctions SET status = 'FINISHED' " +
+                "WHERE status = 'RUNNING' AND STR_TO_DATE(LEFT(REPLACE(end_time, 'T', ' '), 19), '%Y-%m-%d %H:%i:%s') < NOW()";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            int updated = ps.executeUpdate();
+            if (updated > 0) {
+                System.out.println("✅ updateExpiredAuctions: Cập nhật " + updated + " phiên từ RUNNING → FINISHED");
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Lỗi update phiên hết hạn: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     // 3. LẤY TOÀN BỘ PHIÊN ĐANG CHẠY ĐỂ ĐỔ LÊN GIAO DIỆN
     public List<AuctionDisplayDTO> getActiveAuctionsWithItems() {
+        updateExpiredAuctions();
         List<AuctionDisplayDTO> list = new ArrayList<>();
 
         String q = "SELECT a.id AS auction_id, i.id AS item_id, i.name AS item_name, i.description, i.type, " +
@@ -85,6 +101,7 @@ public class JdbcAuctionDAO {
      * 4. Hàm lọc phiên đấu giá dựa trên từ khóa, trạng thái và loại sản phẩm
      **/
     public List<AuctionDisplayDTO> getAuctionsByFilter(String keyword, String status, String type) {
+        updateExpiredAuctions();
         List<AuctionDisplayDTO> list = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder(
