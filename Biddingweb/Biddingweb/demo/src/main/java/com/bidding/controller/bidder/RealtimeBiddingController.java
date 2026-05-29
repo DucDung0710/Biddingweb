@@ -1,5 +1,8 @@
 package com.bidding.controller.bidder;
 
+import com.bidding.model.AuctionDisplayDTO;
+import com.bidding.util.DataContext;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
@@ -7,7 +10,15 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
+
 public class RealtimeBiddingController extends BaseBidderController {
+
+    private int currentAuctionId; // Lưu ID của phiên đấu giá hiện tại để gửi request
+    // Hàm nhận dữ liệu ID phiên từ màn hình danh sách truyền qua
+    public void setAuctionId(int auctionId) {
+        this.currentAuctionId = auctionId;
+    }
+    private Timeline countdownTimeline; // Quản lý luồng đếm ngược thời gian trên UI
 
     // Khối Thông tin chung & Trạng thái Live
     @FXML private Label lblAuctionTitle;
@@ -53,6 +64,18 @@ public class RealtimeBiddingController extends BaseBidderController {
         super.setupSidebarBehavior();
         setupRealtimeChart();
         initSocketConnection();
+        AuctionDisplayDTO currentAuction = DataContext.getInstance().getCurrentAuction();
+        if (currentAuction != null) {
+            lblAuctionTitle.setText(currentAuction.getItemName() != null ? currentAuction.getItemName() : "Sản phẩm không tên");
+            lblStartPrice.setText(String.format("%,.0f ₫", currentAuction.getStartPrice()));
+            lblType.setText(currentAuction.getType() != null ? currentAuction.getType() : "N/A");
+            lblSeller.setText(currentAuction.getSellerName() != null ? currentAuction.getSellerName() : "N/A");
+            lblCurrentPrice.setText(String.format("%,.0f ₫", currentAuction.getCurrentPrice()));
+            lblEndTime.setText(currentAuction.getEndTime());
+            lblStatus.setText(currentAuction.getStatus() != null ? currentAuction.getStatus() : "N/A");
+            lblLeader.setText(currentAuction.getWinnerId() != 0 ? "Người dẫn đầu: " + currentAuction.getWinnerId() : "Chưa có người dẫn đầu");
+
+        }
     }
 
     private void setupRealtimeChart() {
@@ -92,6 +115,7 @@ public class RealtimeBiddingController extends BaseBidderController {
     private void handleBack() {
         com.bidding.util.SceneManager.switchToAuctionList();
     }
+
 
     private void initSocketConnection() {
         // Kết nối TCP Socket với Server nhận dữ liệu Realtime

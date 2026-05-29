@@ -5,6 +5,8 @@ module demo {
     requires java.sql;
     requires javafx.base;
     requires transitive com.google.gson;
+    requires com.zaxxer.hikari;
+
 
 
     // 1. Cấu hình các gói Tiện ích & Engine

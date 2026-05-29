@@ -105,7 +105,7 @@
                                                 <HBox alignment="CENTER_LEFT" spacing="6.0">
                                                     <children>
                                                         <Label style="-fx-font-size: 12px; -fx-text-fill: #555;" text="📅 Bắt đầu:" />
-                                                        <Label fx:id="lblStartTime" style="-fx-font-size: 12px; -fx-font-weight: bold;" text="10/05/2026 08:00" />
+                                                        <Label fx:id="lblStartTime" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #A32D2D;" text="10/05/2026 08:00" />
                                                     </children>
                                                 </HBox>
                                                 <HBox alignment="CENTER_LEFT" spacing="6.0">
@@ -157,11 +157,11 @@
                                                     <children>
                                                         <!-- Danh mục sản phẩm -->
                                                         <Label style="-fx-font-size: 13px; -fx-text-fill: #888888;" text="Danh mục:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                                        <Label fx:id="lblType" style="-fx-font-size: 13px; -fx-font-weight: bold;" text="Chưa phân loại" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                                        <Label fx:id="lblType" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: black;" text="Chưa phân loại" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                                                         <!-- Người bán -->
                                                         <Label style="-fx-font-size: 13px; -fx-text-fill: #888888;" text="Người bán:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                                        <Label fx:id="lblSellerName" style="-fx-font-size: 13px;" text="Chưa cập nhật" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                        <Label fx:id="lblSellerName" style="-fx-font-size: 13px; -fx-text-fill: black; -fx-font-weight: bold;" text="Chưa cập nhật" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                                                         <!-- Trạng thái -->
                                                         <Label style="-fx-font-size: 13px; -fx-text-fill: #888888;" text="Trạng thái phiên:" GridPane.columnIndex="0" GridPane.rowIndex="2" />

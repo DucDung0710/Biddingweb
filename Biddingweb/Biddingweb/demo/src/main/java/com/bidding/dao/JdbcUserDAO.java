@@ -10,13 +10,11 @@ import com.bidding.shared.Users;
 
 public class JdbcUserDAO implements UserDAO {
 
-
-
     @Override
     public Users findByEmail(String email) {
         String q = "SELECT id, username, email, password, role, balance FROM users WHERE email = ?";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(q)) { // Sử dụng PreparedStatement để chống SQL Injection
+             PreparedStatement ps = conn.prepareStatement(q)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -24,7 +22,7 @@ public class JdbcUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            // Log exception instead of printing stack trace
+            System.err.println("Lỗi findByEmail: " + e.getMessage());
         }
         return null;
     }
@@ -41,19 +39,42 @@ public class JdbcUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            // Log exception instead of printing stack trace
+            System.err.println("Lỗi findByUsername: " + e.getMessage());
         }
         return null;
     }
 
     @Override
     public boolean existsByEmail(String email) {
-        return findByEmail(email) != null;
+        // TỐI ƯU HikariCP: Không dùng hàm findByEmail() lồng vào đây nữa.
+        // Chỉ quét xem có tồn tại không giúp giải phóng Connection trong vài mili giây.
+        String q = "SELECT 1 FROM users WHERE email = ? LIMIT 1";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi existsByEmail: " + e.getMessage());
+            return false;
+        }
     }
 
     @Override
     public boolean existsByUsername(String username) {
-        return findByUsername(username) != null;
+        // TỐI ƯU TƯƠNG TỰ: Tăng tốc độ kiểm tra trùng lặp tài khoản
+        String q = "SELECT 1 FROM users WHERE username = ? LIMIT 1";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi existsByUsername: " + e.getMessage());
+            return false;
+        }
     }
 
     @Override
@@ -81,7 +102,7 @@ public class JdbcUserDAO implements UserDAO {
             ps.setString(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            // Log exception instead of printing stack trace
+            System.err.println("Lỗi deleteById: " + e.getMessage());
             return false;
         }
     }
@@ -89,20 +110,17 @@ public class JdbcUserDAO implements UserDAO {
     @Override
     public boolean updateBalance(int userId, double newBalance) {
         String q = "UPDATE users SET balance = ? WHERE id = ?";
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            try (PreparedStatement ps = conn.prepareStatement(q)) {
-                ps.setDouble(1, newBalance);
-                ps.setInt(2, userId);
-                return ps.executeUpdate() > 0;
-            }
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            ps.setDouble(1, newBalance);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            // Log exception instead of printing stack trace
+            System.err.println("Lỗi updateBalance: " + e.getMessage());
             return false;
         }
     }
 
-    // Hàm bổ trợ đóng gói ánh xạ dữ liệu từ DB lên Đối tượng Object
     private Users mapRowToUser(ResultSet rs) throws SQLException {
         Users u = new Users();
         u.setId(rs.getInt("id"));

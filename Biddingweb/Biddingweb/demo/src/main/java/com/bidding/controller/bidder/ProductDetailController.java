@@ -40,7 +40,7 @@ public class ProductDetailController extends BaseBidderController {
             lblProductName.setText(currentAuction.getItemName());
             lblCurrentPrice.setText(String.format("%,.0f ₫", currentAuction.getCurrentPrice()));
             lblStartPrice.setText(String.format("%,.0f ₫", currentAuction.getStartPrice()));
-            lblStartTime.setText("Bắt đầu: " + currentAuction.getStartTime());
+            lblStartTime.setText( currentAuction.getStartTime());
             lblEndTime.setText( currentAuction.getEndTime());
 
             // 2. Đổ dữ liệu chi tiết đồng bộ từ DB
