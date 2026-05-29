@@ -9,18 +9,32 @@ import java.sql.Statement;
 public class DatabaseConnection {
     private static DatabaseConnection instance;
     private final Connection connection;
-    private static final String DB_URL = "jdbc:sqlite:bidding_system.db";
+
+    private static final String DB_HOST = getEnv("DB_HOST", "localhost");
+    private static final String DB_PORT = getEnv("DB_PORT", "3306");
+    private static final String DB_NAME = getEnv("DB_NAME", "biddingdb");
+    private static final String DB_USER = getEnv("DB_USER", "root");
+    private static final String DB_PASSWORD = getEnv("DB_PASSWORD", "");
+    private static final String SERVER_URL = String.format("jdbc:mysql://%s:%s/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC", DB_HOST, DB_PORT);
+    private static final String DB_URL = String.format("jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC", DB_HOST, DB_PORT, DB_NAME);
 
     private DatabaseConnection() throws SQLException {
-        connection = DriverManager.getConnection(DB_URL);
-        // DÒNG IN ĐƯỜNG DẪN THỰC TẾ:
-        java.io.File dbFile = new java.io.File("bidding_system.db");
-        System.out.println("📌 Đường dẫn SQLite thực tế ứng dụng đang ghi vào: "
-                + dbFile.getAbsolutePath());
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute("PRAGMA foreign_keys = ON;");
-        }
+        createDatabaseIfNeeded();
+        connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        System.out.println("📌 MySQL database URL: " + DB_URL);
         createTablesIfNotExist();
+    }
+
+    private static String getEnv(String name, String defaultValue) {
+        String value = System.getenv(name);
+        return value == null || value.isBlank() ? defaultValue : value;
+    }
+
+    private void createDatabaseIfNeeded() throws SQLException {
+        try (Connection initConnection = DriverManager.getConnection(SERVER_URL, DB_USER, DB_PASSWORD);
+             Statement stmt = initConnection.createStatement()) {
+            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + DB_NAME + " CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        }
     }
 
     public static synchronized DatabaseConnection getInstance() throws SQLException {
@@ -36,14 +50,74 @@ public class DatabaseConnection {
 
     @SuppressWarnings("unused")
     private void createTablesIfNotExist() {
-        // Gộp toàn bộ mã Schema SQL của bạn vào đây để chạy tự động
-        String sqlUsers = "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT NOT NULL, balance REAL DEFAULT 0.0);";
-        String sqlItems = "CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, type TEXT NOT NULL, seller_id INTEGER REFERENCES users(id));";
-        String sqlAuctions = "CREATE TABLE IF NOT EXISTS auctions (id INTEGER PRIMARY KEY AUTOINCREMENT, item_id INTEGER REFERENCES items(id), start_price REAL NOT NULL, current_price REAL NOT NULL, start_time TEXT NOT NULL, end_time TEXT NOT NULL, status TEXT NOT NULL, winner_id INTEGER REFERENCES users(id));";
-        String sqlBids = "CREATE TABLE IF NOT EXISTS bid_transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, auction_id INTEGER REFERENCES auctions(id), bidder_id INTEGER REFERENCES users(id), amount REAL NOT NULL, bid_time TEXT NOT NULL, is_auto INTEGER DEFAULT 0);";
-        String sqlAuto = "CREATE TABLE IF NOT EXISTS auto_bids (id INTEGER PRIMARY KEY AUTOINCREMENT, auction_id INTEGER REFERENCES auctions(id), bidder_id INTEGER REFERENCES users(id), max_bid REAL NOT NULL, increment REAL NOT NULL, registered_at TEXT NOT NULL);";
-        String sqlWalletTx = "CREATE TABLE IF NOT EXISTS wallet_transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL REFERENCES users(id), type TEXT NOT NULL, amount REAL NOT NULL, balance_after REAL NOT NULL, ref_id INTEGER, note TEXT, created_at TEXT NOT NULL);";
-        String sqlHolds = "CREATE TABLE IF NOT EXISTS wallet_holds (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL REFERENCES users(id), auction_id INTEGER NOT NULL REFERENCES auctions(id), amount REAL NOT NULL, status TEXT NOT NULL);";
+        String sqlUsers = "CREATE TABLE IF NOT EXISTS users (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "username VARCHAR(100) UNIQUE NOT NULL, " +
+                "email VARCHAR(255) UNIQUE NOT NULL, " +
+                "password VARCHAR(255) NOT NULL, " +
+                "role VARCHAR(50) NOT NULL, " +
+                "balance DOUBLE DEFAULT 0.0" +
+                ") ENGINE=InnoDB;";
+        String sqlItems = "CREATE TABLE IF NOT EXISTS items (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "name VARCHAR(255) NOT NULL, " +
+                "description TEXT, " +
+                "type VARCHAR(100) NOT NULL, " +
+                "seller_id INT, " +
+                "FOREIGN KEY (seller_id) REFERENCES users(id)" +
+                ") ENGINE=InnoDB;";
+        String sqlAuctions = "CREATE TABLE IF NOT EXISTS auctions (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "item_id INT, " +
+                "start_price DOUBLE NOT NULL, " +
+                "current_price DOUBLE NOT NULL, " +
+                "start_time VARCHAR(50) NOT NULL, " +
+                "end_time VARCHAR(50) NOT NULL, " +
+                "status VARCHAR(50) NOT NULL, " +
+                "winner_id INT, " +
+                "FOREIGN KEY (item_id) REFERENCES items(id), " +
+                "FOREIGN KEY (winner_id) REFERENCES users(id)" +
+                ") ENGINE=InnoDB;";
+        String sqlBids = "CREATE TABLE IF NOT EXISTS bid_transactions (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "auction_id INT, " +
+                "bidder_id INT, " +
+                "amount DOUBLE NOT NULL, " +
+                "bid_time VARCHAR(50) NOT NULL, " +
+                "is_auto TINYINT DEFAULT 0, " +
+                "FOREIGN KEY (auction_id) REFERENCES auctions(id), " +
+                "FOREIGN KEY (bidder_id) REFERENCES users(id)" +
+                ") ENGINE=InnoDB;";
+        String sqlAuto = "CREATE TABLE IF NOT EXISTS auto_bids (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "auction_id INT, " +
+                "bidder_id INT, " +
+                "max_bid DOUBLE NOT NULL, " +
+                "increment DOUBLE NOT NULL, " +
+                "registered_at VARCHAR(50) NOT NULL, " +
+                "FOREIGN KEY (auction_id) REFERENCES auctions(id), " +
+                "FOREIGN KEY (bidder_id) REFERENCES users(id)" +
+                ") ENGINE=InnoDB;";
+        String sqlWalletTx = "CREATE TABLE IF NOT EXISTS wallet_transactions (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "user_id INT NOT NULL, " +
+                "type VARCHAR(50) NOT NULL, " +
+                "amount DOUBLE NOT NULL, " +
+                "balance_after DOUBLE NOT NULL, " +
+                "ref_id INT, " +
+                "note TEXT, " +
+                "created_at VARCHAR(50) NOT NULL, " +
+                "FOREIGN KEY (user_id) REFERENCES users(id)" +
+                ") ENGINE=InnoDB;";
+        String sqlHolds = "CREATE TABLE IF NOT EXISTS wallet_holds (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "user_id INT NOT NULL, " +
+                "auction_id INT NOT NULL, " +
+                "amount DOUBLE NOT NULL, " +
+                "status VARCHAR(50) NOT NULL, " +
+                "FOREIGN KEY (user_id) REFERENCES users(id), " +
+                "FOREIGN KEY (auction_id) REFERENCES auctions(id)" +
+                ") ENGINE=InnoDB;";
 
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(sqlUsers);
@@ -54,7 +128,7 @@ public class DatabaseConnection {
             stmt.execute(sqlWalletTx);
             stmt.execute(sqlHolds);
             ensureUsersEmailColumn();
-            System.out.println(" Khởi tạo trọn bộ hệ thống bảng dữ liệu đấu giá trực tuyến thành công!");
+            System.out.println("Khởi tạo trọn bộ hệ thống bảng dữ liệu đấu giá trực tuyến thành công!");
         } catch (SQLException e) {
             // Log exception instead of printing stack trace
         }
@@ -64,7 +138,7 @@ public class DatabaseConnection {
         try (ResultSet rs = connection.getMetaData().getColumns(null, null, "users", "email")) {
             if (!rs.next()) {
                 try (Statement stmt = connection.createStatement()) {
-                    stmt.execute("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT '';");
+                    stmt.execute("ALTER TABLE users ADD COLUMN email VARCHAR(255) NOT NULL DEFAULT '';");
                 }
             }
         }
