@@ -126,7 +126,7 @@
                 <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 10 0;">
                     <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Phiên đấu giá nổi bật" />
                     <Region HBox.hgrow="ALWAYS" />
-                    <Button style="-fx-font-size: 12px; -fx-background-color: transparent;                                    -fx-border-color: #cccccc; -fx-border-radius: 6;                                    -fx-cursor: hand; -fx-padding: 5 14;" text="Xem tất cả →" />
+                    <Button fx:id="btnViewAll" onAction="#handleViewAll" style="-fx-font-size: 12px; -fx-background-color: transparent;                                    -fx-border-color: #cccccc; -fx-border-radius: 6;                                    -fx-cursor: hand; -fx-padding: 5 14;" text="Xem tất cả →" />
                 </HBox>
 
                 <!-- ===== AUCTION CARDS ===== -->

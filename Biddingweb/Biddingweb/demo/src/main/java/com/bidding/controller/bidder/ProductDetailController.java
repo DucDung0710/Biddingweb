@@ -1,6 +1,10 @@
 package com.bidding.controller.bidder;
 
+import com.bidding.model.AuctionDisplayDTO;
+import com.bidding.util.DataContext;
+import com.bidding.util.SocketClient;
 import com.bidding.util.SceneManager;
+import com.google.gson.JsonObject;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -15,9 +19,9 @@ public class ProductDetailController extends BaseBidderController {
     @FXML private Label lblCurrentPrice;
     @FXML private Label lblStartTime;
     @FXML private Label lblEndTime;
-    @FXML private Label lblCategory;
     @FXML private Label lblSellerName;
     @FXML private Label lblAuctionStatus;
+    @FXML private Label lblType;
 
     @FXML private TextArea txtDescription;
     @FXML private Button btnJoinRealtime;
@@ -27,37 +31,50 @@ public class ProductDetailController extends BaseBidderController {
      */
     @FXML
     public void initialize() {
-        // 1. Kích hoạt logic Sidebar từ lớp cha
         super.setupSidebarBehavior();
 
-        // 2. Kiểm tra trạng thái phiên để ẩn/hiện nút "Vào phòng đấu giá"
-        checkAuctionStatus();
+        // Đọc dữ liệu thật từ DataContext chuyển sang
+        AuctionDisplayDTO currentAuction = DataContext.getInstance().getCurrentAuction();
 
-        // 3. Giả lập hoặc nạp dữ liệu sản phẩm (Thực tế sẽ nhận dữ liệu từ ListController)
-        loadSampleData();
+        if (currentAuction != null) {
+            // 1. Đổ dữ liệu đấu giá và thông tin cơ bản sản phẩm
+            lblProductName.setText(currentAuction.getItemName());
+            lblCurrentPrice.setText(String.format("%,.0f ₫", currentAuction.getCurrentPrice()));
+            lblStartPrice.setText(String.format("%,.0f ₫", currentAuction.getStartPrice()));
+            lblStartTime.setText("Bắt đầu: " + currentAuction.getStartTime());
+            lblEndTime.setText( currentAuction.getEndTime());
+
+            // 2. Đổ dữ liệu chi tiết đồng bộ từ DB
+            lblType.setText(currentAuction.getType());
+            lblSellerName.setText(currentAuction.getSellerName() != null ? currentAuction.getSellerName() : "Chưa cập nhật");
+            txtDescription.setText(currentAuction.getDescription() != null ? currentAuction.getDescription() : "Không có mô tả sản phẩm.");
+
+            // 3. Định dạng chuỗi hiển thị trạng thái trực quan
+            String state = currentAuction.getStatus();
+            if ("OPEN".equalsIgnoreCase(state)) {
+                lblAuctionStatus.setText("🔵 SẮP BẮT ĐẦU");
+            } else if ("FINISHED".equalsIgnoreCase(state)) {
+                lblAuctionStatus.setText("⚫ ĐÃ KẾT THÚC");
+            } else {
+                lblAuctionStatus.setText("🔴 ĐANG DIỄN RA");
+            }
+        }
+
+        // 4. Kiểm tra trạng thái để bật/tắt nút vào phòng
+        checkAuctionStatus();
     }
 
-    /**
-     * Logic kiểm tra trạng thái: Chỉ cho phép vào phòng nếu đang "ĐANG DIỄN RA"
-     */
     private void checkAuctionStatus() {
         String status = lblAuctionStatus.getText();
-        if (status.contains("SẮP BẮT ĐẦU") || status.contains("ĐÃ KẾT THÚC")) {
+        if (status != null && (status.contains("SẮP BẮT ĐẦU") || status.contains("ĐÃ KẾT THÚC"))) {
             btnJoinRealtime.setDisable(true);
-            btnJoinRealtime.setText("Phiên đấu giá chưa mở");
+            btnJoinRealtime.setText("Phiên đấu giá chưa mở hoặc đã đóng");
             btnJoinRealtime.setStyle("-fx-background-color: #cccccc; -fx-text-fill: white;");
+        } else {
+            btnJoinRealtime.setDisable(false);
+            btnJoinRealtime.setText("Vào phòng đấu giá trực tiếp");
+            btnJoinRealtime.setStyle("-fx-background-color: #185FA5; -fx-text-fill: white;");
         }
-    }
-
-    /**
-     * Nạp dữ liệu mẫu (Sẽ được thay thế bằng logic truyền dữ liệu đối tượng Item)
-     */
-    private void loadSampleData() {
-        // Bạn có thể tạo 1 hàm public setProduct(Item item) để ListController gọi khi chuyển trang
-        lblProductName.setText("MacBook Pro M3 14 inch 16GB/512GB");
-        lblCurrentPrice.setText("28,500,000 ₫");
-        lblAuctionStatus.setText("🔴 ĐANG DIỄN RA");
-        txtDescription.setText("Thiết bị mới 99% không một vết xước...");
     }
 
     /**
