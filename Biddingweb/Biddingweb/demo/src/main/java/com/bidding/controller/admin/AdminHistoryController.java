@@ -8,12 +8,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import java.io.IOException;
 
 public class AdminHistoryController {
 
     // 1. Ánh xạ các thành phần Sidebar Menu
-    @FXML private HBox navOverview, navUsers, navAuctions, navProducts, navWallet, navAuctionHistory, navNotifications, btnLogout;
+    @FXML private HBox navOverview, navUsers, navAuctions, navProducts, navWallet, navNotifications, btnLogout;
+    @FXML @SuppressWarnings("unused") private HBox navAuctionHistory;
     @FXML private Label lblPendingBadge;
 
     // 2. Ánh xạ các thành phần lọc và bảng dữ liệu
@@ -71,6 +71,7 @@ public class AdminHistoryController {
      * Xử lý sự kiện bấm nút "Lọc dữ liệu"
      */
     @FXML
+    @SuppressWarnings("unused")
     private void handleFilterHistory() {
         var startDate = dpHistoryStart.getValue();
         var endDate = dpHistoryEnd.getValue();
@@ -88,6 +89,7 @@ public class AdminHistoryController {
      * Xử lý sự kiện bấm nút "Xuất dữ liệu Excel"
      */
     @FXML
+    @SuppressWarnings("unused")
     private void handleExportExcel() {
         System.out.println("Đang xử lý xuất file Excel cho danh sách lịch sử đấu giá tài sản...");
 

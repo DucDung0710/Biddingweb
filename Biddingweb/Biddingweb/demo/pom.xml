@@ -68,7 +68,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>uilogin.controller.BiddingApplication</mainClass>
+                    <mainClass>com.bidding.app.BiddingApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

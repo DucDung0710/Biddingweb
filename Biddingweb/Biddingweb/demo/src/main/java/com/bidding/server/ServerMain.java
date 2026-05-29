@@ -8,6 +8,7 @@ import java.net.Socket;
 public class ServerMain {
     private static final int PORT = 9999;
 
+    @SuppressWarnings("resource")
     public static void main(String[] args) throws Exception {
         // Khởi tạo DB khi server start
         DatabaseConnection.getInstance();

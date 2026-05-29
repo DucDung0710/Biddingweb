@@ -98,7 +98,7 @@ public class Main {
 
         // ========== Bước 6: Lên lịch phiên đấu giá ==========
         // Tạo AuctionOperator và lên lịch phiên bắt đầu ngay
-        AuctionOperator operator = new AuctionOperator(walletManager, admin.getId());
+        AuctionOperator operator = new AuctionOperator(walletManager, String.valueOf(admin.getId()));
         AuctionOperator.AuctionResult scheduleResult = operator.scheduleAuction(room, System.currentTimeMillis());
         System.out.println("[Scheduler] " + scheduleResult.getMessage());
 

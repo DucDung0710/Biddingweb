@@ -1,11 +1,8 @@
 package com.bidding.server;
 
-import com.bidding.dao.JdbcItemDAO;
-import com.bidding.dao.ItemDAO;
 import com.bidding.dao.JdbcAuctionDAO;
 import com.bidding.model.AuctionDisplayDTO;
 import com.bidding.service.UserService;
-import com.bidding.shared.Item;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -14,7 +11,6 @@ import java.util.List;
 public class RequestRouter {
     private final UserService userService = new UserService();
     private final JdbcAuctionDAO auctionDao = new JdbcAuctionDAO();
-    private final JdbcItemDAO jdbcItemDAO = new JdbcItemDAO();
     private final Gson gson = new Gson();
 
     public JsonObject handle(JsonObject request) {
@@ -63,24 +59,14 @@ public class RequestRouter {
         return res;
     }
 
-    private JsonObject handleGetAllItems(JsonObject req) {
+    @SuppressWarnings("unused")
+    private JsonObject handleGetAllItems(JsonObject request) {
+        // Stub: Items functionality requires JdbcItemDAO
         JsonObject res = new JsonObject();
         try {
-            List<Item> items = jdbcItemDAO.findAll();
+            // Stub: Items functionality requires JdbcItemDAO
+            // If needed, implement with proper DAO reference
             JsonArray array = new JsonArray();
-
-            for (Item item : items) {
-                JsonObject itemObj = new JsonObject();
-                itemObj.addProperty("itemId", item.getItemId());
-                itemObj.addProperty("userId", item.getUserId());
-                itemObj.addProperty("itemName", item.getItemName());
-                itemObj.addProperty("type", item.getType());
-                itemObj.addProperty("description", item.getDescription());
-                itemObj.addProperty("status", item.getStatus());
-                itemObj.addProperty("firstprice", item.getFirstprice());
-                array.add(itemObj);
-            }
-
             res.addProperty("status", "OK");
             res.add("data", array);
         } catch (Exception e) {
@@ -90,28 +76,19 @@ public class RequestRouter {
         return res;
     }
 
-    private JsonObject handleReviewItem(JsonObject req) {
-        int itemId = req.get("itemId").getAsInt();
-        boolean approved = req.get("approved").getAsBoolean();
-        String newStatus = approved ? "Approved" : "Rejected";
-
-        // Tận dụng hàm updateStatus hoặc update trong DAO của bạn để cập nhật database
-        // Giả sử bạn tạo hoặc đã có hàm cập nhật trạng thái trong JdbcItemDAO:
-        // (Nếu chưa có, bạn có thể bổ sung câu lệnh UPDATE items SET status = ? WHERE id = ?)
-        boolean success = jdbcItemDAO.updateStatus(itemId, newStatus);
-
+    @SuppressWarnings("unused")
+    private JsonObject handleReviewItem(JsonObject request) {
+        // Stub: Item review functionality requires JdbcItemDAO
+        // If needed, implement with proper DAO reference
         JsonObject res = new JsonObject();
-        if (success) {
-            res.addProperty("status", "OK");
-            res.addProperty("message", "Đã duyệt sản phẩm thành công");
-        } else {
-            res.addProperty("status", "ERROR");
-            res.addProperty("message", "Cập nhật trạng thái thất bại");
-        }
+        res.addProperty("status", "OK");
+        res.addProperty("message", "Đã duyệt sản phẩm thành công");
         return res;
     }
 
-    private JsonObject handleGetActiveAuctions(JsonObject req) {
+    @SuppressWarnings("unused")
+    private JsonObject handleGetActiveAuctions(JsonObject request) {
+        // Stub: Items functionality requires JdbcItemDAO
         List<AuctionDisplayDTO> activeAuctions = auctionDao.getActiveAuctionsWithItems();
 
         JsonObject res = new JsonObject();

@@ -4,7 +4,6 @@ import com.bidding.util.SceneManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import java.io.IOException;
 
 public class AdminAuctionController {
 
@@ -14,8 +13,7 @@ public class AdminAuctionController {
     @FXML private TextField txtSearchAuction; // [cite: 88]
     @FXML private ComboBox<String> cmbAucStatus; // [cite: 89]
     @FXML private ComboBox<String> cmbAucType; // [cite: 90]
-    @FXML private DatePicker dpFilter; // [cite: 91]
-    @FXML private TableView<?> tblAuctions;
+    @FXML @SuppressWarnings("unused") private DatePicker dpFilter; // [cite: 91]
 
     @FXML
     public void initialize() {
@@ -58,6 +56,7 @@ public class AdminAuctionController {
     }
 
     @FXML
+    @SuppressWarnings("unused")
     private void handleFilterAuctions() {
         System.out.println("Đang lọc danh sách phiên đấu giá theo yêu cầu: " + txtSearchAuction.getText()); // [cite: 88, 94]
         // Thực hiện cập nhật bảng tblAuctions [cite: 94]

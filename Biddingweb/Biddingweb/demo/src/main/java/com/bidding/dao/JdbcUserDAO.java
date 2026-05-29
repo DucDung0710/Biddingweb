@@ -1,11 +1,12 @@
 package com.bidding.dao;
 
-import com.bidding.database.DatabaseConnection;
-import com.bidding.shared.Users;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import com.bidding.database.DatabaseConnection;
+import com.bidding.shared.Users;
 
 public class JdbcUserDAO implements UserDAO {
 
@@ -23,7 +24,7 @@ public class JdbcUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
         }
         return null;
     }
@@ -40,7 +41,7 @@ public class JdbcUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
         }
         return null;
     }
@@ -57,15 +58,14 @@ public class JdbcUserDAO implements UserDAO {
 
     @Override
     public boolean insert(Users user) {
-        String q = "INSERT INTO users (id, username, email, password, role, balance) VALUES (?, ?, ?, ?, ?, ?)";
+        String q = "INSERT INTO users (username, email, password, role, balance) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(q)) {
-            ps.setInt(1, user.getId());
-            ps.setString(2, user.getUsername());
-            ps.setString(3, user.getEmail());
-            ps.setString(4, user.getPassword());
-            ps.setString(5, user.getRole());
-            ps.setDouble(6, user.getBalance());
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getPassword());
+            ps.setString(4, user.getRole());
+            ps.setDouble(5, user.getBalance());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -81,7 +81,7 @@ public class JdbcUserDAO implements UserDAO {
             ps.setString(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
             return false;
         }
     }
@@ -97,7 +97,7 @@ public class JdbcUserDAO implements UserDAO {
                 return ps.executeUpdate() > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
             return false;
         }
     }

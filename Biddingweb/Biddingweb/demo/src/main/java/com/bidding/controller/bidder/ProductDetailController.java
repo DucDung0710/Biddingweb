@@ -2,9 +2,8 @@ package com.bidding.controller.bidder;
 
 import com.bidding.model.AuctionDisplayDTO;
 import com.bidding.util.DataContext;
-import com.bidding.util.SocketClient;
 import com.bidding.util.SceneManager;
-import com.google.gson.JsonObject;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -14,7 +13,7 @@ public class ProductDetailController extends BaseBidderController {
 
     // --- THÀNH PHẦN UI ĐƯỢC INJECT TỪ FXML ---
     @FXML private Label lblProductName;
-    @FXML private Label lblProductImage;
+    @FXML @SuppressWarnings("unused") private Label lblProductImage;
     @FXML private Label lblStartPrice;
     @FXML private Label lblCurrentPrice;
     @FXML private Label lblStartTime;
@@ -81,6 +80,7 @@ public class ProductDetailController extends BaseBidderController {
      * Xử lý quay lại danh sách sản phẩm
      */
     @FXML
+    @SuppressWarnings("unused")
     private void handleBack() {
         SceneManager.switchToAuctionList();
     }
@@ -89,6 +89,7 @@ public class ProductDetailController extends BaseBidderController {
      * Chuyển hướng người dùng vào phòng đấu giá trực tiếp (Realtime Bidding)
      */
     @FXML
+    @SuppressWarnings("unused")
     private void handleJoinRealtime() {
         System.out.println("Đang kết nối vào phòng đấu giá trực tiếp...");
         SceneManager.switchToRealtimeBidding();

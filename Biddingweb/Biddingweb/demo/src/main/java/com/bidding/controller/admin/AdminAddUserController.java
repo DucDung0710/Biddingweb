@@ -42,6 +42,7 @@ public class AdminAddUserController {
     }
 
     @FXML
+    @SuppressWarnings("unused")
     private void handleCancel(ActionEvent event) {
         // Lấy Stage hiện tại của cửa sổ phụ và đóng nó lại
         Stage stage = (Stage) btnCancel.getScene().getWindow();
@@ -49,13 +50,13 @@ public class AdminAddUserController {
     }
 
     @FXML
+    @SuppressWarnings("unused")
     private void handleSaveUser(ActionEvent event) {
         // 1. Thu thập dữ liệu từ các ô nhập liệu
         String fullName = txtFullName.getText().trim();
         String email = txtEmail.getText().trim();
         String phone = txtPhone.getText().trim();
         String role = cmbRole.getValue();
-        String status = cmbStatus.getValue();
         String password = txtPassword.getText();
 
         // 2. Kiểm tra dữ liệu hợp lệ (Validation)

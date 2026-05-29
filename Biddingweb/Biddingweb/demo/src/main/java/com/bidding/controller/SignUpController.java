@@ -11,7 +11,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import com.bidding.service.UserService;
 import com.bidding.util.SceneManager;
 
 public class SignUpController {
@@ -29,9 +28,11 @@ public class SignUpController {
     private PasswordField txtConfirmPassword;
 
     @FXML
+    @SuppressWarnings("unused")
     private Button btnSignUp;
 
     @FXML
+    @SuppressWarnings("unused")
     private Button btnLogIn;
 
     @FXML
@@ -39,8 +40,6 @@ public class SignUpController {
 
     @FXML
     private Label lblError;
-
-    private final UserService userService = new UserService();
 
     @FXML
     public void initialize() {
@@ -50,6 +49,7 @@ public class SignUpController {
     }
 
     @FXML
+    @SuppressWarnings("unused")
     private void handleSignUp(ActionEvent event) {
         String fullName = txtFullName.getText();
         String email = txtEmail.getText();
@@ -87,6 +87,7 @@ public class SignUpController {
     }
 
     @FXML
+    @SuppressWarnings("unused")
     private void handleLogIn(ActionEvent event) {
             SceneManager.switchToLogin();
     }

@@ -1,10 +1,10 @@
 module demo {
     requires javafx.controls;
     requires javafx.fxml;
-    requires javafx.graphics;
+    requires transitive javafx.graphics;
     requires java.sql;
     requires javafx.base;
-    requires com.google.gson;
+    requires transitive com.google.gson;
 
 
     // 1. Cấu hình các gói Tiện ích & Engine

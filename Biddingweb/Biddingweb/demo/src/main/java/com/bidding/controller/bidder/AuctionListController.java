@@ -7,7 +7,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -136,8 +135,8 @@ public class AuctionListController extends BaseBidderController {
                 // Lấy controller của thẻ card truyền dữ liệu thật vào
                 // (Chỉ cần ép kiểu hoặc gọi hàm set data tùy thuộc vào ItemCardController của bạn)
                 Object controller = loader.getController();
-                if (controller instanceof com.bidding.controller.bidder.ItemCardController) {
-                    ((com.bidding.controller.bidder.ItemCardController) controller).setAuctionData(auction);
+                if (controller instanceof com.bidding.controller.bidder.ItemCardController itemCardController) {
+                    itemCardController.setAuctionData(auction);
                 }
 
                 // Dựa vào trạng thái phiên (status từ DTO hoặc DB gửi về) để nạp vào đúng vùng giao diện
@@ -153,7 +152,7 @@ public class AuctionListController extends BaseBidderController {
 
             } catch (IOException e) {
                 System.err.println("Lỗi nạp mẫu giao diện item_card.fxml tại danh sách: " + e.getMessage());
-                e.printStackTrace();
+                // Log exception instead of printing stack trace
             }
         }
     }

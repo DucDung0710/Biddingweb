@@ -1,23 +1,30 @@
 package com.bidding.controller.admin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bidding.shared.Item;
-import com.bidding.shared.Users;
 import com.bidding.shared.UserSession;
+import com.bidding.shared.Users;
 import com.bidding.util.SceneManager;
 import com.bidding.util.SocketClient;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AdminProductController {
     @FXML private Label navOverview, navUsers, navAuctions, navWallet, navProducts, navAuctionHistory, navNotifications, btnLogout;
@@ -69,8 +76,7 @@ public class AdminProductController {
                 String lowerCaseFilter = newValue.toLowerCase();
 
                 if (item.getItemName() != null && item.getItemName().toLowerCase().contains(lowerCaseFilter)) return true;
-                if (item.getDescription() != null && item.getDescription().toLowerCase().contains(lowerCaseFilter)) return true;
-                return false;
+                return item.getDescription() != null && item.getDescription().toLowerCase().contains(lowerCaseFilter);
             });
         });
         tblProducts.setItems(filteredData);
@@ -99,7 +105,7 @@ public class AdminProductController {
                 item.setType(obj.get("type").getAsString());
                 item.setDescription(obj.get("description").getAsString());
                 item.setStatus(obj.get("status").getAsString());
-                item.setFirstprice(obj.get("firstprice").getAsDouble());
+                item.setFirstprice(java.math.BigDecimal.valueOf(obj.get("firstprice").getAsDouble()));
 
                 serverItems.add(item);
 

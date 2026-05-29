@@ -255,7 +255,7 @@ public class AuctionOperator {
         private volatile BigDecimal currentPrice;
         
         // ID của người đặt giá cao nhất (volatile để visibility)
-        private volatile String highestBidderId;
+        private volatile Integer highestBidderId;
         
         // Đối tượng Users của người đặt giá cao nhất (volatile để visibility)
         private volatile Users highestBidder;
@@ -286,7 +286,7 @@ public class AuctionOperator {
             }
             if (!room.isApproved()) {
                 room.notifyObservers("Phòng đấu giá chưa được duyệt, phiên không thể bắt đầu.");
-                archiveSession(this, AuctionHistory.create(room.getRoomId(), room.getItem().getItemId(), null, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Phòng chưa được duyệt."));
+                archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), null, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Phòng chưa được duyệt."));
                 return;
             }
             status = AuctionStatus.RUNNING;
@@ -330,7 +330,7 @@ public class AuctionOperator {
                 if (highestBidderId == null) {
                     status = AuctionStatus.ENDED;
                     room.notifyObservers("Phiên đấu giá đã kết thúc mà không có người đặt giá. Không có người chiến thắng.");
-                    archiveSession(this, AuctionHistory.create(room.getRoomId(), room.getItem().getItemId(), null, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.ENDED, "Không có người đặt giá."));
+                    archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), null, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.ENDED, "Không có người đặt giá."));
                     return;
                 }
                 completeAuction();
@@ -361,11 +361,11 @@ public class AuctionOperator {
             status = AuctionStatus.ENDED;
             Balance winnerWallet = walletManager.getWalletByUserId(highestBidderId);
             Balance sellerWallet = walletManager.getWalletByUserId(room.getSellerUserId());
-            Balance adminWallet = walletManager.getWalletByUserId(adminUserId);
+            Balance adminWallet = walletManager.getWalletByUserId(Integer.parseInt(adminUserId));
 
             if (winnerWallet == null || sellerWallet == null || adminWallet == null) {
                 room.notifyObservers("Không thể hoàn tất đấu giá do ví không hợp lệ. Cần xử lý thủ công.");
-                archiveSession(this, AuctionHistory.create(room.getRoomId(), room.getItem().getItemId(), highestBidderId, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Ví người tham gia hoặc seller/admin không tồn tại."));
+                archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), String.valueOf(highestBidderId), currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Ví người tham gia hoặc seller/admin không tồn tại."));
                 return;
             }
 
@@ -374,7 +374,7 @@ public class AuctionOperator {
                 paid = winnerWallet.commitLockedAmount(currentPrice);
             } catch (IllegalArgumentException ex) {
                 room.notifyObservers("Không thể trừ tiền người thắng: " + ex.getMessage());
-                archiveSession(this, AuctionHistory.create(room.getRoomId(), room.getItem().getItemId(), highestBidderId, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Commit tiền lỗi: " + ex.getMessage()));
+                archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), String.valueOf(highestBidderId), currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Commit tiền lỗi: " + ex.getMessage()));
                 return;
             }
 
@@ -387,7 +387,7 @@ public class AuctionOperator {
             } catch (IllegalArgumentException ex) {
                 room.notifyObservers("Không thể phân phối tiền thắng: " + ex.getMessage() + ". Hoàn trả người thắng.");
                 winnerWallet.deposit(paid);
-                archiveSession(this, AuctionHistory.create(room.getRoomId(), room.getItem().getItemId(), highestBidderId, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Rollback do phân phối lỗi: " + ex.getMessage()));
+                archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), String.valueOf(highestBidderId), currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Rollback do phân phối lỗi: " + ex.getMessage()));
                 return;
             }
 
@@ -402,7 +402,7 @@ public class AuctionOperator {
                 adminShare
             ));
             highestBidder.update(String.format("Chúc mừng! Bạn đã thắng phiên đấu giá '%s' với giá %s.", room.getRoomId(), paid));
-            archiveSession(this, AuctionHistory.create(room.getRoomId(), room.getItem().getItemId(), highestBidderId, paid, sellerShare, adminShare, AuctionStatus.ENDED, "Đấu giá hoàn tất thành công."));
+            archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), String.valueOf(highestBidderId), paid, sellerShare, adminShare, AuctionStatus.ENDED, "Đấu giá hoàn tất thành công."));
         }
 
         /**
@@ -469,7 +469,7 @@ public class AuctionOperator {
                     return new AuctionResult(false, "Không tìm thấy ví của bidder.");
                 }
 
-                if (highestBidderId != null && bidder.getId().equals(highestBidderId)) {
+                if (highestBidderId != null && bidder.getId() == highestBidderId) {
                     BigDecimal additionalAmount = bid.subtract(currentPrice);
                     if (additionalAmount.compareTo(BigDecimal.ZERO) <= 0) {
                         return new AuctionResult(false, "Giá đặt mới phải cao hơn giá hiện tại.");
@@ -543,7 +543,7 @@ public class AuctionOperator {
          * Lấy ID của bidder dẫn đầu hiện tại.
          * @return ID của bidder, hoặc null nếu chưa có bidders
          */
-        public String getHighestBidderId() {
+        public Integer getHighestBidderId() {
             return highestBidderId;
         }
     }

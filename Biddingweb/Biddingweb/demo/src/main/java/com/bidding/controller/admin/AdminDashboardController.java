@@ -4,16 +4,15 @@ import com.bidding.util.SceneManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import java.io.IOException;
 
 public class AdminDashboardController {
 
-    @FXML private HBox navOverview, navUsers, navAuctions, navProducts, navWallet, navAuctionsHistory, navNotifications, btnLogout;
+    @FXML @SuppressWarnings("unused") private HBox navOverview, navUsers, navAuctions, navProducts, navWallet, navAuctionsHistory, navNotifications, btnLogout;
     @FXML private Label lblPendingBadge; // Thêm badge thông báo số lượng đơn ví chờ duyệt
 
     @FXML private Label lblTotalUsers, lblActiveAuctions, lblIssues;
-    @FXML private TableView<?> tblActiveAuctions;
-    @FXML private TableView<?> tblNewUsers;
+    @FXML @SuppressWarnings("unused") private TableView<?> tblActiveAuctions;
+    @FXML @SuppressWarnings("unused") private TableView<?> tblNewUsers;
     @FXML private Button btnViewAllAuctions, btnViewAllUsers;
 
     @FXML

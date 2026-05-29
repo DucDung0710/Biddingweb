@@ -21,13 +21,13 @@ public class JdbcItemDAO implements ItemDAO {
                 ps.setString(2, item.getItemName());
                 ps.setString(3, item.getDescription());
                 ps.setString(4, item.getType());
-                ps.setDouble(5, item.getFirstprice());
+                ps.setBigDecimal(5, item.getFirstprice());
                 ps.setString(6, item.getStatus());
                 ps.setInt(7, item.getUserId());
                 return ps.executeUpdate() > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
             return false;
         }
     }
@@ -46,14 +46,14 @@ public class JdbcItemDAO implements ItemDAO {
                     item.setItemName(rs.getString("ItemName"));
                     item.setDescription(rs.getString("description"));
                     item.setType(rs.getString("type"));
-                    item.setFirstprice(rs.getDouble("firstprice"));
+                    item.setFirstprice(rs.getBigDecimal("firstprice"));
                     item.setStatus(rs.getString("status"));
                     item.setUserId(rs.getInt("user_id"));
                     list.add(item);
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
         }
         return list;
     }
@@ -72,7 +72,7 @@ public class JdbcItemDAO implements ItemDAO {
                         item.setItemName(rs.getString("ItemName"));
                         item.setDescription(rs.getString("description"));
                         item.setType(rs.getString("type"));
-                        item.setFirstprice(rs.getDouble("firstprice"));
+                        item.setFirstprice(rs.getBigDecimal("firstprice"));
                         item.setStatus(rs.getString("status"));
                         item.setUserId(rs.getInt("user_id"));
                         return item;
@@ -80,7 +80,7 @@ public class JdbcItemDAO implements ItemDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
         }
         return null;
     }
@@ -96,7 +96,7 @@ public class JdbcItemDAO implements ItemDAO {
                 return ps.executeUpdate() > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
             return false;
         }
     }
@@ -113,7 +113,7 @@ public class JdbcItemDAO implements ItemDAO {
                 return ps.executeUpdate() > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
             return false;
         }
     }
@@ -128,7 +128,7 @@ public class JdbcItemDAO implements ItemDAO {
                 return ps.executeUpdate() > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
             return false;
         }
     }

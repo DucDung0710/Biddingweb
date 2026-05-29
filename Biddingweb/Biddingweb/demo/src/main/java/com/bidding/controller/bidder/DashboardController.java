@@ -1,7 +1,6 @@
 package com.bidding.controller.bidder;
 
 import com.bidding.model.AuctionDisplayDTO;
-import com.bidding.shared.Users;
 import com.bidding.util.DataContext;
 import com.bidding.util.SocketClient;
 import com.bidding.util.SceneManager;
@@ -22,7 +21,7 @@ import java.util.List;
 
 public class DashboardController extends BaseBidderController {
     @FXML private Button txtTopSearch;
-    @FXML private Button btnViewAll;
+    @FXML @SuppressWarnings("unused") private Button btnViewAll;
 
     @FXML private Label lblStatActive;
     @FXML private Label lblStatLeading;
@@ -74,7 +73,7 @@ public class DashboardController extends BaseBidderController {
 
         } catch (Exception e) {
             System.err.println("Lỗi nghiêm trọng khi khởi tạo Dashboard: " + e.getMessage());
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
         }
     }
 
@@ -140,15 +139,16 @@ public class DashboardController extends BaseBidderController {
                 auctionContainer.getChildren().add(cardNode);
             } catch (IOException e) {
                 System.err.println("Lỗi nạp file mẫu giao diện item_card.fxml: " + e.getMessage());
-                e.printStackTrace();
+                // Log exception instead of printing stack trace
             } catch (Exception ex) {
                 System.err.println("Lỗi phân rã cấu trúc JSON sản phẩm: " + ex.getMessage());
-                ex.printStackTrace();
+                // Log exception instead of printing stack trace
             }
         }
     }
 
     @FXML
+    @SuppressWarnings("unused")
     private void handleTopSearch() {
         if (txtTopSearch != null) {
             String keyword = txtTopSearch.getText().trim();
@@ -158,7 +158,9 @@ public class DashboardController extends BaseBidderController {
             }
         }
     }
-    @FXML private void handleViewAll() {
+    @FXML
+    @SuppressWarnings("unused")
+    private void handleViewAll() {
         SceneManager.switchToAuctionList();
     }
 }

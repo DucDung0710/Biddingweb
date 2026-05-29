@@ -1,0 +1,16 @@
+# Maven target
+target/
+
+# SQLite database file
+bidding_system.db
+*.db
+
+# Maven classpath helper
+cp.txt
+
+# VS Code settings
+.vscode/
+
+# Generated files
+*.class
+*.log

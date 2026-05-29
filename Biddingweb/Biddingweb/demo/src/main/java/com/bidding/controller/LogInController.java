@@ -11,7 +11,6 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
-import com.bidding.service.UserService;
 import com.bidding.util.SceneManager;
 
 public class LogInController {
@@ -23,12 +22,15 @@ public class LogInController {
     private PasswordField txtPassword;
 
     @FXML
+    @SuppressWarnings("unused")
     private Button btnLogin;
 
     @FXML
+    @SuppressWarnings("unused")
     private Button btnSignUp;
 
     @FXML
+    @SuppressWarnings("unused")
     private CheckBox chkRemember;
 
     @FXML
@@ -40,10 +42,8 @@ public class LogInController {
     @FXML
     private Region spacerError;
 
-    // Service layer
-    private final UserService userService = new UserService();
-
     @FXML
+    @SuppressWarnings("unused")
     private void handleLogIn() {
         String email = txtEmail.getText().trim();
         String password = txtPassword.getText();
@@ -79,14 +79,17 @@ public class LogInController {
         }
     }
     @FXML
+    @SuppressWarnings("unused")
     private void handleSignUp(ActionEvent event) {
         try {
             SceneManager.switchToSignUp();
         } catch (Exception e) {
             System.err.println("Lỗi chuyển sang màn hình đăng ký: " + e.getMessage());
-            e.printStackTrace();}
+            // Log exception instead of printing stack trace
+        }
     }
 
+    @SuppressWarnings("unused")
     private void clearFields() {
         txtEmail.clear();
         txtPassword.clear();
@@ -102,6 +105,7 @@ public class LogInController {
         }
     }
 
+    @SuppressWarnings("unused")
     private void hideInlineError() {
         if (lblError != null && boxError != null && spacerError != null) {
             lblError.setText("");

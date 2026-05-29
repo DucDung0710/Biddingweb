@@ -4,15 +4,16 @@ import com.bidding.util.SceneManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import java.io.IOException;
 
 public class WalletAdminController {
 
-    @FXML private HBox navOverview, navUsers, navAuctions, navProducts, navWallet, navAuctionHistory, navNotifications, btnLogout;
+    @FXML private HBox navOverview, navUsers, navAuctions, navProducts, navNotifications, btnLogout;
+    @FXML @SuppressWarnings("unused") private HBox navWallet;
+    @FXML @SuppressWarnings("unused") private HBox navAuctionHistory;
     @FXML private Label lblPendingBadge;
     @FXML private Label lblStatPending, lblStatApproved, lblStatTotalApproved, lblStatRejected;
     @FXML private Button btnRefresh;
-    @FXML private TableView<?> tblPendingRequests;
+    @FXML @SuppressWarnings("unused") private TableView<?> tblPendingRequests;
     @FXML
     public void initialize() {
         // --- LIÊN KẾT SIDEBAR ---

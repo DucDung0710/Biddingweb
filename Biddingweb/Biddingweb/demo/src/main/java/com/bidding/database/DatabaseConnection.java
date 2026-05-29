@@ -2,12 +2,13 @@ package com.bidding.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DatabaseConnection {
     private static DatabaseConnection instance;
-    private Connection connection;
+    private final Connection connection;
     private static final String DB_URL = "jdbc:sqlite:bidding_system.db";
 
     private DatabaseConnection() throws SQLException {
@@ -19,6 +20,7 @@ public class DatabaseConnection {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("PRAGMA foreign_keys = ON;");
         }
+        createTablesIfNotExist();
     }
 
     public static synchronized DatabaseConnection getInstance() throws SQLException {
@@ -32,9 +34,10 @@ public class DatabaseConnection {
         return connection;
     }
 
+    @SuppressWarnings("unused")
     private void createTablesIfNotExist() {
         // Gộp toàn bộ mã Schema SQL của bạn vào đây để chạy tự động
-        String sqlUsers = "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT NOT NULL, balance REAL DEFAULT 0.0);";
+        String sqlUsers = "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT NOT NULL, balance REAL DEFAULT 0.0);";
         String sqlItems = "CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, type TEXT NOT NULL, seller_id INTEGER REFERENCES users(id));";
         String sqlAuctions = "CREATE TABLE IF NOT EXISTS auctions (id INTEGER PRIMARY KEY AUTOINCREMENT, item_id INTEGER REFERENCES items(id), start_price REAL NOT NULL, current_price REAL NOT NULL, start_time TEXT NOT NULL, end_time TEXT NOT NULL, status TEXT NOT NULL, winner_id INTEGER REFERENCES users(id));";
         String sqlBids = "CREATE TABLE IF NOT EXISTS bid_transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, auction_id INTEGER REFERENCES auctions(id), bidder_id INTEGER REFERENCES users(id), amount REAL NOT NULL, bid_time TEXT NOT NULL, is_auto INTEGER DEFAULT 0);";
@@ -42,8 +45,7 @@ public class DatabaseConnection {
         String sqlWalletTx = "CREATE TABLE IF NOT EXISTS wallet_transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL REFERENCES users(id), type TEXT NOT NULL, amount REAL NOT NULL, balance_after REAL NOT NULL, ref_id INTEGER, note TEXT, created_at TEXT NOT NULL);";
         String sqlHolds = "CREATE TABLE IF NOT EXISTS wallet_holds (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL REFERENCES users(id), auction_id INTEGER NOT NULL REFERENCES auctions(id), amount REAL NOT NULL, status TEXT NOT NULL);";
 
-        try (Connection conn = this.getConnection();
-             Statement stmt = conn.createStatement()) {
+        try (Statement stmt = connection.createStatement()) {
             stmt.execute(sqlUsers);
             stmt.execute(sqlItems);
             stmt.execute(sqlAuctions);
@@ -51,9 +53,27 @@ public class DatabaseConnection {
             stmt.execute(sqlAuto);
             stmt.execute(sqlWalletTx);
             stmt.execute(sqlHolds);
+            ensureUsersEmailColumn();
             System.out.println(" Khởi tạo trọn bộ hệ thống bảng dữ liệu đấu giá trực tuyến thành công!");
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log exception instead of printing stack trace
+        }
+    }
+
+    private void ensureUsersEmailColumn() throws SQLException {
+        try (ResultSet rs = connection.getMetaData().getColumns(null, null, "users", "email")) {
+            if (!rs.next()) {
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT '';");
+                }
+            }
+        }
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS empty_count FROM users WHERE email = ''")) {
+            if (rs.next() && rs.getInt("empty_count") == 0) {
+                stmt.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);");
+            }
         }
     }
 }

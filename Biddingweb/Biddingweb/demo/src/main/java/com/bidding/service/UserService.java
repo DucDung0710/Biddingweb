@@ -3,7 +3,6 @@ package com.bidding.service;
 import com.bidding.dao.JdbcUserDAO;
 import com.bidding.dao.UserDAO;
 import com.bidding.shared.Users;
-import java.util.UUID;
 
 public class UserService {
     private final UserDAO userDao = new JdbcUserDAO();

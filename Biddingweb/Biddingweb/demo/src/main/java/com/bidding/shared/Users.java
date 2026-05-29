@@ -3,7 +3,7 @@ package com.bidding.shared;
 /**
  * Lớp Users đại diện cho một người dùng trong hệ thống đấu giá.
  */
-public abstract class Users implements AuctionObserver {
+public class Users implements AuctionObserver {
     private String username;
     private String password;
     private int id;
