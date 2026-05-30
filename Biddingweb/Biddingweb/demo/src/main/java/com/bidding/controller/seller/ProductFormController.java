@@ -1,4 +1,4 @@
-package com.bidonline.controller;
+package com.bidding.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

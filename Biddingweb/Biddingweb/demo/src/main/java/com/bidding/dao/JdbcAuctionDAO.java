@@ -288,4 +288,34 @@ public class JdbcAuctionDAO {
         }
         return null;
     }
+
+    // 9. Cập nhật giá hiện tại của phiên đấu giá
+    public boolean updateCurrentPrice(int auctionId, double newPrice) {
+        String q = "UPDATE auctions SET current_price = ? WHERE id = ? AND status = 'RUNNING'";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            ps.setDouble(1, newPrice);
+            ps.setInt(2, auctionId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("❌ Lỗi cập nhật giá hiện tại:");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 10. Cập nhật người chiến thắng (winner_id)
+    public boolean updateWinner(int auctionId, int winnerId) {
+        String q = "UPDATE auctions SET winner_id = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            ps.setInt(1, winnerId);
+            ps.setInt(2, auctionId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("❌ Lỗi cập nhật người chiến thắng:");
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

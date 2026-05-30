@@ -25,6 +25,8 @@ public class RequestRouter {
             case "GET_AUCTION_DETAIL" -> handleGetAuctionDetail(request);
             case "GET_ALL_ITEMS" -> handleGetAllItems(request);
             case "REVIEW_ITEM"   -> handleReviewItem(request);// xử lý lấy danh sách
+            case "PLACE_BID" -> handlePlaceBid(request);
+            case "GET_BID_HISTORY" -> handleGetBidHistory(request);
             default -> error("Unknown action: " + action);
         };
     }
@@ -185,6 +187,83 @@ public class RequestRouter {
         } else {
             return error("Email hoặc mật khẩu không đúng");
         }
+    }
+
+    private JsonObject handlePlaceBid(JsonObject req) {
+        JsonObject res = new JsonObject();
+        try {
+            int auctionId = req.get("auctionId").getAsInt();
+            int bidderId = req.get("bidderId").getAsInt();
+            String bidderName = req.get("bidderName").getAsString();
+            double bidAmount = req.get("bidAmount").getAsDouble();
+            
+            // Lưu bid vào database
+            com.bidding.model.BidRecord bidRecord = new com.bidding.model.BidRecord(
+                    auctionId,
+                    bidderId,
+                    bidderName,
+                    java.math.BigDecimal.valueOf(bidAmount),
+                    java.time.LocalDateTime.now()
+            );
+            
+            com.bidding.dao.JdbcBidRecordDAO bidDAO = new com.bidding.dao.JdbcBidRecordDAO();
+            com.bidding.model.BidRecord highestBid = bidDAO.getHighestBid(auctionId);
+            
+            if (highestBid == null || java.math.BigDecimal.valueOf(bidAmount).compareTo(highestBid.getBidAmount()) > 0) {
+                bidRecord.setWinning(true);
+            }
+            
+            if (bidDAO.insert(bidRecord)) {
+                // Cập nhật giá hiện tại và người thắng
+                auctionDao.updateCurrentPrice(auctionId, bidAmount);
+                auctionDao.updateWinner(auctionId, bidderId);
+                
+                res.addProperty("status", "OK");
+                res.addProperty("message", "Đặt giá thành công");
+                res.addProperty("isWinning", bidRecord.isWinning());
+                res.addProperty("bidId", bidRecord.getBidId());
+            } else {
+                res.addProperty("status", "ERROR");
+                res.addProperty("message", "Lỗi lưu bản ghi đặt giá");
+            }
+        } catch (Exception e) {
+            res.addProperty("status", "ERROR");
+            res.addProperty("message", "Lỗi server: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    private JsonObject handleGetBidHistory(JsonObject req) {
+        JsonObject res = new JsonObject();
+        try {
+            int auctionId = req.get("auctionId").getAsInt();
+            
+            com.bidding.dao.JdbcBidRecordDAO bidDAO = new com.bidding.dao.JdbcBidRecordDAO();
+            List<com.bidding.model.BidRecord> bidRecords = bidDAO.getByAuctionId(auctionId);
+            
+            res.addProperty("status", "OK");
+            JsonArray bidArray = new JsonArray();
+            
+            for (com.bidding.model.BidRecord bid : bidRecords) {
+                JsonObject bidObj = new JsonObject();
+                bidObj.addProperty("bidId", bid.getBidId());
+                bidObj.addProperty("bidderId", bid.getBidderId());
+                bidObj.addProperty("bidderName", bid.getBidderName());
+                bidObj.addProperty("bidAmount", bid.getBidAmount().doubleValue());
+                bidObj.addProperty("bidTime", bid.getBidTime().toString());
+                bidObj.addProperty("isWinning", bid.isWinning());
+                bidArray.add(bidObj);
+            }
+            
+            res.add("bidRecords", bidArray);
+            res.addProperty("bidCount", bidRecords.size());
+        } catch (Exception e) {
+            res.addProperty("status", "ERROR");
+            res.addProperty("message", "Lỗi server: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return res;
     }
 
     private JsonObject error(String message) {
