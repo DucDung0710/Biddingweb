@@ -23,6 +23,9 @@
         </children>
     </VBox>
 
+    <!-- Thông báo lỗi -->
+    <Label fx:id="lblError" managed="false" style="-fx-text-fill: #A32D2D; -fx-font-size: 12px; -fx-wrap-text: true;" text="" visible="false" />
+
     <!-- Khu vực nhập liệu -->
     <GridPane hgap="12.0" vgap="14.0">
         <columnConstraints>

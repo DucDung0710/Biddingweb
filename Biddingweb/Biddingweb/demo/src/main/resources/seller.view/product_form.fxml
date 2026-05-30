@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="460" prefWidth="500" spacing="0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidonline.controller.ProductFormController">
+<VBox prefHeight="460" prefWidth="500" spacing="0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.seller.ProductFormController">
 
     <!-- ===== HEADER ===== -->
     <HBox alignment="CENTER_LEFT" prefHeight="52" style="-fx-padding: 0 20; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">

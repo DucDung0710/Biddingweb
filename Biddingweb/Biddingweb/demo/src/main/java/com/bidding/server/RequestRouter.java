@@ -1,6 +1,7 @@
 package com.bidding.server;
 
 import com.bidding.dao.JdbcAuctionDAO;
+import com.bidding.dao.JdbcItemDAO;
 import com.bidding.model.AuctionDisplayDTO;
 import com.bidding.service.UserService;
 import com.google.gson.Gson;
@@ -11,6 +12,7 @@ import java.util.List;
 public class RequestRouter {
     private final UserService userService = new UserService();
     private final JdbcAuctionDAO auctionDao = new JdbcAuctionDAO();
+    private final JdbcItemDAO itemDao = new JdbcItemDAO();
     private final Gson gson = new Gson();
 
     public JsonObject handle(JsonObject request) {
@@ -61,12 +63,22 @@ public class RequestRouter {
 
     @SuppressWarnings("unused")
     private JsonObject handleGetAllItems(JsonObject request) {
-        // Stub: Items functionality requires JdbcItemDAO
         JsonObject res = new JsonObject();
         try {
-            // Stub: Items functionality requires JdbcItemDAO
-            // If needed, implement with proper DAO reference
             JsonArray array = new JsonArray();
+            List<com.bidding.shared.Item> items = itemDao.findAll();
+            for (com.bidding.shared.Item it : items) {
+                JsonObject obj = new JsonObject();
+                obj.addProperty("itemId", it.getItemId());
+                obj.addProperty("userId", it.getUserId());
+                obj.addProperty("itemName", it.getItemName());
+                obj.addProperty("description", it.getDescription());
+                obj.addProperty("type", it.getType());
+                // Provide safe defaults for fields admin UI expects
+                obj.addProperty("firstprice", it.getFirstprice() != null ? it.getFirstprice().doubleValue() : 0.0);
+                obj.addProperty("status", it.getStatus() != null ? it.getStatus() : "Pending");
+                array.add(obj);
+            }
             res.addProperty("status", "OK");
             res.add("data", array);
         } catch (Exception e) {
@@ -78,11 +90,23 @@ public class RequestRouter {
 
     @SuppressWarnings("unused")
     private JsonObject handleReviewItem(JsonObject request) {
-        // Stub: Item review functionality requires JdbcItemDAO
-        // If needed, implement with proper DAO reference
         JsonObject res = new JsonObject();
-        res.addProperty("status", "OK");
-        res.addProperty("message", "Đã duyệt sản phẩm thành công");
+        try {
+            int itemId = request.get("itemId").getAsInt();
+            boolean approved = request.get("approved").getAsBoolean();
+            String newStatus = approved ? com.bidding.shared.Item.STATUS_APPROVED : com.bidding.shared.Item.STATUS_REJECTED;
+            boolean ok = itemDao.updateStatus(itemId, newStatus);
+            if (ok) {
+                res.addProperty("status", "OK");
+                res.addProperty("message", "Đã xử lý trạng thái sản phẩm");
+            } else {
+                res.addProperty("status", "ERROR");
+                res.addProperty("message", "Không thể cập nhật trạng thái trong DB");
+            }
+        } catch (Exception e) {
+            res.addProperty("status", "ERROR");
+            res.addProperty("message", "Lỗi server: " + e.getMessage());
+        }
         return res;
     }
 

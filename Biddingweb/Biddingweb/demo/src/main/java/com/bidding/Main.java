@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 import com.bidding.engine.AuctionOperator;
-import com.bidding.engine.AuctionRoom;
 import com.bidding.shared.Balance;
 import com.bidding.shared.Item;
 import com.bidding.shared.ItemManager;
@@ -83,44 +82,28 @@ public class Main {
             return;
         }
 
-        // ========== Bước 4: Admin duyệt item và tạo phòng đấu giá ==========
-        // Tạo phòng đấu giá với roomId và password
-        AuctionRoom room = new AuctionRoom(item, seller);
-        boolean approved = room.adminApproveItem(admin, "ROOM-001", "secret123");
-        if (!approved) {
-            System.out.println("Admin không thể duyệt phòng đấu giá.");
-            return;
-        }
-
-        // ========== Bước 5: Mời Bidder tham gia ==========
-        // Mời Bidder vào phòng đấu giá
-        room.inviteUser(bidder);
-
-        // ========== Bước 6: Lên lịch phiên đấu giá ==========
-        // Tạo AuctionOperator và lên lịch phiên bắt đầu ngay
+        // ========== Bước 4: Admin duyệt item và lên lịch phiên đấu giá ==========
+        item.setStatus(Item.STATUS_APPROVED);
         AuctionOperator operator = new AuctionOperator(walletManager, String.valueOf(admin.getId()));
-        AuctionOperator.AuctionResult scheduleResult = operator.scheduleAuction(room, System.currentTimeMillis());
+        AuctionOperator.AuctionResult scheduleResult = operator.scheduleAuction(item, seller, "ROOM-001", System.currentTimeMillis());
         System.out.println("[Scheduler] " + scheduleResult.getMessage());
 
         // Chờ phiên bắt đầu (cần ít nhất 1 giây)
         sleepMillis(1100);
 
-        // Kiểm tra xem phiên đã bắt đầu chưa
-        AuctionOperator.AuctionSession session = operator.getSession(room.getRoomId());
+        AuctionOperator.AuctionSession session = operator.getSession("ROOM-001");
         if (session == null || !session.isStarted()) {
-            System.out.println("Phiên đấu giá chưa bắt đầu. Hãy kiểm tra lại trạng thái room.");
+            System.out.println("Phiên đấu giá chưa bắt đầu. Hãy kiểm tra lại trạng thái phiên đấu giá.");
             operator.shutdown();
             return;
         }
 
-        // ========== Bước 7: Bidder chấp nhận lời mời ==========
-        // Bidder chấp nhận lời mời với roomId và password
-        AuctionRoom.InvitationResult inviteResult = room.acceptInvitationWithResult((com.bidding.shared.AuctionObserver) bidder, room.getRoomId(), "secret123");
-        System.out.println("[Invitation] " + inviteResult.getMessage());
+        // ========== Bước 5: Bidder tham gia phiên đấu giá ==========
+        session.registerObserver(bidder);
+        System.out.println("[Invitation] Bidder đã tham gia phiên đấu giá và sẽ nhận thông báo.");
 
-        // ========== Bước 8: Bidder đặt giá ==========
-        // Đặt giá 110 (cao hơn giá khởi điểm 100)
-        AuctionOperator.AuctionResult bidResult = operator.placeBid(room.getRoomId(), bidder, 110.0);
+        // ========== Bước 6: Bidder đặt giá ==========
+        AuctionOperator.AuctionResult bidResult = operator.placeBid("ROOM-001", bidder, 110.0);
         System.out.println("[Bid] " + bidResult.getMessage());
 
         // Hiển thị số dư sau khi đặt giá

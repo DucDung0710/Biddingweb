@@ -70,8 +70,18 @@ public class Users implements AuctionObserver {
     }
 
     @Override
-    public void update(String message) {
-        System.out.println("Thông báo cho " + username + ": " + message);
+    public void onNewBid(int auctionId, int bidderId, double bidAmount, boolean isAutoBid, String message) {
+        System.out.println("Thông báo đấu giá cho " + username + ": " + message);
+    }
+
+    @Override
+    public void onAuctionEnded(int auctionId, int winnerId, double finalPrice, String message) {
+        System.out.println("Kết quả đấu giá cho " + username + ": " + message);
+    }
+
+    @Override
+    public void onAuctionCancelled(int auctionId, String reason) {
+        System.out.println("Đấu giá bị hủy cho " + username + ": " + reason);
     }
 
     @Override

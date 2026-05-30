@@ -65,18 +65,9 @@ public class UserManager {
     }
 
     public void makeAdmin(Users currentUser, String targetUsername) {
-        if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin")) {
-            System.out.println("Lỗi: Chỉ Admin mới có quyền thực hiện!");
-            return;
-        }
-        Users user = userDao.findByUsername(targetUsername);
-        if (user != null) {
-            user.setRole("Admin");
-            userDao.insert(user);
-            System.out.println("Đã thăng chức Admin cho: " + targetUsername);
-        } else {
-            System.out.println("Lỗi: Không tìm thấy người dùng này.");
-        }
+        // Deprecated: hệ thống không cho phép thăng quyền thủ công.
+        // Việc tạo tài khoản với vai trò Admin được kiểm soát qua signUp() và danh sách email cho phép.
+        System.out.println("Chức năng makeAdmin đã bị loại bỏ. Sử dụng signUp() để tạo tài khoản mới với vai trò tương ứng.");
     }
 
     public void deleteUser(Users currentUser, String targetId, ItemManager itemManager) {

@@ -168,6 +168,30 @@ public class JdbcAuctionDAO {
         }
     }
 
+    // 9. Tạo một phiên đấu giá mới trong DB và trả về auction id (generated key)
+    public int createAuction(int itemId, double startPrice, long startTimeMillis, long endTimeMillis) {
+        String q = "INSERT INTO auctions (item_id, start_price, current_price, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)";
+        String status = (startTimeMillis <= System.currentTimeMillis()) ? "RUNNING" : "OPEN";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, itemId);
+            ps.setDouble(2, startPrice);
+            ps.setDouble(3, startPrice);
+            ps.setLong(4, startTimeMillis);
+            ps.setLong(5, endTimeMillis);
+            ps.setString(6, status);
+            int affected = ps.executeUpdate();
+            if (affected > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     // 6. Hàm ghi Log giao dịch đặt giá vào bảng bid_transactions
     public boolean insertTransaction(int auctionId, int bidderId, double amount, String time, int isAuto) {
         String q = "INSERT INTO bid_transactions (auction_id, bidder_id, amount, bid_time, is_auto) VALUES (?, ?, ?, ?, ?)";
@@ -178,6 +202,25 @@ public class JdbcAuctionDAO {
             ps.setDouble(3, amount);
             ps.setString(4, time);
             ps.setInt(5, isAuto);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Lưu cấu hình auto-bid vào bảng auto_bids để có thể truy xuất sau này
+     */
+    public boolean insertAutoBid(int auctionId, int userId, double maxBid, double increment, String createdAt) {
+        String q = "INSERT INTO auto_bids (auction_id, user_id, max_amount, increment_amount, created_at) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            ps.setInt(1, auctionId);
+            ps.setInt(2, userId);
+            ps.setDouble(3, maxBid);
+            ps.setDouble(4, increment);
+            ps.setString(5, createdAt);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

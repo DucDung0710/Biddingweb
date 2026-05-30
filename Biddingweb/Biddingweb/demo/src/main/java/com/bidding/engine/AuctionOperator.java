@@ -19,7 +19,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.bidding.shared.AuctionObserver;
 import com.bidding.shared.Balance;
+import com.bidding.shared.Item;
 import com.bidding.shared.Users;
 import com.bidding.shared.WalletManager;
 
@@ -48,7 +50,7 @@ public class AuctionOperator {
     private final WalletManager walletManager;
     
     // ID của admin (cho việc phân phối tiền)
-    private final String adminUserId;
+    private volatile Integer adminUserId;
     
     // Thread pool để lên lịch các task (timeout phiên, etc)
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(Math.max(2, Runtime.getRuntime().availableProcessors()));
@@ -64,9 +66,28 @@ public class AuctionOperator {
     
     // Mức tăng giá tối thiểu: 5% so với giá hiện tại
     private static final BigDecimal MINIMUM_INCREMENT_FACTOR = new BigDecimal("1.05");
+    // Nếu bid xảy ra trong 10s cuối thì áp dụng cơ chế gia hạn
+    private static final long EXTENSION_WINDOW_MS = 10 * 1000L;
+    // Mỗi lần gia hạn sẽ thêm 3 phút
+    private static final long EXTENSION_DURATION_MS = 3 * 60 * 1000L;
+    // Thời lượng mặc định nếu không có endTime được cung cấp
+    private static final long DEFAULT_INITIAL_DURATION_MS = 3 * 60 * 1000L;
 
-    public AuctionOperator(WalletManager walletManager, String adminUserId) {
+    public AuctionOperator(WalletManager walletManager) {
         this.walletManager = walletManager;
+    }
+
+    public AuctionOperator(WalletManager walletManager, String adminUserIdStr) {
+        this(walletManager);
+        try {
+            if (adminUserIdStr != null && !adminUserIdStr.isEmpty()) {
+                this.adminUserId = Integer.valueOf(adminUserIdStr);
+            }
+        } catch (NumberFormatException ignored) {
+        }
+    }
+
+    public void setAdminUserId(int adminUserId) {
         this.adminUserId = adminUserId;
     }
 
@@ -74,39 +95,59 @@ public class AuctionOperator {
      * Lên lịch một phiên đấu giá để bắt đầu vào thời điểm chỉ định.
      * 
      * Quá trình:
-     * 1. Kiểm tra xác nhận của phòng đấu giá (phải được Admin duyệt)
+     * 1. Kiểm tra item và seller đã được xác thực
      * 2. Kiểm tra không có phiên đấu giá nào đang hoạt động với roomId này
      * 3. Tạo AuctionSession và lên lịch để bắt đầu vào thời điểm startTimeMillis
-     * 4. Trả về AuctionResult với kết quả (thành công/thất bại)
+     * 4. Trả về AuctionResult với trạng thái và thông báo chi tiết
      * 
-     * @param auctionRoom Phòng đấu giá cần lên lịch
+     * @param item Item đấu giá
+     * @param seller Người bán
+     * @param roomId ID phiên đấu giá
      * @param startTimeMillis Thời điểm bắt đầu (milliseconds từ epoch)
      * @return AuctionResult với trạng thái và thông báo chi tiết
      */
-    public AuctionResult scheduleAuction(AuctionRoom auctionRoom, long startTimeMillis) {
-        if (auctionRoom == null) {
-            return new AuctionResult(false, "AuctionRoom không hợp lệ.");
+    public AuctionResult scheduleAuction(Item item, Users seller, String roomId, long startTimeMillis) {
+        long defaultEnd = startTimeMillis + DEFAULT_INITIAL_DURATION_MS;
+        return scheduleAuction(item, seller, roomId, startTimeMillis, defaultEnd);
+    }
+
+    public AuctionResult scheduleAuction(Item item, Users seller, String roomId, long startTimeMillis, long endTimeMillis) {
+        if (item == null) {
+            return new AuctionResult(false, "Item không hợp lệ.");
         }
-        if (!auctionRoom.isApproved()) {
-            return new AuctionResult(false, "Phòng đấu giá phải được Admin duyệt trước khi lên lịch.");
+        if (seller == null || item.getUserId() != seller.getId()) {
+            return new AuctionResult(false, "Chỉ seller sở hữu sản phẩm mới có thể lên lịch đấu giá.");
         }
-        if (auctionRoom.getRoomId() == null || auctionRoom.getRoomId().isEmpty()) {
-            return new AuctionResult(false, "Room ID chưa được thiết lập.");
+        if (!Item.STATUS_APPROVED.equalsIgnoreCase(item.getStatus())) {
+            return new AuctionResult(false, "Sản phẩm chưa được Admin duyệt.");
+        }
+        if (roomId == null || roomId.isEmpty()) {
+            return new AuctionResult(false, "Room ID không hợp lệ.");
         }
 
-        AuctionSession existing = sessions.get(auctionRoom.getRoomId());
+        AuctionSession existing = sessions.get(roomId);
         if (existing != null && !existing.isEnded()) {
             return new AuctionResult(false, "Đã có một phiên đấu giá đang hoạt động với roomId này.");
         }
 
-        auctionRoom.setScheduledStartTimeMillis(startTimeMillis);
-
-        AuctionSession session = new AuctionSession(auctionRoom);
-        sessions.put(auctionRoom.getRoomId(), session);
+        AuctionSession session = new AuctionSession(roomId, item, seller, endTimeMillis);
+        sessions.put(roomId, session);
 
         long delay = Math.max(0, startTimeMillis - System.currentTimeMillis());
         scheduler.schedule(session::begin, delay, TimeUnit.MILLISECONDS);
-        return new AuctionResult(true, "Đã lên lịch đấu giá cho phòng " + auctionRoom.getRoomId() + " vào thời điểm " + startTimeMillis + ".");
+        return new AuctionResult(true, "Đã lên lịch đấu giá cho phiên " + roomId + " vào thời điểm " + startTimeMillis + ". Kết thúc: " + endTimeMillis + ".");
+    }
+
+    /**
+     * Overload allowing passing DB auctionId so engine can persist bid updates.
+     */
+    public AuctionResult scheduleAuction(Item item, Users seller, String roomId, long startTimeMillis, long endTimeMillis, int auctionId) {
+        AuctionResult r = scheduleAuction(item, seller, roomId, startTimeMillis, endTimeMillis);
+        if (r.isAccepted() && auctionId > 0) {
+            AuctionSession s = sessions.get(roomId);
+            if (s != null) s.auctionId = auctionId;
+        }
+        return r;
     }
 
     /**
@@ -127,6 +168,9 @@ public class AuctionOperator {
             return new AuctionResult(false, "Room ID không hợp lệ.");
         }
         AuctionSession session = sessions.get(roomId);
+        if (session == null && roomId.matches("\\d+")) {
+            session = getSessionByAuctionId(Integer.parseInt(roomId));
+        }
         if (session == null) {
             return new AuctionResult(false, "Không tìm thấy phiên đấu giá cho roomId này.");
         }
@@ -134,13 +178,43 @@ public class AuctionOperator {
     }
 
     /**
-     * Lấy thông tin phiên đấu giá theo roomId.
+     * Đăng ký auto-bid cho một phòng đấu giá cụ thể.
+     */
+    public AuctionResult registerAutoBid(String roomId, Users bidder, double maxBid, double increment) {
+        if (roomId == null || roomId.isEmpty()) {
+            return new AuctionResult(false, "Room ID không hợp lệ.");
+        }
+        AuctionSession session = sessions.get(roomId);
+        if (session == null && roomId.matches("\\d+")) {
+            session = getSessionByAuctionId(Integer.parseInt(roomId));
+        }
+        if (session == null) {
+            return new AuctionResult(false, "Không tìm thấy phiên đấu giá cho roomId này.");
+        }
+        return session.registerAutoBid(bidder, maxBid, increment);
+    }
+
+    /**
+     * Lấy thông tin phiên đấu giá theo roomId hoặc auctionId.
      * 
-     * @param roomId ID của phòng đấu giá
+     * @param roomId ID của phòng đấu giá hoặc auctionId dạng chuỗi
      * @return AuctionSession nếu tìm thấy, null nếu không tồn tại
      */
     public AuctionSession getSession(String roomId) {
-        return sessions.get(roomId);
+        AuctionSession session = sessions.get(roomId);
+        if (session == null && roomId != null && roomId.matches("\\d+")) {
+            session = getSessionByAuctionId(Integer.parseInt(roomId));
+        }
+        return session;
+    }
+
+    private AuctionSession getSessionByAuctionId(int auctionId) {
+        for (AuctionSession session : sessions.values()) {
+            if (session != null && session.getAuctionId() == auctionId) {
+                return session;
+            }
+        }
+        return null;
     }
 
     /**
@@ -170,7 +244,7 @@ public class AuctionOperator {
      * @param historyEntry Bản ghi lịch sử để lưu trữ
      */
     private void archiveSession(AuctionSession session, AuctionHistory historyEntry) {
-        sessions.remove(session.room.getRoomId(), session);
+        sessions.remove(session.getRoomId(), session);
         auctionHistory.add(historyEntry);
         persistHistory(historyEntry);
     }
@@ -239,78 +313,137 @@ public class AuctionOperator {
      * - Sử dụng volatile fields để đảm bảo visibility trong multi-threaded environment
      */
     public class AuctionSession {
-        // Thời gian tối đa cho mỗi turn của phiên: 3 phút = 180 giây
-        private static final long TURN_DURATION_MS = 3 * 60 * 1000L;
-
-        // Phòng đấu giá này belong to
-        private final AuctionRoom room;
-        
-        // Lock để bảo vệ các thao tác đặt giá (bidding operations)
+        // inner class uses outer class constants for durations
+        private final String roomId;
+        private final Item item;
+        private final int sellerUserId;
+        private final String sellerUsername;
         private final Lock bidLock = new ReentrantLock();
-        
-        // Trạng thái hiện tại của phiên (volatile để visibility)
         private volatile AuctionStatus status;
-        
-        // Giá hiện tại cao nhất (volatile để visibility)
         private volatile BigDecimal currentPrice;
-        
-        // ID của người đặt giá cao nhất (volatile để visibility)
         private volatile Integer highestBidderId;
-        
-        // Đối tượng Users của người đặt giá cao nhất (volatile để visibility)
         private volatile Users highestBidder;
-        
-        // Future của tác vụ timeout turn hiện tại (để cancel nếu có bid mới)
-        private volatile ScheduledFuture<?> turnTimeoutFuture;
+        private volatile ScheduledFuture<?> endFuture;
+        private volatile long auctionEndTimeMillis;
+        // Nếu phiên có bản ghi DB tương ứng, lưu auctionId để ghi transaction
+        private volatile int auctionId = -1;
+        // Cấu hình auto-bid cho phiên: userId -> config
+        private final Map<Integer, AutoBidConfig> autoBids = new ConcurrentHashMap<>();
+        // Observers (bidders and watchers) nhận thông báo về auction events
+        private final List<AuctionObserver> observers = new CopyOnWriteArrayList<>();
+        private final Users seller;
 
-        public AuctionSession(AuctionRoom room) {
-            this.room = room;
+        private class AutoBidConfig {
+            final int userId;
+            final Users user;
+            final BigDecimal maxBid;
+            final BigDecimal increment;
+
+            AutoBidConfig(Users user, BigDecimal maxBid, BigDecimal increment) {
+                this.userId = user.getId();
+                this.user = user;
+                this.maxBid = maxBid;
+                this.increment = increment;
+            }
+        }
+
+        /**
+         * Đăng ký một observer (bidder hoặc watcher) để nhận thông báo auction events
+         */
+        public void registerObserver(AuctionObserver observer) {
+            if (observer != null && !observers.contains(observer)) {
+                observers.add(observer);
+            }
+        }
+
+        /**
+         * Broadcast event khi có bid mới
+         */
+        private void broadcastNewBid(int bidderId, double bidAmount, boolean isAutoBid, String description) {
+            for (AuctionObserver observer : observers) {
+                observer.onNewBid(auctionId, bidderId, bidAmount, isAutoBid, description);
+            }
+        }
+
+        /**
+         * Broadcast event khi đấu giá kết thúc với người chiến thắng
+         */
+        private void broadcastAuctionEnded(int winnerId, double finalPrice, String description) {
+            for (AuctionObserver observer : observers) {
+                observer.onAuctionEnded(auctionId, winnerId, finalPrice, description);
+            }
+        }
+
+        /**
+         * Broadcast event khi đấu giá bị hủy
+         */
+        private void broadcastAuctionCancelled(String reason) {
+            for (AuctionObserver observer : observers) {
+                observer.onAuctionCancelled(auctionId, reason);
+            }
+        }
+
+        public AuctionSession(String roomId, Item item, Users seller, long scheduledEndTimeMillis) {
+            this.roomId = roomId;
+            this.item = item;
+            this.sellerUserId = seller != null ? seller.getId() : item.getUserId();
+            this.sellerUsername = seller != null ? seller.getUsername() : "";
+            this.seller = seller;
             this.status = AuctionStatus.SCHEDULED;
-            this.currentPrice = room.getItem().getFirstprice();
+            this.currentPrice = item.getFirstprice();
             this.highestBidderId = null;
             this.highestBidder = null;
+            if (scheduledEndTimeMillis > 0) {
+                this.auctionEndTimeMillis = scheduledEndTimeMillis;
+            } else {
+                this.auctionEndTimeMillis = System.currentTimeMillis() + DEFAULT_INITIAL_DURATION_MS;
+            }
         }
 
         /**
          * Bắt đầu phiên đấu giá.
          * 
          * Quá trình:
-         * 1. Kiểm tra phòng đã được duyệt (approved)
-         * 2. Thay đổi status thành RUNNING
-         * 3. Thông báo cho tất cả observers (watchers)
-         * 4. Lên lịch timeout cho turn (nếu không có bidders trong 3 phút sẽ kết thúc)
+         * 1. Thay đổi status thành RUNNING
+         * 2. Thông báo cho tất cả observers (watchers)
+         * 3. Lên lịch timeout cho phiên đấu giá
          */
         public void begin() {
             if (status == AuctionStatus.CANCELLED || status == AuctionStatus.ENDED) {
                 return;
             }
-            if (!room.isApproved()) {
-                room.notifyObservers("Phòng đấu giá chưa được duyệt, phiên không thể bắt đầu.");
-                archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), null, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Phòng chưa được duyệt."));
-                return;
-            }
             status = AuctionStatus.RUNNING;
-            room.notifyObservers(String.format(
-                "Đấu giá cho item '%s' (ID: %s) của seller '%s' sẽ bắt đầu ngay bây giờ. Giá khởi điểm: %s.",
-                room.getItem().getItemName(),
-                room.getItem().getItemId(),
-                room.getSellerUsername().isEmpty() ? String.valueOf(room.getSellerUserId()) : room.getSellerUsername(),
-                currentPrice
-            ));
-            scheduleTurnTimeout();
+            item.setStatus(com.bidding.shared.Item.STATUS_IN_AUCTION);
+            if (seller != null) {
+                registerObserver(seller);
+            }
+            broadcastNewBid(-1, currentPrice.doubleValue(), false,
+                    String.format("Đấu giá cho item '%s' bắt đầu. Giá khởi điểm: %s", item.getItemName(), currentPrice));
+            scheduleAuctionEnd();
         }
 
-        /**
-         * Lên lịch timeout cho turn hiện tại (3 phút).
-         * 
-         * Nếu có timeout cũ chưa hoàn thành, hủy nó trước.
-         * Khi timeout hết, nếu không có bidders mới thì kết thúc phiên.
-         */
-        private void scheduleTurnTimeout() {
-            if (turnTimeoutFuture != null && !turnTimeoutFuture.isDone()) {
-                turnTimeoutFuture.cancel(false);
+        public String getRoomId() {
+            return roomId;
+        }
+
+        public Item getItem() {
+            return item;
+        }
+
+        public int getSellerUserId() {
+            return sellerUserId;
+        }
+
+        public String getSellerUsername() {
+            return sellerUsername;
+        }
+
+        private void scheduleAuctionEnd() {
+            if (endFuture != null && !endFuture.isDone()) {
+                endFuture.cancel(false);
             }
-            turnTimeoutFuture = scheduler.schedule(this::finishIfNoMoreBids, TURN_DURATION_MS, TimeUnit.MILLISECONDS);
+            long delay = Math.max(0, auctionEndTimeMillis - System.currentTimeMillis());
+            endFuture = scheduler.schedule(this::finishIfAuctionEnded, delay, TimeUnit.MILLISECONDS);
         }
 
         /**
@@ -321,16 +454,21 @@ public class AuctionOperator {
          * 2. Nếu không có bidders, kết thúc với trạng thái ENDED
          * 3. Nếu có bidders, hoàn tất đấu giá và phân phối tiền
          */
-        private void finishIfNoMoreBids() {
+        private void finishIfAuctionEnded() {
             bidLock.lock();
             try {
                 if (status != AuctionStatus.RUNNING) {
                     return;
                 }
+                if (System.currentTimeMillis() < auctionEndTimeMillis) {
+                    scheduleAuctionEnd();
+                    return;
+                }
                 if (highestBidderId == null) {
                     status = AuctionStatus.ENDED;
-                    room.notifyObservers("Phiên đấu giá đã kết thúc mà không có người đặt giá. Không có người chiến thắng.");
-                    archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), null, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.ENDED, "Không có người đặt giá."));
+                    item.setStatus(com.bidding.shared.Item.STATUS_UNSOLD);
+                    broadcastAuctionCancelled("Không có người đặt giá.");
+                    archiveSession(this, AuctionHistory.create(roomId, String.valueOf(item.getItemId()), null, currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.ENDED, "Không có người đặt giá."));
                     return;
                 }
                 completeAuction();
@@ -359,13 +497,14 @@ public class AuctionOperator {
          */
         private void completeAuction() {
             status = AuctionStatus.ENDED;
+            item.setStatus(com.bidding.shared.Item.STATUS_SOLD);
             Balance winnerWallet = walletManager.getWalletByUserId(highestBidderId);
-            Balance sellerWallet = walletManager.getWalletByUserId(room.getSellerUserId());
-            Balance adminWallet = walletManager.getWalletByUserId(Integer.parseInt(adminUserId));
+            Balance sellerWallet = walletManager.getWalletByUserId(sellerUserId);
+            Balance adminWallet = adminUserId != null ? walletManager.getWalletByUserId(adminUserId) : null;
 
             if (winnerWallet == null || sellerWallet == null || adminWallet == null) {
-                room.notifyObservers("Không thể hoàn tất đấu giá do ví không hợp lệ. Cần xử lý thủ công.");
-                archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), String.valueOf(highestBidderId), currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Ví người tham gia hoặc seller/admin không tồn tại."));
+                broadcastAuctionCancelled("Không thể hoàn tất đấu giá do ví không hợp lệ. Cần xử lý thủ công.");
+                archiveSession(this, AuctionHistory.create(roomId, String.valueOf(item.getItemId()), String.valueOf(highestBidderId), currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Ví người tham gia hoặc seller/admin không tồn tại."));
                 return;
             }
 
@@ -373,8 +512,8 @@ public class AuctionOperator {
             try {
                 paid = winnerWallet.commitLockedAmount(currentPrice);
             } catch (IllegalArgumentException ex) {
-                room.notifyObservers("Không thể trừ tiền người thắng: " + ex.getMessage());
-                archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), String.valueOf(highestBidderId), currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Commit tiền lỗi: " + ex.getMessage()));
+                broadcastAuctionCancelled("Không thể trừ tiền người thắng: " + ex.getMessage());
+                archiveSession(this, AuctionHistory.create(roomId, String.valueOf(item.getItemId()), String.valueOf(highestBidderId), currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Commit tiền lỗi: " + ex.getMessage()));
                 return;
             }
 
@@ -385,24 +524,26 @@ public class AuctionOperator {
                 sellerWallet.deposit(sellerShare);
                 adminWallet.deposit(adminShare);
             } catch (IllegalArgumentException ex) {
-                room.notifyObservers("Không thể phân phối tiền thắng: " + ex.getMessage() + ". Hoàn trả người thắng.");
+                broadcastAuctionCancelled("Không thể phân phối tiền thắng: " + ex.getMessage() + ". Hoàn trả người thắng.");
                 winnerWallet.deposit(paid);
-                archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), String.valueOf(highestBidderId), currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Rollback do phân phối lỗi: " + ex.getMessage()));
+                archiveSession(this, AuctionHistory.create(roomId, String.valueOf(item.getItemId()), String.valueOf(highestBidderId), currentPrice, BigDecimal.ZERO, BigDecimal.ZERO, AuctionStatus.CANCELLED, "Rollback do phân phối lỗi: " + ex.getMessage()));
                 return;
             }
 
             String winnerName = highestBidder.getUsername();
-            room.notifyObservers(String.format(
+            broadcastAuctionEnded(highestBidderId, paid.doubleValue(), String.format(
                 "Đấu giá kết thúc. Người thắng: %s (ID: %s) với giá %s. Seller '%s' nhận %s, Admin nhận %s.",
                 winnerName,
                 highestBidderId,
                 paid,
-                room.getSellerUsername().isEmpty() ? String.valueOf(room.getSellerUserId()) : room.getSellerUsername(),
+                sellerUsername.isEmpty() ? String.valueOf(sellerUserId) : sellerUsername,
                 sellerShare,
                 adminShare
             ));
-            highestBidder.update(String.format("Chúc mừng! Bạn đã thắng phiên đấu giá '%s' với giá %s.", room.getRoomId(), paid));
-            archiveSession(this, AuctionHistory.create(room.getRoomId(), String.valueOf(room.getItem().getItemId()), String.valueOf(highestBidderId), paid, sellerShare, adminShare, AuctionStatus.ENDED, "Đấu giá hoàn tất thành công."));
+            if (highestBidder != null) {
+                highestBidder.onAuctionEnded(auctionId, highestBidderId, paid.doubleValue(), String.format("Chúc mừng! Bạn đã thắng phiên đấu giá '%s' với giá %s.", roomId, paid));
+            }
+            archiveSession(this, AuctionHistory.create(roomId, String.valueOf(item.getItemId()), String.valueOf(highestBidderId), paid, sellerShare, adminShare, AuctionStatus.ENDED, "Đấu giá hoàn tất thành công."));
         }
 
         /**
@@ -457,7 +598,7 @@ public class AuctionOperator {
                 }
 
                 BigDecimal requiredMinimum = (highestBidderId == null)
-                        ? room.getItem().getFirstprice().multiply(MINIMUM_INCREMENT_FACTOR)
+                        ? item.getFirstprice().multiply(MINIMUM_INCREMENT_FACTOR)
                         : currentPrice.multiply(MINIMUM_INCREMENT_FACTOR);
 
                 if (bid.compareTo(requiredMinimum) < 0) {
@@ -483,8 +624,11 @@ public class AuctionOperator {
                         return new AuctionResult(false, ex.getMessage());
                     }
                     currentPrice = bid;
-                    scheduleTurnTimeout();
-                    room.notifyObservers(String.format("Bidder '%s' đã tiếp tục giữ vị trí dẫn đầu với giá %s.", bidder.getUsername(), currentPrice));
+                    if (auctionEndTimeMillis - System.currentTimeMillis() <= EXTENSION_WINDOW_MS) {
+                        auctionEndTimeMillis = auctionEndTimeMillis + EXTENSION_DURATION_MS;
+                    }
+                    scheduleAuctionEnd();
+                    broadcastNewBid(bidder.getId(), currentPrice.doubleValue(), false, String.format("Bidder '%s' đã tiếp tục giữ vị trí dẫn đầu với giá %s.", bidder.getUsername(), currentPrice));
                     return new AuctionResult(true, "Bạn đã gia hạn vị trí dẫn đầu và khóa thêm tiền.");
                 }
 
@@ -503,16 +647,128 @@ public class AuctionOperator {
                 } catch (IllegalArgumentException ex) {
                     return new AuctionResult(false, ex.getMessage());
                 }
+                // unlock previous highest
+                if (highestBidderId != null) {
+                    Balance previousWallet = walletManager.getWalletByUserId(highestBidderId);
+                    if (previousWallet != null) {
+                        try {
+                            previousWallet.unlockAmount(currentPrice);
+                        } catch (IllegalArgumentException ignored) {
+                        }
+                    }
+                }
                 highestBidderId = bidder.getId();
                 highestBidder = bidder;
                 currentPrice = bid;
-                scheduleTurnTimeout();
+                if (auctionEndTimeMillis - System.currentTimeMillis() <= EXTENSION_WINDOW_MS) {
+                    auctionEndTimeMillis = auctionEndTimeMillis + EXTENSION_DURATION_MS;
+                }
+                scheduleAuctionEnd();
 
-                room.notifyObservers(String.format("Bidder '%s' đã dẫn đầu phiên với giá %s. Thời gian turn reset lại 3 phút.", bidder.getUsername(), currentPrice));
+                broadcastNewBid(bidder.getId(), currentPrice.doubleValue(), false, String.format("Bidder '%s' đã dẫn đầu phiên với giá %s.", bidder.getUsername(), currentPrice));
+                registerObserver(bidder);
+                // Ghi lên DB nếu có auctionId
+                if (this.auctionId > 0) {
+                    new com.bidding.dao.JdbcAuctionDAO().updateBidPrice(this.auctionId, currentPrice.doubleValue(), bidder.getId());
+                    new com.bidding.dao.JdbcAuctionDAO().insertTransaction(this.auctionId, bidder.getId(), currentPrice.doubleValue(), String.valueOf(System.currentTimeMillis()), 0);
+                }
+                // Sau khi một bid thành công, cố gắng kích hoạt auto-bids nếu có
+                runAutoBids();
+
                 return new AuctionResult(true, "Đặt giá thành công. Bạn đang dẫn đầu phiên đấu giá.");
             } finally {
                 bidLock.unlock();
             }
+        }
+
+        /**
+         * Đăng ký auto-bid cho user trong phiên này.
+         */
+        public AuctionResult registerAutoBid(Users bidder, double maxBidDouble, double incrementDouble) {
+            if (bidder == null) return new AuctionResult(false, "Người dùng không hợp lệ.");
+            BigDecimal maxBid = BigDecimal.valueOf(maxBidDouble);
+            BigDecimal increment = BigDecimal.valueOf(incrementDouble <= 0 ? 1 : incrementDouble);
+            autoBids.put(bidder.getId(), new AutoBidConfig(bidder, maxBid, increment));
+            // Persist auto-bid registration to DB when this session is linked to an auction record
+            if (this.auctionId > 0) {
+                try {
+                    new com.bidding.dao.JdbcAuctionDAO().insertAutoBid(this.auctionId, bidder.getId(), maxBid.doubleValue(), increment.doubleValue(), String.valueOf(System.currentTimeMillis()));
+                } catch (Exception ignored) {
+                }
+            }
+            // Immediately try to trigger auto-bid if possible
+            bidLock.lock();
+            try {
+                runAutoBids();
+            } finally {
+                bidLock.unlock();
+            }
+            return new AuctionResult(true, "Auto-bid đã được lưu.");
+        }
+
+        private void runAutoBids() {
+            boolean progressed;
+            do {
+                progressed = false;
+                BigDecimal requiredMinimum = currentPrice.multiply(MINIMUM_INCREMENT_FACTOR);
+                AutoBidConfig best = null;
+                for (AutoBidConfig cfg : autoBids.values()) {
+                    if (cfg.userId == highestBidderId) continue;
+                    if (cfg.maxBid.compareTo(requiredMinimum) >= 0) {
+                        if (best == null || cfg.maxBid.compareTo(best.maxBid) > 0) {
+                            best = cfg;
+                        }
+                    }
+                }
+                if (best == null) break;
+
+                // Determine bid amount:
+                // - At least the required minimum (5% rule)
+                // - Prefer currentPrice + increment from auto-bid config
+                // - Do not exceed user's maxBid
+                BigDecimal stepBased = currentPrice.add(best.increment);
+                BigDecimal candidate = requiredMinimum.max(stepBased);
+                BigDecimal nextBid = candidate.min(best.maxBid);
+
+                Balance bestWallet = walletManager.getWalletByUserId(best.userId);
+                if (bestWallet == null) {
+                    autoBids.remove(best.userId);
+                    continue;
+                }
+
+                // unlock previous highest
+                if (highestBidderId != null) {
+                    Balance previousWallet = walletManager.getWalletByUserId(highestBidderId);
+                    if (previousWallet != null) {
+                        try { previousWallet.unlockAmount(currentPrice); } catch (IllegalArgumentException ignored) {}
+                    }
+                }
+
+                try {
+                    bestWallet.lockAmount(nextBid);
+                } catch (IllegalArgumentException ex) {
+                    // cannot lock, remove auto-bid or skip
+                    autoBids.remove(best.userId);
+                    continue;
+                }
+
+                highestBidderId = best.userId;
+                highestBidder = best.user;
+                currentPrice = nextBid;
+
+                if (auctionEndTimeMillis - System.currentTimeMillis() <= EXTENSION_WINDOW_MS) {
+                    auctionEndTimeMillis = auctionEndTimeMillis + EXTENSION_DURATION_MS;
+                }
+                scheduleAuctionEnd();
+                broadcastNewBid(best.userId, currentPrice.doubleValue(), true, String.format("Auto-bid: '%s' đã dẫn đầu với giá %s.", best.user.getUsername(), currentPrice));
+                registerObserver(best.user);
+                // Persist auto-bid transaction if linked to DB auction
+                if (this.auctionId > 0) {
+                    new com.bidding.dao.JdbcAuctionDAO().updateBidPrice(this.auctionId, currentPrice.doubleValue(), best.userId);
+                    new com.bidding.dao.JdbcAuctionDAO().insertTransaction(this.auctionId, best.userId, currentPrice.doubleValue(), String.valueOf(System.currentTimeMillis()), 1);
+                }
+                progressed = true;
+            } while (progressed);
         }
 
         /**
@@ -545,6 +801,10 @@ public class AuctionOperator {
          */
         public Integer getHighestBidderId() {
             return highestBidderId;
+        }
+
+        public int getAuctionId() {
+            return auctionId;
         }
     }
 

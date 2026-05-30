@@ -10,7 +10,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
-
+@SuppressWarnings("unused")
 public class RealtimeBiddingController extends BaseBidderController {
 
     private int currentAuctionId; // Lưu ID của phiên đấu giá hiện tại để gửi request
@@ -66,6 +66,8 @@ public class RealtimeBiddingController extends BaseBidderController {
         initSocketConnection();
         AuctionDisplayDTO currentAuction = DataContext.getInstance().getCurrentAuction();
         if (currentAuction != null) {
+            // store auctionId for direct use
+            setAuctionId(currentAuction.getAuctionId());
             lblAuctionTitle.setText(currentAuction.getItemName() != null ? currentAuction.getItemName() : "Sản phẩm không tên");
             lblStartPrice.setText(String.format("%,.0f ₫", currentAuction.getStartPrice()));
             lblType.setText(currentAuction.getType() != null ? currentAuction.getType() : "N/A");
@@ -91,6 +93,27 @@ public class RealtimeBiddingController extends BaseBidderController {
             if (amount <= 0) {
                 throw new IllegalArgumentException("Giá đấu phải lớn hơn 0!");
             }
+            var currentUser = com.bidding.util.DataContext.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                showError("Bạn cần đăng nhập để đặt giá.");
+                return;
+            }
+            var auction = com.bidding.util.DataContext.getInstance().getCurrentAuction();
+            if (auction == null) {
+                showError("Không xác định phiên đấu giá hiện tại.");
+                return;
+            }
+            String roomId = currentAuctionId > 0 ? String.valueOf(currentAuctionId) : String.valueOf(auction.getAuctionId());
+            String resp = com.bidding.service.AuctionService.getInstance().placeBid(roomId, currentUser, amount);
+            if (resp == null) {
+                showError("Đặt giá thất bại. Vui lòng thử lại.");
+            } else if (resp.toLowerCase().contains("lỗi") || resp.toLowerCase().contains("thất bại")) {
+                showError(resp);
+            } else {
+                lblBidError.setText(resp);
+                lblBidError.setVisible(true);
+                lblBidError.setManaged(true);
+            }
         } catch (NumberFormatException e) {
             showError("Vui lòng nhập số tiền hợp lệ!");
         } catch (IllegalArgumentException e) {
@@ -108,7 +131,40 @@ public class RealtimeBiddingController extends BaseBidderController {
 
     @FXML
     private void handleSetAutoBid() {
-        // Thiết lập cấu hình Đấu giá tự động
+        try {
+            if (!chkAutoBid.isSelected()) {
+                showError("Hãy bật Auto-bid trước khi lưu cấu hình.");
+                return;
+            }
+            double max = Double.parseDouble(txtMaxBid.getText());
+            double inc = Double.parseDouble(txtIncrement.getText());
+            if (max <= 0 || inc <= 0) {
+                showError("Giá trị phải lớn hơn 0.");
+                return;
+            }
+            var currentUser = com.bidding.util.DataContext.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                showError("Bạn cần đăng nhập để đặt Auto-bid.");
+                return;
+            }
+            var auction = com.bidding.util.DataContext.getInstance().getCurrentAuction();
+            if (auction == null) {
+                showError("Không xác định phiên đấu giá hiện tại.");
+                return;
+            }
+            // Use auctionId as authoritative room identifier
+            String roomId = currentAuctionId > 0 ? String.valueOf(currentAuctionId) : String.valueOf(auction.getAuctionId());
+            String resp = com.bidding.service.AuctionService.getInstance().registerAutoBid(roomId, currentUser, max, inc);
+            if (resp != null && resp.toLowerCase().contains("lỗi")) {
+                showError(resp);
+            } else {
+                // Hiển thị thông báo thành công nhỏ
+                lblBidError.setText("Auto-bid đã được lưu.");
+                lblBidError.setVisible(true);
+            }
+        } catch (NumberFormatException ex) {
+            showError("Vui lòng nhập số hợp lệ cho Max và Increment.");
+        }
     }
 
     @FXML

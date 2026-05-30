@@ -6,7 +6,7 @@
 
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.bidonline.controller.NotificationController"
+      fx:controller="com.bidding.controller.seller.NotificationController"
       prefWidth="1100" prefHeight="660"
       style="-fx-background-color: #f5f5f5;">
 
