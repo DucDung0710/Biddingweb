@@ -1,168 +1,157 @@
-//package com.bidding.controller.seller;
-//
-//import com.bidding.shared.Item;
-//import javafx.collections.FXCollections;
-//import javafx.event.ActionEvent;
-//import javafx.fxml.FXML;
-//import javafx.fxml.Initializable;
-//import javafx.scene.control.*;
-//import javafx.stage.Stage;
-//
-//import java.net.URL;
-//import java.time.LocalDate;
-//import java.util.ResourceBundle;
-//
-//public class ProductFormController implements Initializable {
-//
-//    @FXML private Label     lblFormTitle;
-//    @FXML private TextField txtName;
-//    @FXML private ComboBox<String> cmbType;
-//    @FXML private TextArea  txtDescription;
-//    @FXML private TextField txtStartPrice;
-//    @FXML private DatePicker dpStartDate;
-//    @FXML private DatePicker dpEndDate;
-//    @FXML private TextField txtEndHour;
-//    @FXML private TextField txtEndMinute;
-//    @FXML private Label     lblError;
-//    @FXML private Button    btnSave;
-//
-//    private Item editingProduct;         // null = thêm mới, có giá trị = sửa
-//    private Runnable onSaveCallback;        // callback để reload bảng ở Seller Dashboard
-//
-//    @Override
-//    public void initialize(URL url, ResourceBundle rb) {
-//        cmbType.setItems(FXCollections.observableArrayList(
-//                "Electronics", "Art", "Vehicle"
-//        ));
-//        dpStartDate.setValue(LocalDate.now());
-//        dpEndDate.setValue(LocalDate.now().plusDays(7));
-//        txtEndHour.setText("20");
-//        txtEndMinute.setText("00");
-//    }
-//
-//    /**
-//     * Gọi từ SellerDashboardController.
-//     * product = null  → form thêm mới
-//     * product != null → điền sẵn data để sửa
-//     */
-//    public void setProduct(Item product) {
-//        this.editingProduct = product;
-//
-//        if (product == null) {
-//            lblFormTitle.setText("Thêm sản phẩm mới");
-//            btnSave.setText("Lưu sản phẩm");
-//        } else {
-//            lblFormTitle.setText("Sửa sản phẩm");
-//            btnSave.setText("Cập nhật");
-//
-//            // Điền data vào form
-//            txtName.setText(product.getName());
-//            cmbType.setValue(product.getType());
-//            txtStartPrice.setText(String.valueOf(product.getStartPrice()));
-//            // txtDescription, dpStartDate, dpEndDate, txtEndHour, txtEndMinute
-//            // → điền tương tự khi Product có đủ field
-//        }
-//    }
-//
-//    /** Callback để SellerDashboardController reload bảng sau khi lưu */
-//    public void setOnSaveCallback(Runnable callback) {
-//        this.onSaveCallback = callback;
-//    }
-//
-//    // ── Validate ─────────────────────────────────────────────────
-//
-//    private boolean validate() {
-//        // Tên sản phẩm
-//        if (txtName.getText().trim().isEmpty()) {
-//            showError("Vui lòng nhập tên sản phẩm.");
-//            txtName.requestFocus();
-//            return false;
-//        }
-//
-//        // Loại sản phẩm
-//        if (cmbType.getValue() == null) {
-//            showError("Vui lòng chọn loại sản phẩm.");
-//            return false;
-//        }
-//
-//        // Giá khởi điểm
-//        try {
-//            long price = Long.parseLong(txtStartPrice.getText().trim());
-//            if (price <= 0) throw new NumberFormatException();
-//        } catch (NumberFormatException e) {
-//            showError("Giá khởi điểm phải là số nguyên dương.");
-//            txtStartPrice.requestFocus();
-//            return false;
-//        }
-//
-//        // Ngày kết thúc phải sau ngày bắt đầu
-//        if (dpEndDate.getValue() != null && dpStartDate.getValue() != null) {
-//            if (!dpEndDate.getValue().isAfter(dpStartDate.getValue())) {
-//                showError("Ngày kết thúc phải sau ngày bắt đầu.");
-//                return false;
-//            }
-//        }
-//
-//        // Giờ hợp lệ
-//        try {
-//            int h = Integer.parseInt(txtEndHour.getText().trim());
-//            int m = Integer.parseInt(txtEndMinute.getText().trim());
-//            if (h < 0 || h > 23 || m < 0 || m > 59) throw new NumberFormatException();
-//        } catch (NumberFormatException e) {
-//            showError("Giờ kết thúc không hợp lệ (HH: 0-23, MM: 0-59).");
-//            return false;
-//        }
-//
-//        hideError();
-//        return true;
-//    }
-//
-//    private void showError(String msg) {
-//        lblError.setText(msg);
-//        lblError.setVisible(true);
-//        lblError.setManaged(true);
-//    }
-//
-//    private void hideError() {
-//        lblError.setVisible(false);
-//        lblError.setManaged(false);
-//    }
-//
-//    // ── Event Handlers ───────────────────────────────────────────
-//
-//    @FXML
-//    private void handleSave(ActionEvent event) {
-//        if (!validate()) return;
-//
-//        String name       = txtName.getText().trim();
-//        String type       = cmbType.getValue();
-//        long   startPrice = Long.parseLong(txtStartPrice.getText().trim());
-//        String desc       = txtDescription.getText().trim();
-//        String endTime    = dpEndDate.getValue() + " "
-//                + txtEndHour.getText() + ":" + txtEndMinute.getText();
-//
-//        if (editingProduct == null) {
-//            // TODO: gọi API POST /api/products  { name, type, startPrice, description, endTime }
-//            System.out.println("Thêm mới: " + name + " | " + type + " | " + startPrice);
-//        } else {
-//            // TODO: gọi API PUT /api/products/{id}  { ... }
-//            System.out.println("Cập nhật ID=" + editingProduct.getId() + " → " + name);
-//        }
-//
-//        // Gọi callback để Seller Dashboard reload bảng
-//        if (onSaveCallback != null) onSaveCallback.run();
-//
-//        closeForm();
-//    }
-//
-//    @FXML
-//    private void handleClose(ActionEvent event) {
-//        closeForm();
-//    }
-//
-//    private void closeForm() {
-//        Stage stage = (Stage) btnSave.getScene().getWindow();
-//        stage.close();
-//    }
-//}
-//
+package com.bidonline.controller;
+
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class ProductFormController implements Initializable {
+
+    @FXML private Label lblFormTitle;
+    @FXML private Button btnClose;
+    @FXML private Button btnCancel;
+    @FXML private Button btnSave;
+    
+    // Khai báo điều khiển Phần Ảnh
+    @FXML private Button btnUploadImage;
+    @FXML private ImageView imgProductPreview;
+    @FXML private Label lblUploadPlaceholder;
+
+    // Khai báo điều khiển thông tin Form
+    @FXML private TextField txtName;
+    @FXML private ComboBox<String> cmbType; 
+    @FXML private TextArea txtDescription;
+    @FXML private TextField txtStartPrice;
+    @FXML private DatePicker dpStartDate;
+    
+    // PHẦN THÊM MỚI: Đồng bộ điều khiển Giờ/Phút Bắt đầu từ FXML
+    @FXML private TextField txtStartHour;
+    @FXML private TextField txtStartMinute;
+    
+    @FXML private DatePicker dpEndDate;
+    @FXML private TextField txtEndHour;
+    @FXML private TextField txtEndMinute;
+    @FXML private Label lblError;
+
+    // Biến lưu trữ file ảnh vật lý được chọn phục vụ chuyển giao Backend
+    private File selectedImageFile;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Đổ dữ liệu tĩnh vào ComboBox phân loại sản phẩm
+        cmbType.getItems().addAll("Điện tử", "Thời trang", "Gia dụng", "Sách & Thiết bị giải trí", "Khác");
+
+        // Ràng buộc bảo vệ form cho Giờ và Phút BẮT ĐẦU (Mới bổ sung)
+        addNumberValidation(txtStartHour, 23);     // Giờ bắt đầu tối đa là 23
+        addNumberValidation(txtStartMinute, 59);   // Phút bắt đầu tối đa là 59
+
+        // Ràng buộc bảo vệ form cho Giờ và Phút KẾT THÚC
+        addNumberValidation(txtEndHour, 23);       // Giờ kết thúc tối đa là 23
+        addNumberValidation(txtEndMinute, 59);     // Phút kết thúc tối đa là 59
+        
+        // Chặn gõ chữ vào ô giá
+        addPriceValidation(txtStartPrice);        
+    }
+
+    /**
+     * Logic bấm nút "Chọn hình ảnh" để mở thư mục máy tính
+     */
+    @FXML
+    private void handleUploadImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Chọn hình ảnh sản phẩm");
+        
+        // Tạo bộ lọc tệp tin đảm bảo người bán chọn đúng định dạng hình ảnh
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.webp")
+        );
+
+        Stage stage = (Stage) btnUploadImage.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            this.selectedImageFile = file;
+            
+            // Đọc tệp tin và nạp trực tiếp vào khung hiển thị Preview
+            Image image = new Image(file.toURI().toString());
+            imgProductPreview.setImage(image);
+            
+            // Ẩn văn bản gợi ý "Chưa có hình ảnh"
+            lblUploadPlaceholder.setVisible(false);
+        }
+    }
+
+    /**
+     * Kiểm tra hợp lệ dữ liệu và tiến hành Lưu sản phẩm
+     */
+    @FXML
+    private void handleSave() {
+        // Kiểm tra các trường bắt buộc nhập văn bản/lựa chọn gốc
+        if (txtName.getText().isEmpty() || cmbType.getValue() == null || txtStartPrice.getText().isEmpty()) {
+            showError("Vui lòng điền đầy đủ các thông tin bắt buộc (*)");
+            return;
+        }
+
+        // Bổ sung kiểm tra Ngày và Giờ bắt đầu/kết thúc xem đã điền đầy đủ chưa
+        if (dpStartDate.getValue() == null || txtStartHour.getText().isEmpty() || txtStartMinute.getText().isEmpty() ||
+            dpEndDate.getValue() == null || txtEndHour.getText().isEmpty() || txtEndMinute.getText().isEmpty()) {
+            showError("Vui lòng nhập đầy đủ mốc thời gian bắt đầu và kết thúc (*)");
+            return;
+        }
+
+        // Kiểm tra xem người bán đã chọn ảnh hay chưa
+        if (selectedImageFile == null) {
+            showError("Vui lòng đăng tải hình ảnh cho sản phẩm");
+            return;
+        }
+
+        // => Tại đây: Viết code đẩy 'selectedImageFile' và thông tin chữ lên API Backend của bạn.
+        System.out.println("Sẵn sàng lưu sản phẩm: " + txtName.getText());
+        System.out.println("Thời gian bắt đầu: " + dpStartDate.getValue() + " " + txtStartHour.getText() + ":" + txtStartMinute.getText());
+        System.out.println("Thời gian kết thúc: " + dpEndDate.getValue() + " " + txtEndHour.getText() + ":" + txtEndMinute.getText());
+        System.out.println("File ảnh truyền đi: " + selectedImageFile.getAbsolutePath());
+
+        handleClose();
+    }
+
+    @FXML
+    private void handleClose() {
+        Stage stage = (Stage) btnCancel.getScene().getWindow();
+        stage.close();
+    }
+
+    private void showError(String message) {
+        lblError.setText(message);
+        lblError.setVisible(true);
+        lblError.setManaged(true);
+    }
+
+    private void addNumberValidation(TextField textField, int maxVal) {
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                textField.setText(newValue.replaceAll("[^\\d]", ""));
+            }
+            if (!textField.getText().isEmpty()) {
+                int val = Integer.parseInt(textField.getText());
+                if (val > maxVal) {
+                    textField.setText(String.valueOf(maxVal));
+                }
+            }
+        });
+    }
+
+    private void addPriceValidation(TextField textField) {
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                textField.setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
+    }
+}
