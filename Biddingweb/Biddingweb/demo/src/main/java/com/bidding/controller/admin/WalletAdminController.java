@@ -107,7 +107,7 @@ public class WalletAdminController {
         // Load table data
         ObservableList<DepositRequestRow> tableData = FXCollections.observableArrayList();
         for (WalletDepositRequestDAO.DepositRequest req : pendingRequests) {
-            tableData.add(new DepositRequestRow(req.getId(), req.getUserName(), req.getAmount(), req.getCreatedAt(), req.getStatus(), req.getId()));
+            tableData.add(new DepositRequestRow(req.getId(), req.getUserName(), req.getAmount(), req.getCreatedAt(), req.getStatus()));
         }
         tblPendingRequests.setItems(tableData);
     }
@@ -149,7 +149,7 @@ public class WalletAdminController {
         private final String createdAt;
         private final String status;
 
-        public DepositRequestRow(int requestId, String userName, double amount, String createdAt, String status, int id) {
+        public DepositRequestRow(int requestId, String userName, double amount, String createdAt, String status) {
             this.requestId = requestId;
             this.userName = userName;
             this.amount = amount;

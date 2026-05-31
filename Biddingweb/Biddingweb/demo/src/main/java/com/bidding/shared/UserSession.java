@@ -26,4 +26,12 @@ public class UserSession {
     public void clear() {
         this.loggedInUser = null;
     }
+
+    /**
+     * Convenience static method for controllers to log out the current user.
+     */
+    public static void logout() {
+        UserSession session = getInstance();
+        session.clear();
+    }
 }

@@ -13,6 +13,7 @@ module com.bidding.demo {
     opens com.bidding.controller.bidder to javafx.fxml;
     opens com.bidding.controller.seller to javafx.fxml;
     opens com.bidding.controller.wallet to javafx.fxml;
+    opens com.bidding.model to com.google.gson;
 
     exports com.bidding.app;
     exports com.bidding.controller.admin;

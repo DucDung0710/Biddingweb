@@ -8,7 +8,6 @@ import com.bidding.service.BiddingService;
 import com.bidding.shared.WalletManager;
 import com.bidding.util.DataContext;
 import com.bidding.util.SocketClient;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -42,7 +41,7 @@ public class RealtimeBiddingController extends BaseBidderController {
     private final BiddingService biddingService = new BiddingService(new WalletManager(), null);
     private final JdbcAuctionDAO auctionDAO = new JdbcAuctionDAO();
     private final JdbcBidRecordDAO bidRecordDAO = new JdbcBidRecordDAO();
-    private final com.bidding.util.SocketClient socketClient = com.bidding.util.SocketClient.getInstance();
+    private final SocketClient socketClient = SocketClient.getInstance();
 
     public void setAuctionId(int auctionId) {
         this.currentAuctionId = auctionId;
@@ -101,6 +100,14 @@ public class RealtimeBiddingController extends BaseBidderController {
             loadBidHistory();
             startCountdownTimer(currentAuction.getEndTime());
             startAutoRefresh();
+        } else {
+            showError("Không tìm thấy dữ liệu phiên đấu giá. Vui lòng quay lại và thử lại.");
+            btnBid.setDisable(true);
+            txtBidAmount.setDisable(true);
+            chkAutoBid.setDisable(true);
+            txtMaxBid.setDisable(true);
+            txtIncrement.setDisable(true);
+            btnSetAutoBid.setDisable(true);
         }
     }
 
@@ -265,7 +272,7 @@ public class RealtimeBiddingController extends BaseBidderController {
                         // Nếu người đặt giá mới không phải là chính user đang đăng nhập -> thông báo
                         var currentUser = com.bidding.shared.UserSession.getInstance().getLoggedInUser();
                         if (currentUser == null || latest.getBidderId() != currentUser.getId()) {
-                            String msg = String.format("Có bid mới: %s — %, .0f ₫",
+                            String msg = String.format("Có bid mới: %s — %,.0f ₫",
                                     latest.getBidderName(),
                                     latest.getBidAmount().doubleValue());
                             showSuccess(msg);
