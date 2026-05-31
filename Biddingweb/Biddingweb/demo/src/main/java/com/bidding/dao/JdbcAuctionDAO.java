@@ -43,7 +43,10 @@ public class JdbcAuctionDAO {
     //Hàm kiểm tra và cập nhật phiên hết hạn
     public void updateExpiredAuctions() {
         String q = "UPDATE auctions SET status = 'FINISHED' " +
-                "WHERE status = 'RUNNING' AND STR_TO_DATE(LEFT(REPLACE(end_time, 'T', ' '), 19), '%Y-%m-%d %H:%i:%s') < NOW()";
+                "WHERE status = 'RUNNING' AND (" +
+                "CASE WHEN end_time RLIKE '^[0-9]+$' " +
+                "THEN FROM_UNIXTIME(end_time / 1000) " +
+                "ELSE STR_TO_DATE(LEFT(REPLACE(end_time, 'T', ' '), 19), '%Y-%m-%d %H:%i:%s') END) < NOW()";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(q)) {
             int updated = ps.executeUpdate();
@@ -58,7 +61,10 @@ public class JdbcAuctionDAO {
     // Hàm kiểm tra và cập nhật phiên mới bắt đầu
     public void updateActiveAuctions() {
         String q = "UPDATE auctions SET status = 'RUNNING' " +
-                "WHERE status = 'OPEN' AND STR_TO_DATE(LEFT(REPLACE(start_time, 'T', ' '), 19), '%Y-%m-%d %H:%i:%s') <= NOW()";
+                "WHERE status = 'OPEN' AND (" +
+                "CASE WHEN start_time RLIKE '^[0-9]+$' " +
+                "THEN FROM_UNIXTIME(start_time / 1000) " +
+                "ELSE STR_TO_DATE(LEFT(REPLACE(start_time, 'T', ' '), 19), '%Y-%m-%d %H:%i:%s') END) <= NOW()";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(q)) {
             int updated = ps.executeUpdate();
@@ -206,13 +212,15 @@ public class JdbcAuctionDAO {
     public int createAuction(int itemId, double startPrice, long startTimeMillis, long endTimeMillis) {
         String q = "INSERT INTO auctions (item_id, start_price, current_price, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)";
         String status = (startTimeMillis <= System.currentTimeMillis()) ? "RUNNING" : "OPEN";
+        String startTime = formatTimestamp(startTimeMillis);
+        String endTime = formatTimestamp(endTimeMillis);
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(q, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, itemId);
             ps.setDouble(2, startPrice);
             ps.setDouble(3, startPrice);
-            ps.setLong(4, startTimeMillis);
-            ps.setLong(5, endTimeMillis);
+            ps.setString(4, startTime);
+            ps.setString(5, endTime);
             ps.setString(6, status);
             int affected = ps.executeUpdate();
             if (affected > 0) {
@@ -224,6 +232,29 @@ public class JdbcAuctionDAO {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    private String formatTimestamp(long epochMillis) {
+        return java.time.Instant.ofEpochMilli(epochMillis)
+                .atZone(java.time.ZoneOffset.UTC)
+                .toLocalDateTime()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    }
+
+    public boolean auctionExistsForItem(int itemId) {
+        String q = "SELECT COUNT(*) FROM auctions WHERE item_id = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            ps.setInt(1, itemId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     // 6. Hàm ghi Log giao dịch đặt giá vào bảng bid_transactions

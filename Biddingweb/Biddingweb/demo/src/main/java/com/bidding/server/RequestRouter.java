@@ -144,13 +144,41 @@ public class RequestRouter {
             boolean approved = request.get("approved").getAsBoolean();
             String newStatus = approved ? Item.STATUS_APPROVED : Item.STATUS_REJECTED;
             boolean ok = itemDao.updateStatus(itemId, newStatus);
-            if (ok) {
-                res.addProperty("status", "OK");
-                res.addProperty("message", "Đã xử lý trạng thái sản phẩm");
-            } else {
+
+            if (!ok) {
                 res.addProperty("status", "ERROR");
                 res.addProperty("message", "Không thể cập nhật trạng thái trong DB");
+                return res;
             }
+
+            if (approved) {
+                Item item = itemDao.findById(itemId);
+                if (item == null) {
+                    res.addProperty("status", "ERROR");
+                    res.addProperty("message", "Không tìm thấy sản phẩm để tạo phiên đấu giá");
+                    return res;
+                }
+
+                if (!auctionDao.auctionExistsForItem(itemId)) {
+                    long now = System.currentTimeMillis();
+                    long endTime = now + (3 * 60 * 1000L); // Khởi tạo phiên 3 phút
+                    int auctionId = auctionDao.createAuction(itemId, item.getFirstprice().doubleValue(), now, endTime);
+                    if (auctionId > 0) {
+                        itemDao.updateStatus(itemId, Item.STATUS_IN_AUCTION);
+                        res.addProperty("status", "OK");
+                        res.addProperty("message", "Sản phẩm đã được duyệt và phiên đấu giá đã được tạo.");
+                        res.addProperty("auctionId", auctionId);
+                        return res;
+                    } else {
+                        res.addProperty("status", "ERROR");
+                        res.addProperty("message", "Sản phẩm đã được duyệt nhưng không thể tạo phiên đấu giá.");
+                        return res;
+                    }
+                }
+            }
+
+            res.addProperty("status", "OK");
+            res.addProperty("message", "Đã xử lý trạng thái sản phẩm");
         } catch (Exception e) {
             res.addProperty("status", "ERROR");
             res.addProperty("message", "Lỗi server: " + e.getMessage());
