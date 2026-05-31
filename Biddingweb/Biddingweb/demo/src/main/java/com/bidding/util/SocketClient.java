@@ -6,8 +6,8 @@ import java.io.*;
 import java.net.Socket;
 
 public class SocketClient {
-    private static final String HOST = "localhost";
-    private static final int PORT = 9999;
+    private static final String HOST = NetworkConfig.HOST;
+    private static final int PORT = NetworkConfig.SERVER_PORT;
     private static final Gson gson = new Gson();
 
     // Đối tượng Singleton duy nhất duy trì kết nối dài hạn
@@ -24,6 +24,9 @@ public class SocketClient {
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             System.out.println("Đã thiết lập kết nối dài hạn tới Server thành công.");
         } catch (IOException e) {
+            this.socket = null;
+            this.out = null;
+            this.in = null;
             System.err.println("Lỗi khởi tạo kết nối Socket: " + e.getMessage());
         }
     }
@@ -38,7 +41,7 @@ public class SocketClient {
 
     // Gửi dữ liệu đi và nhận về đồng bộ trên kết nối đang mở sẵn
     public JsonObject sendRequest(JsonObject request) {
-        if (out == null || in == null || socket.isClosed()) {
+        if (socket == null || socket.isClosed() || out == null || in == null) {
             return createErrorResponse("Mất kết nối tới Server. Hãy thử khởi động lại ứng dụng.");
         }
         try {

@@ -106,7 +106,8 @@
             <ComboBox fx:id="cmbStatus" prefHeight="36" prefWidth="180" promptText="Tất cả trạng thái" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px;" />
             <Region HBox.hgrow="ALWAYS" />
             <Label fx:id="lblProductCount" style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="0 sản phẩm" />
-            </VBox>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 0 24 12 24;">
             <VBox fx:id="tabActive" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="Đang diễn ra (3)" />
             </VBox>

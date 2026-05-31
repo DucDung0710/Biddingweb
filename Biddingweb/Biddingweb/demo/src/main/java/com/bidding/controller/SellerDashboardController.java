@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 
+@SuppressWarnings("unused")
 public class SellerDashboardController implements Initializable {
 
     @FXML
@@ -242,7 +243,7 @@ public class SellerDashboardController implements Initializable {
 
     @FXML
     private void handleOut() {
-        UserSession.getInstance().logout();
+        UserSession.logout();
         SceneManager.switchToLogin();
     }
 

@@ -41,7 +41,7 @@
       "command": "C:\\Users\\ADMIN\\.vscode\\extensions\\redhat.java-1.54.0-win32-x64\\jre\\21.0.10-win32-x86_64\\bin\\java.exe",
       "args": [
         "-cp",
-        "target/classes;target/dependency/*",
+        "'target/classes;target/dependency/*'",
         "com.bidding.server.ServerMain"
       ],
       "options": {
@@ -59,11 +59,11 @@
       "command": "C:\\Users\\ADMIN\\.vscode\\extensions\\redhat.java-1.54.0-win32-x64\\jre\\21.0.10-win32-x86_64\\bin\\java.exe",
       "args": [
         "--module-path",
-        "${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-controls\\21.0.6\\javafx-controls-21.0.6-win.jar;${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-fxml\\21.0.6\\javafx-fxml-21.0.6-win.jar;${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-graphics\\21.0.6\\javafx-graphics-21.0.6-win.jar;${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-base\\21.0.6\\javafx-base-21.0.6-win.jar",
+        "'${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-controls\\21.0.6\\javafx-controls-21.0.6-win.jar;${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-fxml\\21.0.6\\javafx-fxml-21.0.6-win.jar;${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-graphics\\21.0.6\\javafx-graphics-21.0.6-win.jar;${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-base\\21.0.6\\javafx-base-21.0.6-win.jar'",
         "--add-modules",
         "javafx.controls,javafx.fxml,javafx.graphics",
         "-cp",
-        "target/classes;target/dependency/*",
+        "'target/classes;target/dependency/*'",
         "com.bidding.app.BiddingApplication"
       ],
       "options": {

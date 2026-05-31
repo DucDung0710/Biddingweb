@@ -1,6 +1,5 @@
 package com.bidding.controller.seller;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -11,9 +10,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import com.bidding.service.AuctionService;
 import com.bidding.shared.Item;
 import com.bidding.shared.UserSession;
@@ -23,7 +22,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -73,7 +71,7 @@ public class SellerDashboardController {
     private TextField txtSearch;
 
     @FXML
-    private ComboBox<?> cmbFilterStatus; 
+    private ComboBox<String> cmbFilterStatus;
 
     @FXML
     private Label lblStatActive;
@@ -89,6 +87,9 @@ public class SellerDashboardController {
 
     @FXML
     private TableView<Item> tblProducts;
+
+    private final ObservableList<Item> masterProducts = FXCollections.observableArrayList();
+    private final FilteredList<Item> filteredProducts = new FilteredList<>(masterProducts, p -> true);
 
     @FXML
     private TableColumn<Item, String> colName;
@@ -127,7 +128,7 @@ public class SellerDashboardController {
             if (btnAddProduct != null) {
                 btnAddProduct.setOnMouseClicked(e -> {
                     System.out.println("Sidebar: btnAddProduct clicked");
-                    handleAddProduct(null);
+                    handleAddProduct();
                 });
             }
             if (navAuctions != null) {
@@ -149,11 +150,31 @@ public class SellerDashboardController {
                 });
             }
             if (btnLogout != null) {
-                btnLogout.setOnMouseClicked(e -> handleOut(null));
+                btnLogout.setOnMouseClicked(e -> handleOut());
             }
         } catch (Exception ex) {
             System.err.println("SellerDashboardController initialize error: " + ex.getMessage());
             ex.printStackTrace();
+        }
+
+        if (tblProducts != null) {
+            tblProducts.setItems(filteredProducts);
+        }
+        if (cmbFilterStatus != null) {
+            cmbFilterStatus.setItems(FXCollections.observableArrayList(
+                    "Tất cả",
+                    Item.STATUS_PENDING,
+                    Item.STATUS_APPROVED,
+                    Item.STATUS_IN_AUCTION,
+                    Item.STATUS_SOLD,
+                    Item.STATUS_UNSOLD
+            ));
+            cmbFilterStatus.getSelectionModel().selectFirst();
+            cmbFilterStatus.setOnAction(e -> applyFilter());
+        }
+        if (txtSearch != null) {
+            txtSearch.setOnAction(e -> applyFilter());
+            txtSearch.textProperty().addListener((obs, o, n) -> applyFilter());
         }
 
         // Thiết lập cell factories cho các cột (hiển thị thuộc tính Item)
@@ -209,7 +230,7 @@ public class SellerDashboardController {
     // ==========================================
     
     @FXML
-    private void handleAddProduct(ActionEvent event) {
+    private void handleAddProduct() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/seller.view/product_form.fxml"));
             Parent root = loader.load();
@@ -229,24 +250,25 @@ public class SellerDashboardController {
     }
 
     private void reloadProducts() {
-        try {
-            Users currentUser = UserSession.getInstance().getLoggedInUser();
-            if (currentUser == null) {
-                System.out.println("Không có user đang đăng nhập.");
-                return;
-            }
+        Users currentUser = UserSession.getInstance().getLoggedInUser();
+        if (currentUser == null) {
+            System.out.println("Không có user đang đăng nhập.");
+            return;
+        }
 
+        try {
             JsonObject request = new JsonObject();
             request.addProperty("action", "GET_ALL_ITEMS");
 
             JsonObject response = SocketClient.getInstance().sendRequest(request);
             if (response != null && "OK".equals(response.get("status").getAsString())) {
                 JsonArray array = response.getAsJsonArray("data");
-                java.util.List<Item> items = new java.util.ArrayList<>();
+                ObservableList<Item> items = FXCollections.observableArrayList();
                 for (JsonElement elem : array) {
                     JsonObject obj = elem.getAsJsonObject();
-                    if (obj.get("userId").getAsInt() != currentUser.getId()) continue;
-
+                    if (obj.get("userId").getAsInt() != currentUser.getId()) {
+                        continue;
+                    }
                     Item item = new Item();
                     item.setItemId(obj.get("itemId").getAsInt());
                     item.setUserId(obj.get("userId").getAsInt());
@@ -259,17 +281,16 @@ public class SellerDashboardController {
                     }
                     items.add(item);
                 }
-
-                ObservableList<Item> obs = FXCollections.observableArrayList(items);
-                tblProducts.setItems(obs);
+                masterProducts.setAll(items);
                 System.out.println("Đã tải lại " + items.size() + " sản phẩm cho seller từ Server.");
+                applyFilter();
                 return;
             }
 
-            // Nếu server không trả về dữ liệu, fallback về dữ liệu cục bộ
             System.err.println("Không thể tải sản phẩm từ Server, sử dụng dữ liệu cục bộ.");
-            java.util.List<Item> items = AuctionService.getInstance().getSellerItems(currentUser.getId());
-            tblProducts.setItems(FXCollections.observableArrayList(items));
+            ObservableList<Item> fallbackItems = FXCollections.observableArrayList(AuctionService.getInstance().getSellerItems(currentUser.getId()));
+            masterProducts.setAll(fallbackItems);
+            applyFilter();
         } catch (Exception ex) {
             System.err.println("Lỗi khi tải sản phẩm: " + ex.getMessage());
             ex.printStackTrace();
@@ -281,19 +302,33 @@ public class SellerDashboardController {
     }
 
     private void handleNavAuctions() {
-        // Chuyển tạm tới trang quản lý sản phẩm (hiện chưa có màn hình auctions riêng)
         com.bidding.util.SceneManager.switchToSellerProductManagement();
     }
 
-    @FXML
-    private void handleFilter(ActionEvent event) {
-        // Xử lý sự kiện lọc sản phẩm
+    private void applyFilter() {
+        if (txtSearch == null || cmbFilterStatus == null) {
+            return;
+        }
+        String keyword = txtSearch.getText();
+        String status = cmbFilterStatus.getValue();
+        ObservableList<Item> filtered = masterProducts.filtered(item -> {
+            boolean matchesKeyword = keyword == null || keyword.isBlank() || item.getItemName().toLowerCase().contains(keyword.toLowerCase());
+            boolean matchesStatus = status == null || status.isBlank() || status.equals("Tất cả") || item.getStatus().equalsIgnoreCase(status);
+            return matchesKeyword && matchesStatus;
+        });
+        if (tblProducts != null) {
+            tblProducts.setItems(filtered);
+        }
     }
 
     @FXML
-    private void handleOut(MouseEvent event) {
-        // Xử lý sự kiện đăng xuất khi click chuột vào chữ Đăng xuất
-        System.out.println("Đang đăng xuất hệ thống...");
+    private void handleFilter() {
+        applyFilter();
+    }
+
+    @FXML
+    private void handleOut() {
+        UserSession.logout();
         com.bidding.util.SceneManager.switchToLogin();
     }
 }

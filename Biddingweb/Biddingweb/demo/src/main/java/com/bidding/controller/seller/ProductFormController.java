@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+@SuppressWarnings("unused")
 public class ProductFormController implements Initializable {
 
     @FXML private Label lblFormTitle;
@@ -37,14 +38,17 @@ public class ProductFormController implements Initializable {
     @FXML private ComboBox<String> cmbType;
     @FXML private TextArea txtDescription;
     @FXML private TextField txtStartPrice;
+    @SuppressWarnings("unused")
     @FXML private DatePicker dpStartDate;
     @FXML private TextField txtStartHour;
     @FXML private TextField txtStartMinute;
+    @SuppressWarnings("unused")
     @FXML private DatePicker dpEndDate;
     @FXML private TextField txtEndHour;
     @FXML private TextField txtEndMinute;
     @FXML private Label lblError;
 
+    @SuppressWarnings("unused")
     private File selectedImageFile;
     private Runnable onSaveCallback;
 
@@ -63,6 +67,7 @@ public class ProductFormController implements Initializable {
         addPriceValidation(txtStartPrice);
     }
 
+    @SuppressWarnings("unused")
     @FXML
     private void handleUploadImage() {
         FileChooser fileChooser = new FileChooser();
@@ -82,6 +87,7 @@ public class ProductFormController implements Initializable {
         }
     }
 
+    @SuppressWarnings("unused")
     @FXML
     private void handleSave() {
         if (txtName.getText().isEmpty() || cmbType.getValue() == null || txtStartPrice.getText().isEmpty()) {
@@ -91,7 +97,6 @@ public class ProductFormController implements Initializable {
 
         System.out.println("Sẵn sàng lưu sản phẩm: " + txtName.getText());
 
-        // 1) Lấy user hiện tại từ session
         Users currentUser = UserSession.getInstance().getLoggedInUser();
         if (currentUser == null) {
             showError("Bạn phải đăng nhập để đăng sản phẩm.");
