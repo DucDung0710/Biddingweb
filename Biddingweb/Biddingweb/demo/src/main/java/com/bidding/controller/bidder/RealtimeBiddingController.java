@@ -127,8 +127,8 @@ public class RealtimeBiddingController extends BaseBidderController {
             lblLeader.setText("Chưa có người dẫn đầu");
         }
         
-        // Tính giá tối thiểu (tăng 5%)
-        double minBidPrice = auction.getCurrentPrice() * 1.05;
+        // Tính giá tối thiểu cho lần đặt giá tiếp theo (ít nhất phải cao hơn giá hiện tại)
+        double minBidPrice = auction.getCurrentPrice() +1;
         lblMinBid.setText(String.format("Giá tối thiểu: %,.0f ₫", minBidPrice));
     }
 
@@ -216,8 +216,7 @@ public class RealtimeBiddingController extends BaseBidderController {
                 showError("Giá đấu phải lớn hơn 0!");
                 return;
             }
-            
-            // Lấy thông tin bidder từ session
+
             // Lấy thông tin bidder từ UserSession (Khớp với màn hình LogIn)
             var currentUser = com.bidding.shared.UserSession.getInstance().getLoggedInUser();
             if (currentUser == null) {
@@ -333,8 +332,90 @@ public class RealtimeBiddingController extends BaseBidderController {
 
     @FXML
     private void handleSetAutoBid() {
-        // TODO: Triển khai auto-bid functionality
-        showSuccess("Auto-Bid đã được bật!");
+        try {
+            boolean isSelected = chkAutoBid.isSelected(); // Đọc trạng thái checkbox
+            var currentUser = com.bidding.shared.UserSession.getInstance().getLoggedInUser(); // Đọc phiên đăng nhập
+
+            if (currentUser == null) {
+                showError("Bạn chưa đăng nhập vào hệ thống!");
+                return;
+            }
+
+            // Tình huống 1: Người dùng bỏ tích chọn -> Gửi lệnh TẮT kích hoạt lên Server
+            if (!isSelected) {
+                JsonObject disableReq = new JsonObject();
+                disableReq.addProperty("action", "SETUP_AUTO_BID");
+                disableReq.addProperty("auctionId", currentAuctionId);
+                disableReq.addProperty("bidderId", currentUser.getId());
+                disableReq.addProperty("maxBid", 0.0);
+                disableReq.addProperty("increment", 0.0);
+                disableReq.addProperty("isEnabled", false);
+
+                JsonObject response = socketClient.sendRequest(disableReq);
+                if ("OK".equals(response.get("status").getAsString())) {
+                    showSuccess(response.get("message").getAsString());
+                    txtMaxBid.setDisable(true);     // Khóa giao diện điều khiển
+                    txtIncrement.setDisable(true);   // Khóa giao diện điều khiển
+                    btnSetAutoBid.setDisable(true); // Khóa nút
+                } else {
+                    showError(response.get("message").getAsString());
+                }
+                return;
+            }
+
+            // Tình huống 2: Người dùng bật cấu hình -> Đọc và Validate dữ liệu
+            String maxBidText = txtMaxBid.getText().trim();
+            String incrementText = txtIncrement.getText().trim();
+
+            if (maxBidText.isEmpty() || incrementText.isEmpty()) {
+                showError("Vui lòng điền đầy đủ cả Giá tối đa và Bước giá nâng hộ!");
+                return;
+            }
+
+            double maxBid = Double.parseDouble(maxBidText);
+            double increment = Double.parseDouble(incrementText);
+
+            // ÉP LOGIC KIỂM TRA ĐẦU VÀO: Lấy thông tin thật từ DB để kiểm tra mức chặn dưới
+            AuctionDisplayDTO auction = auctionDAO.getAuctionById(currentAuctionId);
+            double minRequiredAmount = auction.getCurrentPrice() * 1.05;
+
+            if (maxBid < minRequiredAmount) {
+                showError(String.format("Giá trần tối đa (maxBid) đặt hộ không được phép nhỏ hơn mức giá tối thiểu của sàn (Yêu cầu >= %,.0f ₫)!", minRequiredAmount));
+                return;
+            }
+
+            if (increment <= 0) {
+                showError("Bước giá nâng hộ phải lớn hơn 0 ₫.");
+                return;
+            }
+
+            // ĐÓNG GÓI GÓI TIN ĐẨY QUA TCP SOCKET LÊN SERVER
+            JsonObject autoBidReq = new JsonObject();
+            autoBidReq.addProperty("action", "SETUP_AUTO_BID");
+            autoBidReq.addProperty("auctionId", currentAuctionId);
+            autoBidReq.addProperty("bidderId", currentUser.getId());
+            autoBidReq.addProperty("maxBid", maxBid);
+            autoBidReq.addProperty("increment", increment);
+            autoBidReq.addProperty("isEnabled", true);
+
+            JsonObject response = socketClient.sendRequest(autoBidReq);
+
+            if ("OK".equals(response.get("status").getAsString())) {
+                showSuccess(response.get("message").getAsString());
+                // Khóa textfield lại để biểu thị thiết lập đang có hiệu lực trên máy chủ
+                txtMaxBid.setDisable(true);
+                txtIncrement.setDisable(true);
+                btnSetAutoBid.setDisable(true);
+            } else {
+                showError(response.get("message").getAsString());
+            }
+
+        } catch (NumberFormatException e) {
+            showError("Vui lòng nhập dữ liệu định dạng số nguyên hợp lệ!");
+        } catch (Exception e) {
+            showError("Lỗi kết nối mạng: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML

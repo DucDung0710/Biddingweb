@@ -64,7 +64,7 @@
                         <Label style="-fx-background-color: #B5D4F4; -fx-text-fill: #185FA5; -fx-background-radius: 50; -fx-min-width: 34; -fx-min-height: 34; -fx-max-width: 34; -fx-max-height: 34; -fx-alignment: center; -fx-font-weight: bold; -fx-font-size: 13px;" text="B" />
                         <VBox spacing="2.0">
                             <children>
-                                <Label fx:id="lblUserName" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Nguyễn Văn A" />
+                                <Label fx:id="lblUserName" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Bidder" />
                                 <Label fx:id="lblUserRole" style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Bidder" />
                             </children>
                         </VBox>
