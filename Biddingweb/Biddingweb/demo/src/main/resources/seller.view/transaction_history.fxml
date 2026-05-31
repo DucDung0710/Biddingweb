@@ -5,26 +5,22 @@
 
 <HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.seller.TransactionHistoryController">
 
-    <!-- SIDEBAR — copy từ seller_dashboard.fxml -->
-
     <VBox HBox.hgrow="ALWAYS">
-        <!-- TopBar -->
-        <HBox alignment="CENTER_LEFT" prefHeight="50" style="-fx-background-color: white; -fx-border-color: #e0e0e0;-fx-border-width: 0 0 1 0; -fx-padding: 0 20;">
+        <HBox alignment="CENTER_LEFT" prefHeight="50" spacing="15" style="-fx-background-color: white; -fx-border-color: #e0e0e0;-fx-border-width: 0 0 1 0; -fx-padding: 0 20;">
+            <Button onAction="#handleBack" style="-fx-font-size: 13px; -fx-background-color: #e0e0e0; -fx-text-fill: #333333; -fx-background-radius: 4; -fx-cursor: hand; -fx-padding: 4 12;" text="← Quay lại" />
             <Label style="-fx-font-size: 15px; -fx-font-weight: bold;" text="Lịch sử giao dịch" />
         </HBox>
 
         <VBox spacing="12" style="-fx-padding: 16 20;" VBox.vgrow="ALWAYS">
 
-            <!-- Filter bar -->
             <HBox alignment="CENTER_LEFT" spacing="10">
                 <TextField fx:id="txtSearch" prefWidth="200" promptText="Tìm sản phẩm..." style="-fx-font-size: 12px; -fx-background-radius: 6;-fx-border-color: #dddddd; -fx-border-radius: 6; -fx-padding: 6 10;" />
                 <ComboBox fx:id="cmbStatus" prefWidth="160" promptText="Tất cả trạng thái" style="-fx-font-size: 12px;" />
                 <DatePicker fx:id="dpFrom" prefWidth="140" promptText="Từ ngày" style="-fx-font-size: 12px;" />
                 <DatePicker fx:id="dpTo" prefWidth="140" promptText="Đến ngày" style="-fx-font-size: 12px;" />
-                <Button onAction="#handleFilter" style="-fx-font-size: 12px; -fx-background-color: #3B6D11;fx-text-fill: white; -fx-background-radius: 6;-fx-cursor: hand; -fx-padding: 6 14;" text="Lọc" />
+                <Button onAction="#handleFilter" style="-fx-font-size: 12px; -fx-background-color: #3B6D11; -fx-text-fill: white; -fx-background-radius: 6;-fx-cursor: hand; -fx-padding: 6 14;" text="Lọc" />
             </HBox>
 
-            <!-- Table -->
             <TableView fx:id="tblTransactions" style="-fx-background-color: white; -fx-background-radius: 10;-fx-border-color: #e8e8e8; -fx-border-radius: 10;" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="colProduct" prefWidth="200" text="Sản phẩm" />
@@ -39,7 +35,6 @@
                 </placeholder>
             </TableView>
 
-            <!-- Summary bar -->
             <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10;-fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 12 16;">
                 <VBox spacing="2">
                     <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Tổng giao dịch" />
