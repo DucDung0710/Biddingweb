@@ -38,7 +38,7 @@ public class SceneManager {
             stage.centerOnScreen();
         } catch (IOException e) {
             System.err.println("Không thể tải hoặc tìm thấy file FXML tại đường dẫn: " + fxmlPath);
-            // Log exception instead of printing stack trace
+            e.printStackTrace();
         }
     }
 

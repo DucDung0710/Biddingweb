@@ -56,7 +56,7 @@ public class DashboardController extends BaseBidderController {
 
                 lblStatActive.setText(String.valueOf(activeCount));
                 lblStatWon.setText(String.valueOf(wonCount));
-                lblStatLeading.setText(String.valueOf(activeCount)); // logic tạm thời của bạn
+                lblStatLeading.setText(String.valueOf(activeCount));
             } else {
                 System.err.println("Không lấy được thống kê từ server: " + statResponse.get("message").getAsString());
             }
@@ -73,7 +73,6 @@ public class DashboardController extends BaseBidderController {
 
         } catch (Exception e) {
             System.err.println("Lỗi nghiêm trọng khi khởi tạo Dashboard: " + e.getMessage());
-            // Log exception instead of printing stack trace
         }
     }
 

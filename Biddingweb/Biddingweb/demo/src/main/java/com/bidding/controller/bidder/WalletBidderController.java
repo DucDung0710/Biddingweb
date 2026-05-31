@@ -3,7 +3,6 @@ package com.bidding.controller.bidder;
 import com.bidding.service.WalletService;
 import com.bidding.dao.WalletTransactionDAO;
 import com.bidding.shared.UserSession;
-import com.bidding.util.SessionStore;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -13,12 +12,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.Label;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class WalletBidderController extends BaseBidderController {

@@ -3,7 +3,6 @@ package com.bidding.controller.seller;
 import com.bidding.service.WalletService;
 import com.bidding.dao.WalletTransactionDAO;
 import com.bidding.shared.UserSession;
-import com.bidding.util.SessionStore;
 import com.bidding.util.SceneManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

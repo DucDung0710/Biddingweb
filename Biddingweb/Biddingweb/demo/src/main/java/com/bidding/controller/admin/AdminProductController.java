@@ -27,7 +27,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 
 public class AdminProductController {
-    @FXML private Label navOverview, navUsers, navAuctions, navWallet, navProducts, navAuctionHistory, navNotifications, btnLogout;
+    @FXML private HBox navOverview, navUsers, navAuctions, navWallet, navProducts, navAuctionHistory, navNotifications, btnLogout;
 
     @FXML private Label lblPendingBadge;
     @FXML private Label lblStatPendingProd, lblStatActiveProd;

@@ -36,14 +36,6 @@
                                 <Label style="-fx-font-size: 13px; -fx-text-fill: #185FA5; -fx-font-weight: bold;" text="Lịch sử đấu giá" />
                             </children>
                         </HBox>
-                        <HBox fx:id="navNotifications" alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
-                            <children>
-                                <Label style="-fx-font-size: 15px;" text="🔔" />
-                                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Thông báo" />
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Label fx:id="lblNotifBadge" style="-fx-background-color: #E6F1FB; -fx-text-fill: #185FA5; -fx-font-size: 10px; -fx-padding: 1 7; -fx-background-radius: 20;" text="3" />
-                            </children>
-                        </HBox>
                         <HBox fx:id="navWallet" alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
                             <children>
                                 <Label style="-fx-font-size: 15px;" text="💰" />
@@ -79,12 +71,6 @@
                     <children>
                         <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Lịch sử đấu giá của tôi" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <HBox alignment="CENTER_LEFT" spacing="10.0">
-                            <children>
-                                <TextField fx:id="txtSearchHistory" prefWidth="220.0" promptText="Tìm theo tên sản phẩm..." style="-fx-font-size: 12px; -fx-background-radius: 6; -fx-border-color: #dddddd; -fx-border-radius: 6; -fx-padding: 5 10;" />
-                                <ComboBox fx:id="cmbHistoryStatus" prefWidth="150.0" promptText="Bộ lọc kết quả" style="-fx-font-size: 12px;" />
-                            </children>
-                        </HBox>
                     </children>
                 </HBox>
 

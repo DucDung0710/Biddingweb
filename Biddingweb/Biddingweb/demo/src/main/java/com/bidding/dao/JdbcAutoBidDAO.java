@@ -49,7 +49,6 @@ public class JdbcAutoBidDAO {
                 }
             }
         } catch (SQLException e) {
-            // 🔥 ĐOẠN QUAN TRỌNG NHẤT: In thẳng lỗi DB ra màn hình để biết tại sao tạch
             System.err.println("❌ [DATABASE ERROR] Thất bại tại hàm saveOrUpdateAutoBid:");
             System.err.println("Mã lỗi: " + e.getErrorCode() + " | Nội dung: " + e.getMessage());
             e.printStackTrace();

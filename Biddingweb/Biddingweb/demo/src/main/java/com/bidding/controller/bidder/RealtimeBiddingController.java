@@ -32,13 +32,14 @@ import java.util.TimerTask;
 
 /**
  * RealtimeBiddingController - Quản lý giao diện đấu giá thời gian thực
- * Tuân thủ MVC: chỉ xử lý UI logic, gọi Service layer để xử lý business logic
  */
 public class RealtimeBiddingController extends BaseBidderController {
 
     private int currentAuctionId;
     private Timeline countdownTimeline;
     private Timer refreshTimer;
+    // Lưu id của lượt đặt giá mới nhất mà client đã thấy để phát hiện bid mới
+    private int lastSeenBidId = -1;
     private final BiddingService biddingService = new BiddingService(new WalletManager(), null);
     private final JdbcAuctionDAO auctionDAO = new JdbcAuctionDAO();
     private final JdbcBidRecordDAO bidRecordDAO = new JdbcBidRecordDAO();
@@ -134,20 +135,22 @@ public class RealtimeBiddingController extends BaseBidderController {
 
     /**
      * Tải lịch sử đặt giá từ database và hiển thị lên UI
+     * @return danh sách BidRecord (tăng dần theo thời gian)
      */
-    private void loadBidHistory() {
+    private List<BidRecord> loadBidHistory() {
         List<BidRecord> bidRecords = bidRecordDAO.getByAuctionId(currentAuctionId);
         bidHistoryContainer.getChildren().clear();
-        
+
         // Hiển thị từ mới nhất lên trước
         for (int i = bidRecords.size() - 1; i >= 0; i--) {
             BidRecord bid = bidRecords.get(i);
             HBox bidRow = createBidHistoryRow(bid);
             bidHistoryContainer.getChildren().add(bidRow);
         }
-        
+
         // Cập nhật biểu đồ giá
         updatePriceChart(bidRecords);
+        return bidRecords;
     }
 
     /**
@@ -253,7 +256,23 @@ public class RealtimeBiddingController extends BaseBidderController {
         if (auction != null) {
             Platform.runLater(() -> {
                 updateAuctionUI(auction);
-                loadBidHistory();
+                List<BidRecord> newList = loadBidHistory();
+                if (newList != null && !newList.isEmpty()) {
+                    BidRecord latest = newList.get(newList.size() - 1);
+                    int latestId = latest.getBidId();
+                    if (latestId != lastSeenBidId) {
+                        // Nếu người đặt giá mới không phải là chính user đang đăng nhập -> thông báo
+                        var currentUser = com.bidding.shared.UserSession.getInstance().getLoggedInUser();
+                        if (currentUser == null || latest.getBidderId() != currentUser.getId()) {
+                            String msg = String.format("Có bid mới: %s — %, .0f ₫",
+                                    latest.getBidderName(),
+                                    latest.getBidAmount().doubleValue());
+                            showSuccess(msg);
+                            // (tùy chọn) bạn có thể hiện Alert hoặc toast thay vì showSuccess
+                        }
+                        lastSeenBidId = latestId;
+                    }
+                }
             });
         }
     }

@@ -4,7 +4,6 @@ import javafx.scene.control.TableCell;
 import javafx.util.Callback;
 
 import com.bidding.util.SceneManager;
-import com.bidding.util.SessionStore;
 import com.bidding.service.WalletService;
 import com.bidding.dao.WalletDepositRequestDAO;
 import javafx.fxml.FXML;
@@ -13,7 +12,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.util.Callback;
 
 import java.util.List;
 
