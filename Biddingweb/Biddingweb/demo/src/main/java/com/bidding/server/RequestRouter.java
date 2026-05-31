@@ -2,8 +2,11 @@ package com.bidding.server;
 
 import com.bidding.dao.JdbcAuctionDAO;
 import com.bidding.dao.JdbcItemDAO;
+import com.bidding.dao.JdbcUserDAO;
 import com.bidding.model.AuctionDisplayDTO;
+import com.bidding.service.BiddingService;
 import com.bidding.service.UserService;
+import com.bidding.shared.Users;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -13,6 +16,8 @@ public class RequestRouter {
     private final UserService userService = new UserService();
     private final JdbcAuctionDAO auctionDao = new JdbcAuctionDAO();
     private final JdbcItemDAO itemDao = new JdbcItemDAO();
+    private final JdbcUserDAO userDao = new JdbcUserDAO();
+    private final BiddingService biddingService = new BiddingService(null, null);
     private final Gson gson = new Gson();
 
     public JsonObject handle(JsonObject request) {
@@ -28,6 +33,7 @@ public class RequestRouter {
             case "GET_ALL_ITEMS" -> handleGetAllItems(request);
             case "REVIEW_ITEM"   -> handleReviewItem(request);// xử lý lấy danh sách
             case "PLACE_BID" -> handlePlaceBid(request);
+            case "SETUP_AUTO_BID" -> handleSetupAutoBid(request);
             case "GET_BID_HISTORY" -> handleGetBidHistory(request);
             default -> error("Unknown action: " + action);
         };
@@ -114,7 +120,6 @@ public class RequestRouter {
 
     @SuppressWarnings("unused")
     private JsonObject handleGetActiveAuctions(JsonObject request) {
-        // Stub: Items functionality requires JdbcItemDAO
         List<AuctionDisplayDTO> activeAuctions = auctionDao.getActiveAuctionsWithItems();
 
         JsonObject res = new JsonObject();
@@ -142,7 +147,6 @@ public class RequestRouter {
         return res;
     }
 
-    // THÊM: Endpoint để lấy chi tiết một phiên đấu giá
     private JsonObject handleGetAuctionDetail(JsonObject req) {
         JsonObject res = new JsonObject();
         try {
@@ -213,6 +217,10 @@ public class RequestRouter {
         }
     }
 
+    /**
+     * Xử lý đặt giá từ Client gửi lên.
+     * Đã dọn dẹp code trùng lặp (lệnh update giá/winner đã được BiddingService tự xử lý bên trong).
+     */
     private JsonObject handlePlaceBid(JsonObject req) {
         JsonObject res = new JsonObject();
         try {
@@ -220,39 +228,64 @@ public class RequestRouter {
             int bidderId = req.get("bidderId").getAsInt();
             String bidderName = req.get("bidderName").getAsString();
             double bidAmount = req.get("bidAmount").getAsDouble();
-            
-            // Lưu bid vào database
-            com.bidding.model.BidRecord bidRecord = new com.bidding.model.BidRecord(
-                    auctionId,
-                    bidderId,
-                    bidderName,
-                    java.math.BigDecimal.valueOf(bidAmount),
-                    java.time.LocalDateTime.now()
-            );
-            
-            com.bidding.dao.JdbcBidRecordDAO bidDAO = new com.bidding.dao.JdbcBidRecordDAO();
-            com.bidding.model.BidRecord highestBid = bidDAO.getHighestBid(auctionId);
-            
-            if (highestBid == null || java.math.BigDecimal.valueOf(bidAmount).compareTo(highestBid.getBidAmount()) > 0) {
-                bidRecord.setWinning(true);
-            }
-            
-            if (bidDAO.insert(bidRecord)) {
-                // Cập nhật giá hiện tại và người thắng
-                auctionDao.updateCurrentPrice(auctionId, bidAmount);
-                auctionDao.updateWinner(auctionId, bidderId);
-                
-                res.addProperty("status", "OK");
-                res.addProperty("message", "Đặt giá thành công");
-                res.addProperty("isWinning", bidRecord.isWinning());
-                res.addProperty("bidId", bidRecord.getBidId());
-            } else {
+
+            // Lấy thực thể Users từ DB để truyền vào service xử lý logic số dư và vai trò
+            Users bidder = userDao.findByUsername(bidderName);
+            if (bidder == null) {
                 res.addProperty("status", "ERROR");
-                res.addProperty("message", "Lỗi lưu bản ghi đặt giá");
+                res.addProperty("message", "Tài khoản đặt giá không hợp lệ");
+                return res;
+            }
+
+            // Thực hiện gọi BiddingService để kiểm tra toàn bộ nghiệp vụ và ghi nhận bản ghi vào database
+            BiddingService.BiddingResult result = biddingService.placeBid(auctionId, bidder, bidAmount);
+
+            if (result.isSuccess()) {
+                com.bidding.dao.JdbcBidRecordDAO bidDAO = new com.bidding.dao.JdbcBidRecordDAO();
+                com.bidding.model.BidRecord highestBid = bidDAO.getHighestBid(auctionId);
+
+                // Xác định xem tài khoản vừa đặt có đang giữ vị trí dẫn đầu thực tế hay không
+                boolean isWinning = (highestBid != null && highestBid.getBidderId() == bidderId);
+
+                res.addProperty("status", "OK");
+                res.addProperty("message", result.getMessage());
+                res.addProperty("isWinning", isWinning);
+                res.addProperty("bidId", highestBid != null ? highestBid.getBidId() : 0);
+            } else {
+                // Trả về lỗi nghiệp vụ (ví dụ: số dư không đủ, giá đặt thấp hơn giá tối thiểu,...)
+                res.addProperty("status", "ERROR");
+                res.addProperty("message", result.getMessage());
             }
         } catch (Exception e) {
             res.addProperty("status", "ERROR");
             res.addProperty("message", "Lỗi server: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return res;
+    }
+    private JsonObject handleSetupAutoBid(JsonObject req) {
+        JsonObject res = new JsonObject();
+        try {
+            // Đọc chính xác các trường dữ liệu từ gói JSON Client gửi lên
+            int auctionId = req.get("auctionId").getAsInt();
+            int bidderId = req.get("bidderId").getAsInt();
+            double maxBid = req.get("maxBid").getAsDouble();
+            double increment = req.get("increment").getAsDouble();
+            boolean isEnabled = req.get("isEnabled").getAsBoolean();
+
+            // Gọi xuống BiddingService xử lý logic lưu cấu hình
+            boolean ok = biddingService.setupAutoBid(auctionId, bidderId, maxBid, increment, isEnabled);
+
+            if (ok) {
+                res.addProperty("status", "OK");
+                res.addProperty("message", isEnabled ? "Đã kích hoạt thiết lập Auto-Bid thành công!" : "Đã tắt tính năng Auto-Bid!");
+            } else {
+                res.addProperty("status", "ERROR");
+                res.addProperty("message", "Thực thi cấu hình Auto-Bid thất bại tại cơ sở dữ liệu.");
+            }
+        } catch (Exception e) {
+            res.addProperty("status", "ERROR");
+            res.addProperty("message", "Lỗi xử lý Auto-Bid trên Server: " + e.getMessage());
             e.printStackTrace();
         }
         return res;
@@ -262,13 +295,13 @@ public class RequestRouter {
         JsonObject res = new JsonObject();
         try {
             int auctionId = req.get("auctionId").getAsInt();
-            
+
             com.bidding.dao.JdbcBidRecordDAO bidDAO = new com.bidding.dao.JdbcBidRecordDAO();
             List<com.bidding.model.BidRecord> bidRecords = bidDAO.getByAuctionId(auctionId);
-            
+
             res.addProperty("status", "OK");
             JsonArray bidArray = new JsonArray();
-            
+
             for (com.bidding.model.BidRecord bid : bidRecords) {
                 JsonObject bidObj = new JsonObject();
                 bidObj.addProperty("bidId", bid.getBidId());
@@ -279,7 +312,7 @@ public class RequestRouter {
                 bidObj.addProperty("isWinning", bid.isWinning());
                 bidArray.add(bidObj);
             }
-            
+
             res.add("bidRecords", bidArray);
             res.addProperty("bidCount", bidRecords.size());
         } catch (Exception e) {

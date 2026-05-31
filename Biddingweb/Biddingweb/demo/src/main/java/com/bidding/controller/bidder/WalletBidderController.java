@@ -25,8 +25,6 @@ public class WalletBidderController extends BaseBidderController {
     @FXML private TextField txtDepositAmount;
     @FXML private Label lblDepositResult;
 
-    // Bộ lọc lịch sử giao dịch
-    @FXML private ComboBox<String> cmbTxFilter;
 
     // TableView dữ liệu
     @FXML private TableView<Transaction> tblTransactions;
@@ -59,9 +57,6 @@ public class WalletBidderController extends BaseBidderController {
     }
 
     private void initWalletComponents() {
-        // Khởi tạo ComboBox bộ lọc bảng lịch sử
-        cmbTxFilter.getItems().addAll("Tất cả giao dịch", "Nạp tiền", "Trừ tiền", "Đóng băng", "Hoàn tiền");
-        cmbTxFilter.setValue("Tất cả giao dịch");
 
         // Khởi tạo ComboBox phương thức nạp tiền
         cmbDepositMethod.getItems().addAll("Nạp qua thẻ cào", "Yêu cầu Admin nạp");

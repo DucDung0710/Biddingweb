@@ -55,9 +55,25 @@ public class JdbcAuctionDAO {
             e.printStackTrace();
         }
     }
+    // Hàm kiểm tra và cập nhật phiên mới bắt đầu
+    public void updateActiveAuctions() {
+        String q = "UPDATE auctions SET status = 'RUNNING' " +
+                "WHERE status = 'OPEN' AND STR_TO_DATE(LEFT(REPLACE(start_time, 'T', ' '), 19), '%Y-%m-%d %H:%i:%s') <= NOW()";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            int updated = ps.executeUpdate();
+            if (updated > 0) {
+                System.out.println("✅ updateActiveAuctions: Kích hoạt " + updated + " phiên từ OPEN → RUNNING");
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Lỗi kích hoạt phiên mới: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     // 3. LẤY TOÀN BỘ PHIÊN ĐANG CHẠY ĐỂ ĐỔ LÊN GIAO DIỆN
     public List<AuctionDisplayDTO> getActiveAuctionsWithItems() {
+        updateActiveAuctions();
         updateExpiredAuctions();
         List<AuctionDisplayDTO> list = new ArrayList<>();
 
@@ -101,6 +117,7 @@ public class JdbcAuctionDAO {
      * 4. Hàm lọc phiên đấu giá dựa trên từ khóa, trạng thái và loại sản phẩm
      **/
     public List<AuctionDisplayDTO> getAuctionsByFilter(String keyword, String status, String type) {
+        updateActiveAuctions();
         updateExpiredAuctions();
         List<AuctionDisplayDTO> list = new ArrayList<>();
 

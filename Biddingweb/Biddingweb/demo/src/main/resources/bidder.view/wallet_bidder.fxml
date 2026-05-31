@@ -52,7 +52,7 @@
         <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 14; -fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0;">
             <Label style="-fx-background-color: #B5D4F4; -fx-text-fill: #185FA5;                    -fx-background-radius: 50; -fx-min-width: 34; -fx-min-height: 34;                    -fx-max-width: 34; -fx-max-height: 34;                    -fx-alignment: center; -fx-font-weight: bold; -fx-font-size: 13px;" text="B" />
             <VBox spacing="2">
-                <Label fx:id="lblUserName" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Nguyễn Văn A" />
+                <Label fx:id="lblUserName" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Bidder" />
                 <Label fx:id="lblUserRole" style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Bidder" />
             </VBox>
         </HBox>
@@ -128,8 +128,6 @@
                     <VBox spacing="0" style="-fx-background-color: white; -fx-background-radius: 10;                                  -fx-border-color: #e8e8e8; -fx-border-radius: 10;" HBox.hgrow="ALWAYS">
                         <HBox alignment="CENTER_LEFT" prefHeight="44" style="-fx-padding: 0 16; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
                             <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="📋 Lịch sử giao dịch" />
-                            <Region HBox.hgrow="ALWAYS" />
-                            <ComboBox fx:id="cmbTxFilter" style="-fx-font-size: 11px; -fx-background-radius: 6;" />
                         </HBox>
 
                         <TableView fx:id="tblTransactions" style="-fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
