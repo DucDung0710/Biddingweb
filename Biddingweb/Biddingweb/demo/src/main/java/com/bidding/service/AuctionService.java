@@ -207,9 +207,9 @@ public class AuctionService {
 
     // ==================== ITEM OPERATIONS ====================
 
-    public int registerNewItem(int userId, String itemName, String description, double price) {
+    public int registerNewItem(int userId, String itemName, String type, String description, double price) {
         try {
-            return itemManager.registerNewItem(userId, itemName, description, price);
+            return itemManager.registerNewItem(userId, itemName, type, description, price);
         } catch (Exception e) {
             return -1;
         }

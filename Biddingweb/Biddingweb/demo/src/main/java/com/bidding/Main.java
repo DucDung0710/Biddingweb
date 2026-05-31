@@ -75,7 +75,7 @@ public class Main {
 
         // ========== Bước 3: Seller đăng ký item ==========
         // Seller đăng ký item cần bán: Máy ảnh Sony, giá khởi điểm 100
-        itemManager.registerNewItem(seller.getId(), "Máy ảnh Sony", "Máy ảnh full-frame 24MP", 100.0);
+        itemManager.registerNewItem(seller.getId(), "Máy ảnh Sony", "Điện tử", "Máy ảnh full-frame 24MP", 100.0);
         Item item = itemManager.getItemById(1);
         if (item == null) {
             System.out.println("Không tìm thấy item vừa đăng ký.");

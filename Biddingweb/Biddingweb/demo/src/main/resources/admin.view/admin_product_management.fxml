@@ -83,7 +83,7 @@
                         <TableView fx:id="tblProducts" prefHeight="380" style="-fx-background-color: transparent; -fx-border-color: transparent;">
                             <columns>
                                 <TableColumn fx:id="colProdName" prefWidth="200" text="Tên sản phẩm">
-                                    <cellValueFactory><PropertyValueFactory property="ItemName" /></cellValueFactory>
+                                    <cellValueFactory><PropertyValueFactory property="itemName" /></cellValueFactory>
                                 </TableColumn>
 
                                 <TableColumn fx:id="colProdCategory" prefWidth="330.0000457763672" text="Mô tả chi tiết">

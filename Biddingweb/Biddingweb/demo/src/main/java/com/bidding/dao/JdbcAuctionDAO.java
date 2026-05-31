@@ -149,10 +149,10 @@ public class JdbcAuctionDAO {
             }
             if (status != null && !status.equals("Tất cả")) {
                 String dbStatus = switch (status) {
-                    case "Đang diễn ra" -> "RUNNING";
-                    case "Sắp bắt đầu" -> "OPEN";
-                    case "Đã kết thúc" -> "FINISHED";
-                    default -> "RUNNING";
+                    case "Đang diễn ra", "RUNNING" -> "RUNNING";
+                    case "Sắp bắt đầu", "OPEN" -> "OPEN";
+                    case "Đã kết thúc", "FINISHED" -> "FINISHED";
+                    default -> status;
                 };
                 ps.setString(paramIndex++, dbStatus);
             }

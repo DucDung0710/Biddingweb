@@ -6,6 +6,7 @@ import com.bidding.dao.JdbcUserDAO;
 import com.bidding.model.AuctionDisplayDTO;
 import com.bidding.service.BiddingService;
 import com.bidding.service.UserService;
+import com.bidding.shared.Item;
 import com.bidding.shared.Users;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -31,6 +32,7 @@ public class RequestRouter {
             case "GET_ACTIVE_AUCTIONS" -> handleGetActiveAuctions(request);
             case "GET_AUCTION_DETAIL" -> handleGetAuctionDetail(request);
             case "GET_ALL_ITEMS" -> handleGetAllItems(request);
+            case "CREATE_ITEM" -> handleCreateItem(request);
             case "REVIEW_ITEM"   -> handleReviewItem(request);// xử lý lấy danh sách
             case "PLACE_BID" -> handlePlaceBid(request);
             case "SETUP_AUTO_BID" -> handleSetupAutoBid(request);
@@ -84,7 +86,17 @@ public class RequestRouter {
                 obj.addProperty("type", it.getType());
                 // Provide safe defaults for fields admin UI expects
                 obj.addProperty("firstprice", it.getFirstprice() != null ? it.getFirstprice().doubleValue() : 0.0);
-                obj.addProperty("status", it.getStatus() != null ? it.getStatus() : "Pending");
+                String status = it.getStatus() != null ? it.getStatus() : "PENDING";
+                status = switch (status.toUpperCase()) {
+                    case "PENDING" -> "Pending";
+                    case "APPROVED" -> "Approved";
+                    case "REJECTED" -> "Rejected";
+                    case "IN_AUCTION" -> "In Auction";
+                    case "SOLD" -> "Sold";
+                    case "UNSOLD" -> "Unsold";
+                    default -> status;
+                };
+                obj.addProperty("status", status);
                 array.add(obj);
             }
             res.addProperty("status", "OK");
@@ -97,12 +109,40 @@ public class RequestRouter {
     }
 
     @SuppressWarnings("unused")
+    private JsonObject handleCreateItem(JsonObject request) {
+        JsonObject res = new JsonObject();
+        try {
+            Item item = new Item();
+            item.setItemName(request.get("itemName").getAsString());
+            item.setDescription(request.get("description").getAsString());
+            item.setType(request.get("type").getAsString());
+            item.setFirstprice(java.math.BigDecimal.valueOf(request.get("firstprice").getAsDouble()));
+            item.setStatus(Item.STATUS_PENDING);
+            item.setUserId(request.get("sellerId").getAsInt());
+
+            boolean created = itemDao.insert(item);
+            if (created && item.getItemId() > 0) {
+                res.addProperty("status", "OK");
+                res.addProperty("message", "Sản phẩm đã được lưu và chờ Admin duyệt.");
+                res.addProperty("itemId", item.getItemId());
+            } else {
+                res.addProperty("status", "ERROR");
+                res.addProperty("message", "Không thể lưu sản phẩm vào DB.");
+            }
+        } catch (Exception e) {
+            res.addProperty("status", "ERROR");
+            res.addProperty("message", "Lỗi server khi lưu sản phẩm: " + e.getMessage());
+        }
+        return res;
+    }
+
+    @SuppressWarnings("unused")
     private JsonObject handleReviewItem(JsonObject request) {
         JsonObject res = new JsonObject();
         try {
             int itemId = request.get("itemId").getAsInt();
             boolean approved = request.get("approved").getAsBoolean();
-            String newStatus = approved ? com.bidding.shared.Item.STATUS_APPROVED : com.bidding.shared.Item.STATUS_REJECTED;
+            String newStatus = approved ? Item.STATUS_APPROVED : Item.STATUS_REJECTED;
             boolean ok = itemDao.updateStatus(itemId, newStatus);
             if (ok) {
                 res.addProperty("status", "OK");

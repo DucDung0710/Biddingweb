@@ -89,7 +89,7 @@ public class BasicTest {
         Users seller = userManager.signIn("seller1", "pass123");
         
         // Đăng ký item
-        itemManager.registerNewItem(seller.getId(), "Laptop", "Laptop Dell XPS 13", 500.0);
+        itemManager.registerNewItem(seller.getId(), "Laptop", "Điện tử", "Laptop Dell XPS 13", 500.0);
         Item item = itemManager.getItemById(1);
         
         assert item != null : "Không thể lấy item vừa đăng ký";

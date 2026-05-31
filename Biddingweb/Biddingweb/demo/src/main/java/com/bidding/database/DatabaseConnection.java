@@ -93,10 +93,12 @@ public class DatabaseConnection {
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
         String sqlItems = "CREATE TABLE IF NOT EXISTS items ("
-                + "id INT PRIMARY KEY, "
+                + "id INT AUTO_INCREMENT PRIMARY KEY, "
                 + "name VARCHAR(255) NOT NULL, "
                 + "description TEXT, "
                 + "type VARCHAR(100), "
+                + "firstprice DOUBLE DEFAULT 0.0, "
+                + "status VARCHAR(50) DEFAULT 'PENDING', "
                 + "seller_id INT, "
                 + "FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE"
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
@@ -181,6 +183,7 @@ public class DatabaseConnection {
             stmt.execute(sqlDepositRequests);
 
             ensureUsersEmailColumn(connection);
+            ensureItemsColumns(connection);
             System.out.println("🚀 [HikariCP] Kết nối MySQL Cloud thành công & Trọn bộ cấu trúc bảng đã sẵn sàng!");
         } catch (SQLException e) {
             System.err.println("❌ Lỗi cấu trúc khởi tạo dữ liệu: " + e.getMessage());
@@ -203,6 +206,38 @@ public class DatabaseConnection {
                     stmt.execute("CREATE UNIQUE INDEX idx_users_email ON users(email);");
                 } catch (SQLException e) {
                     // Bỏ qua nếu index đã tồn tại trước đó
+                }
+            }
+        }
+    }
+
+    private void ensureItemsColumns(Connection connection) throws SQLException {
+        try (ResultSet rs = connection.getMetaData().getColumns(null, null, "items", "firstprice")) {
+            if (!rs.next()) {
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute("ALTER TABLE items ADD COLUMN firstprice DOUBLE DEFAULT 0.0;");
+                }
+            }
+        }
+
+        try (ResultSet rs = connection.getMetaData().getColumns(null, null, "items", "status")) {
+            if (!rs.next()) {
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute("ALTER TABLE items ADD COLUMN status VARCHAR(50) DEFAULT 'PENDING';");
+                }
+            }
+        }
+
+        try (ResultSet rs = connection.getMetaData().getColumns(null, null, "items", "id")) {
+            if (rs.next()) {
+                String isAutoIncrement = rs.getString("IS_AUTOINCREMENT");
+                if (!"YES".equalsIgnoreCase(isAutoIncrement)) {
+                    try (Statement stmt = connection.createStatement()) {
+                        stmt.execute("ALTER TABLE items MODIFY COLUMN id INT AUTO_INCREMENT PRIMARY KEY;");
+                    } catch (SQLException e) {
+                        // Nếu không thể thay đổi do cấu trúc table hiện tại, thì giữ nguyên và tiếp tục.
+                        System.err.println("Không thể chuyển cột items.id sang AUTO_INCREMENT: " + e.getMessage());
+                    }
                 }
             }
         }

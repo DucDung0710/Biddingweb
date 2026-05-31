@@ -17,7 +17,8 @@ import java.io.File;
 import com.bidding.shared.Item;
 import com.bidding.shared.UserSession;
 import com.bidding.shared.Users;
-import com.bidding.service.AuctionService;
+import com.bidding.util.SocketClient;
+import com.google.gson.JsonObject;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -88,21 +89,7 @@ public class ProductFormController implements Initializable {
             return;
         }
 
-        if (dpStartDate.getValue() == null || txtStartHour.getText().isEmpty() || txtStartMinute.getText().isEmpty() ||
-            dpEndDate.getValue() == null || txtEndHour.getText().isEmpty() || txtEndMinute.getText().isEmpty()) {
-            showError("Vui lòng nhập đầy đủ mốc thời gian bắt đầu và kết thúc (*)");
-            return;
-        }
-
-        if (selectedImageFile == null) {
-            showError("Vui lòng đăng tải hình ảnh cho sản phẩm");
-            return;
-        }
-
         System.out.println("Sẵn sàng lưu sản phẩm: " + txtName.getText());
-        System.out.println("Thời gian bắt đầu: " + dpStartDate.getValue() + " " + txtStartHour.getText() + ":" + txtStartMinute.getText());
-        System.out.println("Thời gian kết thúc: " + dpEndDate.getValue() + " " + txtEndHour.getText() + ":" + txtEndMinute.getText());
-        System.out.println("File ảnh truyền đi: " + selectedImageFile.getAbsolutePath());
 
         // 1) Lấy user hiện tại từ session
         Users currentUser = UserSession.getInstance().getLoggedInUser();
@@ -111,7 +98,6 @@ public class ProductFormController implements Initializable {
             return;
         }
 
-        // 2) Gọi AuctionService để đăng sản phẩm (ItemManager + DB persistence handled there)
         double price;
         try {
             price = Double.parseDouble(txtStartPrice.getText());
@@ -121,12 +107,22 @@ public class ProductFormController implements Initializable {
         }
 
         try {
-            int newItemId = AuctionService.getInstance().registerNewItem(currentUser.getId(), txtName.getText().trim(), txtDescription.getText().trim(), price);
-            if (newItemId <= 0) {
-                showError("Không thể lưu sản phẩm. Vui lòng thử lại.");
+            JsonObject request = new JsonObject();
+            request.addProperty("action", "CREATE_ITEM");
+            request.addProperty("sellerId", currentUser.getId());
+            request.addProperty("itemName", txtName.getText().trim());
+            request.addProperty("type", cmbType.getValue());
+            request.addProperty("description", txtDescription.getText().trim());
+            request.addProperty("firstprice", price);
+
+            JsonObject response = SocketClient.getInstance().sendRequest(request);
+            if (response == null || !"OK".equals(response.get("status").getAsString())) {
+                String message = response != null && response.has("message") ? response.get("message").getAsString() : "Lỗi kết nối tới Server.";
+                showError(message);
                 return;
             }
-            System.out.println("Sản phẩm đã được đăng (ID=" + newItemId + ")");
+
+            System.out.println("Sản phẩm đã được đăng và đang chờ Admin duyệt.");
         } catch (Exception ex) {
             System.err.println("Lỗi khi đăng sản phẩm: " + ex.getMessage());
             showError("Lỗi hệ thống khi lưu sản phẩm.");

@@ -105,12 +105,7 @@
             <ComboBox fx:id="cmbType" prefHeight="36" prefWidth="160" promptText="Tất cả loại" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px;" />
             <ComboBox fx:id="cmbStatus" prefHeight="36" prefWidth="180" promptText="Tất cả trạng thái" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px;" />
             <Region HBox.hgrow="ALWAYS" />
-            <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="5 sản phẩm" />
-        </HBox>
-
-        <HBox spacing="24" style="-fx-padding: 0 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
-            <VBox fx:id="tabAll" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-border-color: #0b5ed7; -fx-border-width: 0 0 2 0; -fx-cursor: hand;">
-                <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #3B6D11;" text="Tất cả (5)" />
+            <Label fx:id="lblProductCount" style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="0 sản phẩm" />
             </VBox>
             <VBox fx:id="tabActive" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="Đang diễn ra (3)" />
@@ -124,86 +119,7 @@
         </HBox>
 
         <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
-            <VBox spacing="12" style="-fx-padding: 16 24;">
-
-                <HBox alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-padding: 16;">
-                    <VBox alignment="CENTER" minHeight="80" minWidth="80" style="-fx-background-color: #f1f5f9; -fx-background-radius: 6; -fx-padding: 10;">
-                        <Label style="-fx-font-size: 12px; -fx-text-fill: #64748b;" text="[Ảnh]" />
-                    </VBox>
-                    <VBox spacing="6" style="-fx-padding: 0 0 0 16;" HBox.hgrow="ALWAYS">
-                        <HBox alignment="CENTER_LEFT" spacing="8">
-                            <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" text="BMW 5 Series 2024" />
-                            <Label style="-fx-background-color: #e6f4ea; -fx-text-fill: #0b5ed7; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 2 8; -fx-background-radius: 12;" text="Đang đấu giá" />
-                        </HBox>
-                        <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="Sedan cao cấp, màu xanh navy, full option,..." />
-                        <HBox spacing="24" style="-fx-padding: 6 0 0 0;">
-                            <VBox spacing="2">
-                                <Label style="-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;" text="GIÁ KHỞI ĐIỂM" />
-                                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" text="\$50,000" />
-                            </VBox>
-                            <VBox spacing="2">
-                                <Label style="-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;" text="GIÁ HIỆN TẠI" />
-                                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f5132;" text="\$53,200" />
-                            </VBox>
-                            <VBox spacing="2" />
-                            <VBox spacing="2">
-                                <Label style="-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;" text="KẾT THÚC" />
-                                <HBox alignment="CENTER_LEFT" spacing="4">
-                                    <Label style="-fx-font-size: 13px; -fx-text-fill: #475569;" text="2n 23g 59p" />
-                                </HBox>
-                            </VBox>
-                        </HBox>
-                        <HBox alignment="CENTER_LEFT" spacing="4" style="-fx-padding: 4 0 0 0;">
-                            <Label style="-fx-font-size: 11px; -fx-text-fill: #94a3b8;" text="LOẠI: " />
-                            <Label style="-fx-font-size: 11px; -fx-text-fill: #475569; -fx-font-weight: bold;" text="Xe hơi" />
-                        </HBox>
-                    </VBox>
-                    <HBox alignment="CENTER" spacing="6" style="-fx-padding: 0 10 0 20;">
-                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Xem" />
-                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Sửa" />
-                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #fca5a5; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-text-fill: #dc3545; -fx-cursor: hand;" text="Xóa" />
-                    </HBox>
-                </HBox>
-
-                <HBox alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-padding: 16;">
-                    <VBox alignment="CENTER" minHeight="80" minWidth="80" style="-fx-background-color: #f1f5f9; -fx-background-radius: 6; -fx-padding: 10;">
-                        <Label style="-fx-font-size: 12px; -fx-text-fill: #64748b;" text="[Ảnh]" />
-                    </VBox>
-                    <VBox spacing="6" style="-fx-padding: 0 0 0 16;" HBox.hgrow="ALWAYS">
-                        <HBox alignment="CENTER_LEFT" spacing="8">
-                            <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" text="Rolex Submariner Date" />
-                            <Label style="-fx-background-color: #e6f4ea; -fx-text-fill: #0b5ed7; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 2 8; -fx-background-radius: 12;" text="Đang đấu giá" />
-                        </HBox>
-                        <HBox spacing="24" style="-fx-padding: 6 0 0 0;">
-                            <VBox spacing="2">
-                                <Label style="-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;" text="GIÁ KHỞI ĐIỂM" />
-                                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" text="\$11,500" />
-                            </VBox>
-                            <VBox spacing="2">
-                                <Label style="-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;" text="GIÁ HIỆN TẠI" />
-                                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f5132;" text="\$13,100" />
-                            </VBox>
-                            <VBox spacing="2" />
-                            <VBox spacing="2">
-                                <Label style="-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;" text="KẾT THÚC" />
-                                <HBox alignment="CENTER_LEFT" spacing="4">
-                                    <Label style="-fx-font-size: 13px; -fx-text-fill: #475569;" text="1n 04g 12p" />
-                                </HBox>
-                            </VBox>
-                        </HBox>
-                        <HBox alignment="CENTER_LEFT" spacing="4" style="-fx-padding: 4 0 0 0;">
-                            <Label style="-fx-font-size: 11px; -fx-text-fill: #94a3b8;" text="LOẠI" />
-                            <Label style="-fx-font-size: 11px; -fx-text-fill: #475569; -fx-font-weight: bold;" text="Đồng hồ" />
-                        </HBox>
-                    </VBox>
-                    <HBox alignment="CENTER" spacing="6" style="-fx-padding: 0 10 0 20;">
-                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Xem" />
-                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Sửa" />
-                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #fca5a5; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-text-fill: #dc3545; -fx-cursor: hand;" text="Xóa" />
-                    </HBox>
-                </HBox>
-
-            </VBox>
+            <VBox fx:id="productCardsContainer" spacing="12" style="-fx-padding: 16 24;" />
         </ScrollPane>
     </VBox>
     </HBox>

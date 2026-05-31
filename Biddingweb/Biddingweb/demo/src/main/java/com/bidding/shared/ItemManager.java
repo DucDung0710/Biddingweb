@@ -11,8 +11,8 @@ public class ItemManager {
     private final Map<Integer, List<Item>> allItems = new HashMap<>();
     private int nextItemId = 1;
 
-    public int registerNewItem(int userId, String itemName, String description, double price) {
-        Item newItem = new Item(nextItemId++, userId, itemName, "GENERAL", description, BigDecimal.valueOf(price));
+    public int registerNewItem(int userId, String itemName, String type, String description, double price) {
+        Item newItem = new Item(nextItemId++, userId, itemName, type != null ? type : "GENERAL", description, BigDecimal.valueOf(price));
         newItem.setStatus(Item.STATUS_PENDING);
         newItem.setCurrentPrice(newItem.getFirstprice());
         allItems.computeIfAbsent(userId, k -> new ArrayList<>()).add(newItem);

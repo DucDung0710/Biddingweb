@@ -18,6 +18,10 @@ import com.bidding.service.AuctionService;
 import com.bidding.shared.Item;
 import com.bidding.shared.UserSession;
 import com.bidding.shared.Users;
+import com.bidding.util.SocketClient;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -163,6 +167,9 @@ public class SellerDashboardController {
         } catch (Exception e) {
             System.err.println("Không thể gán cell factories cho TableView: " + e.getMessage());
         }
+
+        // Tải dữ liệu sản phẩm Seller ngay khi vào màn hình
+        reloadProducts();
     }
 
     /**
@@ -228,12 +235,41 @@ public class SellerDashboardController {
                 System.out.println("Không có user đang đăng nhập.");
                 return;
             }
+
+            JsonObject request = new JsonObject();
+            request.addProperty("action", "GET_ALL_ITEMS");
+
+            JsonObject response = SocketClient.getInstance().sendRequest(request);
+            if (response != null && "OK".equals(response.get("status").getAsString())) {
+                JsonArray array = response.getAsJsonArray("data");
+                java.util.List<Item> items = new java.util.ArrayList<>();
+                for (JsonElement elem : array) {
+                    JsonObject obj = elem.getAsJsonObject();
+                    if (obj.get("userId").getAsInt() != currentUser.getId()) continue;
+
+                    Item item = new Item();
+                    item.setItemId(obj.get("itemId").getAsInt());
+                    item.setUserId(obj.get("userId").getAsInt());
+                    item.setItemName(obj.get("itemName").getAsString());
+                    item.setType(obj.has("type") ? obj.get("type").getAsString() : "Khác");
+                    item.setDescription(obj.has("description") ? obj.get("description").getAsString() : "");
+                    item.setStatus(obj.has("status") ? obj.get("status").getAsString() : Item.STATUS_PENDING);
+                    if (obj.has("firstprice")) {
+                        item.setFirstprice(java.math.BigDecimal.valueOf(obj.get("firstprice").getAsDouble()));
+                    }
+                    items.add(item);
+                }
+
+                ObservableList<Item> obs = FXCollections.observableArrayList(items);
+                tblProducts.setItems(obs);
+                System.out.println("Đã tải lại " + items.size() + " sản phẩm cho seller từ Server.");
+                return;
+            }
+
+            // Nếu server không trả về dữ liệu, fallback về dữ liệu cục bộ
+            System.err.println("Không thể tải sản phẩm từ Server, sử dụng dữ liệu cục bộ.");
             java.util.List<Item> items = AuctionService.getInstance().getSellerItems(currentUser.getId());
-            ObservableList<Item> obs = FXCollections.observableArrayList(items);
-            @SuppressWarnings("unchecked")
-            TableView<Item> tv = (TableView<Item>) this.tblProducts;
-            tv.setItems(obs);
-            System.out.println("Đã tải lại " + items.size() + " sản phẩm cho seller.");
+            tblProducts.setItems(FXCollections.observableArrayList(items));
         } catch (Exception ex) {
             System.err.println("Lỗi khi tải sản phẩm: " + ex.getMessage());
             ex.printStackTrace();
