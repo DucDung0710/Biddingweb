@@ -112,7 +112,7 @@ Biddingweb/
 
 ## 8. Tài liệu & Demo
 
-- Báo cáo PDF và video demo: (đính kèm tại thư mục `docs/` nếu có)
+- Báo cáo PDF và video demo: (https://drive.google.com/drive/folders/143WW-zZO229Dw_xWaiuZW0wbzQoag_HL?hl=vi)
 
 ---
 _Nội dung đã được cập nhật từ mẫu yêu cầu. Nếu muốn đổi văn phong (tiếng Anh/Việt) hoặc thêm link tài liệu, báo mình biết._
