@@ -15,6 +15,9 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import com.bidding.shared.Item;
+import com.bidding.shared.UserSession;
+import com.bidding.shared.Users;
+import com.bidding.service.AuctionService;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -101,7 +104,35 @@ public class ProductFormController implements Initializable {
         System.out.println("Thời gian kết thúc: " + dpEndDate.getValue() + " " + txtEndHour.getText() + ":" + txtEndMinute.getText());
         System.out.println("File ảnh truyền đi: " + selectedImageFile.getAbsolutePath());
 
-        // TODO: persist product to database via service/DAO
+        // 1) Lấy user hiện tại từ session
+        Users currentUser = UserSession.getInstance().getLoggedInUser();
+        if (currentUser == null) {
+            showError("Bạn phải đăng nhập để đăng sản phẩm.");
+            return;
+        }
+
+        // 2) Gọi AuctionService để đăng sản phẩm (ItemManager + DB persistence handled there)
+        double price;
+        try {
+            price = Double.parseDouble(txtStartPrice.getText());
+        } catch (NumberFormatException nfe) {
+            showError("Giá không hợp lệ.");
+            return;
+        }
+
+        try {
+            int newItemId = AuctionService.getInstance().registerNewItem(currentUser.getId(), txtName.getText().trim(), txtDescription.getText().trim(), price);
+            if (newItemId <= 0) {
+                showError("Không thể lưu sản phẩm. Vui lòng thử lại.");
+                return;
+            }
+            System.out.println("Sản phẩm đã được đăng (ID=" + newItemId + ")");
+        } catch (Exception ex) {
+            System.err.println("Lỗi khi đăng sản phẩm: " + ex.getMessage());
+            showError("Lỗi hệ thống khi lưu sản phẩm.");
+            return;
+        }
+
         if (onSaveCallback != null) {
             onSaveCallback.run();
         }
