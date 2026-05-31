@@ -3,6 +3,7 @@ package com.bidding.controller.seller;
 import com.bidding.dao.WalletTransactionDAO;
 import com.bidding.service.WalletService;
 import com.bidding.shared.UserSession;
+import com.bidding.util.SceneManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -176,5 +177,14 @@ public class TransactionHistoryController implements Initializable {
 
     private String formatMoney(double amount) {
         return moneyFormat.format(amount);
+    }
+
+    @FXML
+    private void handleBack() {
+        try {
+            SceneManager.switchToSellerDashboard();
+        } catch (Exception e) {
+            System.err.println("Lỗi chuyển về dashboard: " + e.getMessage());
+        }
     }
 }

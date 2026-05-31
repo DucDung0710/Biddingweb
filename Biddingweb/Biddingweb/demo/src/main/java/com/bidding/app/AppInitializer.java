@@ -42,55 +42,8 @@ public class AppInitializer {
         AuctionService.initialize(walletManager, itemManager);
         WalletService.initialize(walletManager);
 
-        // 3. Tạo mock data cho development (optional)
-        initializeMockData();
-
-        System.out.println("[AppInitializer] ✓ Khởi tạo thành công!");
     }
 
-    /**
-     * Tạo mock data cho testing (optional - có thể remove sau)
-     */
-    private static void initializeMockData() {
-        try {
-            System.out.println("[AppInitializer] Tạo mock data...");
-
-            // Đăng ký user mẫu
-            userManager.signUp("admin", "admin123", "admin@vnu.edu.vn", "Admin");
-            userManager.signUp("seller", "seller123", "seller@example.com", "Seller");
-            userManager.signUp("bidder", "bidder123", "bidder@example.com", "Bidder");
-
-            Users admin = userManager.signIn("admin", "admin123");
-            Users seller = userManager.signIn("seller", "seller123");
-            Users bidder = userManager.signIn("bidder", "bidder123");
-
-            if (admin == null || seller == null || bidder == null) {
-                System.err.println("[AppInitializer] ✗ Không thể tạo đủ mock users.");
-                return;
-            }
-
-            // Tạo ví
-            walletManager.registerNewWallet(admin);
-            walletManager.registerNewWallet(seller);
-            walletManager.registerNewWallet(bidder);
-
-            // Nạp tiền test
-            walletManager.depositDirectly(admin.getId(), 1000000);
-            walletManager.depositDirectly(seller.getId(), 500000);
-            walletManager.depositDirectly(bidder.getId(), 5000000);
-
-            // Set current admin cho AuctionService
-            AuctionService.getInstance().setCurrentAdmin(admin);
-
-            System.out.println("[AppInitializer] ✓ Mock data tạo thành công!");
-            System.out.println("  - Admin: " + admin.getUsername() + " (Balance: 1,000,000)");
-            System.out.println("  - Seller: " + seller.getUsername() + " (Balance: 500,000)");
-            System.out.println("  - Bidder: " + bidder.getUsername() + " (Balance: 5,000,000)");
-
-        } catch (Exception e) {
-            System.err.println("[AppInitializer] ✗ Lỗi tạo mock data: " + e.getMessage());
-        }
-    }
 
     // ==================== GETTERS ====================
 

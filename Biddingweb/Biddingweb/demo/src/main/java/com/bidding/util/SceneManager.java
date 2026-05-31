@@ -23,12 +23,7 @@ public class SceneManager {
                 System.err.println("Lỗi: Stage chưa được thiết lập trong SceneManager!");
                 return;
             }
-            java.net.URL res1 = SceneManager.class.getResource(fxmlPath);
-            System.err.println("SceneManager: getResource('" + fxmlPath + "') -> " + res1);
-            java.net.URL res2 = SceneManager.class.getClassLoader().getResource(fxmlPath.startsWith("/") ? fxmlPath.substring(1) : fxmlPath);
-            System.err.println("SceneManager: classLoader.getResource('" + (fxmlPath.startsWith("/") ? fxmlPath.substring(1) : fxmlPath) + "') -> " + res2);
-
-            FXMLLoader fxmlLoader = new FXMLLoader(res1 != null ? res1 : res2);
+            FXMLLoader fxmlLoader = new FXMLLoader(SceneManager.class.getResource(fxmlPath));
             Parent root = fxmlLoader.load();
             Scene scene = stage.getScene();
 

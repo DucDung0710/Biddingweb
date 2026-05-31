@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class TimeUtils {
-    // Định dạng tương thích tuyệt đối với chuỗi ngày tháng trong SQLite
+    // Định dạng tương thích tuyệt đối với chuỗi ngày tháng
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
