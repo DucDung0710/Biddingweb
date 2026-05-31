@@ -49,8 +49,8 @@ public class AdminUserController {
         btnLogout.setOnMouseClicked(e -> {SceneManager.switchToLogin();});
 
         // --- CÀI ĐẶT BỘ LỌC DỮ LIỆU ---
-        cmbRoleFilter.getItems().addAll("Tất cả vai trò", "Bidder", "Seller", "Admin"); // [cite: 220]
-        cmbStatusFilter.getItems().addAll("Tất cả trạng thái", "Hoạt động", "Bị khóa"); // [cite: 221]
+        cmbRoleFilter.getItems().addAll("Tất cả vai trò", "Bidder", "Seller", "Admin");
+        cmbStatusFilter.getItems().addAll("Tất cả trạng thái", "Hoạt động", "Bị khóa");
 
         // Đổ số liệu mẫu cho Badge ví tiền trên Sidebar
         if (lblPendingBadge != null) {

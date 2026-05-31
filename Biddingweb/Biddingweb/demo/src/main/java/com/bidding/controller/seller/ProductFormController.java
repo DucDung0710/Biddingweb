@@ -1,11 +1,5 @@
 package com.bidding.controller.seller;
 
-import com.bidding.app.AppInitializer;
-import com.bidding.shared.Item;
-import com.bidding.shared.UserSession;
-import com.bidding.shared.Users;
-import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -14,168 +8,154 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.math.BigDecimal;
+import java.io.File;
+import com.bidding.shared.Item;
 import java.net.URL;
-import java.time.LocalDate;
 import java.util.ResourceBundle;
 
 public class ProductFormController implements Initializable {
 
-    @FXML
-    private Label lblFormTitle;
-    @FXML
-    private TextField txtName;
-    @FXML
-    private ComboBox<String> cmbType;
-    @FXML
-    private TextArea txtDescription;
-    @FXML
-    private TextField txtStartPrice;
-    @FXML
-    private DatePicker dpStartDate;
-    @FXML
-    private DatePicker dpEndDate;
-    @FXML
-    private TextField txtEndHour;
-    @FXML
-    private TextField txtEndMinute;
-    @FXML
-    private Label lblError;
-    @FXML
-    private Button btnSave;
+    @FXML private Label lblFormTitle;
+    @FXML private Button btnClose;
+    @FXML private Button btnCancel;
+    @FXML private Button btnSave;
 
-    private Item editingProduct;
+    @FXML private Button btnUploadImage;
+    @FXML private ImageView imgProductPreview;
+    @FXML private Label lblUploadPlaceholder;
+
+    @FXML private TextField txtName;
+    @FXML private ComboBox<String> cmbType;
+    @FXML private TextArea txtDescription;
+    @FXML private TextField txtStartPrice;
+    @FXML private DatePicker dpStartDate;
+    @FXML private TextField txtStartHour;
+    @FXML private TextField txtStartMinute;
+    @FXML private DatePicker dpEndDate;
+    @FXML private TextField txtEndHour;
+    @FXML private TextField txtEndMinute;
+    @FXML private Label lblError;
+
+    private File selectedImageFile;
     private Runnable onSaveCallback;
 
     @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        cmbType.setItems(FXCollections.observableArrayList(
-                "Electronics", "Art", "Vehicle"
-        ));
-        dpStartDate.setValue(LocalDate.now());
-        dpEndDate.setValue(LocalDate.now().plusDays(7));
-        txtEndHour.setText("20");
-        txtEndMinute.setText("00");
+    public void initialize(URL location, ResourceBundle resources) {
+        cmbType.getItems().addAll("Điện tử", "Thời trang", "Gia dụng", "Sách & Thiết bị giải trí", "Khác");
+        lblFormTitle.setText("Thêm sản phẩm mới");
+        btnSave.setDefaultButton(true);
+        btnClose.setCancelButton(true);
+        txtDescription.setWrapText(true);
+
+        addNumberValidation(txtStartHour, 23);
+        addNumberValidation(txtStartMinute, 59);
+        addNumberValidation(txtEndHour, 23);
+        addNumberValidation(txtEndMinute, 59);
+        addPriceValidation(txtStartPrice);
     }
 
-    public void setProduct(Item product) {
-        this.editingProduct = product;
+    @FXML
+    private void handleUploadImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Chọn hình ảnh sản phẩm");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.webp")
+        );
 
-        if (product == null) {
-            lblFormTitle.setText("Thêm sản phẩm mới");
-            btnSave.setText("Lưu sản phẩm");
-        } else {
-            lblFormTitle.setText("Sửa sản phẩm");
-            btnSave.setText("Cập nhật");
+        Stage stage = (Stage) btnUploadImage.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
 
-            txtName.setText(product.getItemName());
-            cmbType.setValue(product.getType());
-            txtStartPrice.setText(String.valueOf(product.getFirstprice()));
-            txtDescription.setText(product.getDescription());
-            dpStartDate.setValue(LocalDate.now());
-            dpEndDate.setValue(LocalDate.now().plusDays(7));
-            txtEndHour.setText("20");
-            txtEndMinute.setText("00");
+        if (file != null) {
+            this.selectedImageFile = file;
+            Image image = new Image(file.toURI().toString());
+            imgProductPreview.setImage(image);
+            lblUploadPlaceholder.setVisible(false);
         }
+    }
+
+    @FXML
+    private void handleSave() {
+        if (txtName.getText().isEmpty() || cmbType.getValue() == null || txtStartPrice.getText().isEmpty()) {
+            showError("Vui lòng điền đầy đủ các thông tin bắt buộc (*)");
+            return;
+        }
+
+        if (dpStartDate.getValue() == null || txtStartHour.getText().isEmpty() || txtStartMinute.getText().isEmpty() ||
+            dpEndDate.getValue() == null || txtEndHour.getText().isEmpty() || txtEndMinute.getText().isEmpty()) {
+            showError("Vui lòng nhập đầy đủ mốc thời gian bắt đầu và kết thúc (*)");
+            return;
+        }
+
+        if (selectedImageFile == null) {
+            showError("Vui lòng đăng tải hình ảnh cho sản phẩm");
+            return;
+        }
+
+        System.out.println("Sẵn sàng lưu sản phẩm: " + txtName.getText());
+        System.out.println("Thời gian bắt đầu: " + dpStartDate.getValue() + " " + txtStartHour.getText() + ":" + txtStartMinute.getText());
+        System.out.println("Thời gian kết thúc: " + dpEndDate.getValue() + " " + txtEndHour.getText() + ":" + txtEndMinute.getText());
+        System.out.println("File ảnh truyền đi: " + selectedImageFile.getAbsolutePath());
+
+        // TODO: persist product to database via service/DAO
+        if (onSaveCallback != null) {
+            onSaveCallback.run();
+        }
+
+        handleClose();
     }
 
     public void setOnSaveCallback(Runnable callback) {
         this.onSaveCallback = callback;
     }
 
-    private boolean validate() {
-        if (txtName.getText().trim().isEmpty()) {
-            showError("Vui lòng nhập tên sản phẩm.");
-            txtName.requestFocus();
-            return false;
+    public void setProduct(Item item) {
+        if (item == null) return;
+        lblFormTitle.setText("Sửa sản phẩm");
+        txtName.setText(item.getItemName());
+        cmbType.setValue(item.getType());
+        txtDescription.setText(item.getDescription());
+        if (item.getFirstprice() != null) {
+            txtStartPrice.setText(item.getFirstprice().toPlainString());
         }
-
-        if (cmbType.getValue() == null) {
-            showError("Vui lòng chọn loại sản phẩm.");
-            return false;
-        }
-
-        try {
-            long price = Long.parseLong(txtStartPrice.getText().trim());
-            if (price <= 0) throw new NumberFormatException();
-        } catch (NumberFormatException e) {
-            showError("Giá khởi điểm phải là số nguyên dương.");
-            txtStartPrice.requestFocus();
-            return false;
-        }
-
-        if (dpEndDate.getValue() != null && dpStartDate.getValue() != null) {
-            if (!dpEndDate.getValue().isAfter(dpStartDate.getValue())) {
-                showError("Ngày kết thúc phải sau ngày bắt đầu.");
-                return false;
-            }
-        }
-
-        try {
-            int h = Integer.parseInt(txtEndHour.getText().trim());
-            int m = Integer.parseInt(txtEndMinute.getText().trim());
-            if (h < 0 || h > 23 || m < 0 || m > 59) throw new NumberFormatException();
-        } catch (NumberFormatException e) {
-            showError("Giờ kết thúc không hợp lệ (HH: 0-23, MM: 0-59).");
-            return false;
-        }
-
-        hideError();
-        return true;
     }
 
-    private void showError(String msg) {
-        lblError.setText(msg);
+    @FXML
+    private void handleClose() {
+        Stage stage = (Stage) btnCancel.getScene().getWindow();
+        stage.close();
+    }
+
+    private void showError(String message) {
+        lblError.setText(message);
         lblError.setVisible(true);
         lblError.setManaged(true);
     }
 
-    private void hideError() {
-        lblError.setVisible(false);
-        lblError.setManaged(false);
-    }
-
-    @FXML
-    private void handleSave(ActionEvent event) {
-        if (!validate()) return;
-
-        String name = txtName.getText().trim();
-        String type = cmbType.getValue();
-        long startPrice = Long.parseLong(txtStartPrice.getText().trim());
-        String desc = txtDescription.getText().trim();
-        String endTime = dpEndDate.getValue() + " " + txtEndHour.getText() + ":" + txtEndMinute.getText();
-
-        if (editingProduct == null) {
-            Users currentUser = UserSession.getInstance().getLoggedInUser();
-            if (currentUser != null) {
-                AppInitializer.getItemManager().registerNewItem(currentUser.getId(), name, desc, startPrice);
-                System.out.println("Thêm mới: " + name + " | " + type + " | " + startPrice);
-            } else {
-                System.out.println("Không thể lưu sản phẩm: chưa đăng nhập Seller.");
+    private void addNumberValidation(TextField textField, int maxVal) {
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                textField.setText(newValue.replaceAll("[^\\d]", ""));
             }
-        } else {
-            editingProduct.setItemName(name);
-            editingProduct.setType(type);
-            editingProduct.setDescription(desc);
-            editingProduct.setFirstprice(BigDecimal.valueOf(startPrice));
-            editingProduct.setCurrentPrice(BigDecimal.valueOf(startPrice));
-            System.out.println("Cập nhật ID=" + editingProduct.getItemId() + " → " + name);
-        }
-
-        if (onSaveCallback != null) onSaveCallback.run();
-        closeForm();
+            if (!textField.getText().isEmpty()) {
+                int val = Integer.parseInt(textField.getText());
+                if (val > maxVal) {
+                    textField.setText(String.valueOf(maxVal));
+                }
+            }
+        });
     }
 
-    @FXML
-    private void handleClose(ActionEvent event) {
-        closeForm();
-    }
-
-    private void closeForm() {
-        Stage stage = (Stage) btnSave.getScene().getWindow();
-        stage.close();
+    private void addPriceValidation(TextField textField) {
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                textField.setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
     }
 }
 

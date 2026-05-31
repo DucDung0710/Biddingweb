@@ -18,10 +18,10 @@
 // * File FXML: wallet_seller.fxml
 // *
 // * Chức năng:
-// *  - Hiển thị số dư, số tiền chờ thanh toán, tổng doanh thu
-// *  - Tab Nạp tiền (thẻ cào hoặc Admin)
-// *  - Tab Rút tiền (trừ số dư, ghi lịch sử)
-// *  - Lịch sử giao dịch
+// * - Hiển thị số dư, số tiền chờ thanh toán, tổng doanh thu
+// * - Tab Nạp tiền (thẻ cào hoặc Admin)
+// * - Tab Rút tiền (trừ số dư, ghi lịch sử)
+// * - Lịch sử giao dịch
 // */
 //public class WalletSellerController implements Initializable {
 //
@@ -57,7 +57,7 @@
 //    @FXML private Label lblActionResult;
 //
 //    // Transaction table
-//    @FXML private TableView<TransactionRecord>            tblTransactions;
+//    @FXML private TableView<TransactionRecord>          tblTransactions;
 //    @FXML private TableColumn<TransactionRecord, String>  colTxTime;
 //    @FXML private TableColumn<TransactionRecord, String>  colTxType;
 //    @FXML private TableColumn<TransactionRecord, String>  colTxAmount;
@@ -100,8 +100,8 @@
 //    /**
 //     * Inject dữ liệu từ bên ngoài trước khi show màn hình.
 //     * Ví dụ trong MainController:
-//     *   WalletSellerController ctrl = loader.getController();
-//     *   ctrl.initData(walletManager, currentUser);
+//     * WalletSellerController ctrl = loader.getController();
+//     * ctrl.initData(walletManager, currentUser);
 //     */
 //    public void initData(WalletManager walletManager, Users currentUser) {
 //        this.walletManager = walletManager;

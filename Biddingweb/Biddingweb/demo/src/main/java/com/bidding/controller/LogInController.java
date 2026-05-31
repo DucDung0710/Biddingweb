@@ -59,7 +59,16 @@ public class LogInController {
         request.addProperty("email",    email);
         request.addProperty("password", password);
 
+        // Gửi request dạng JsonObject và nhận về kết quả JsonObject trực tiếp
         JsonObject response = SocketClient.getInstance().sendRequest(request);
+
+        // Kiểm tra nếu server không phản hồi (mất kết nối socket)
+        if (response == null) {
+            showInlineError("Không thể kết nối đến server!");
+            return;
+        }
+
+        // Xử lý khi đăng nhập thành công
         if ("OK".equals(response.get("status").getAsString())) {
             com.bidding.shared.Users user = new com.bidding.shared.Users();
             user.setId(response.get("id").getAsInt());
@@ -68,16 +77,20 @@ public class LogInController {
             user.setRole(response.get("role").getAsString());
             user.setBalance(response.get("balance").getAsDouble());
 
+            // Lưu thông tin user vào Session dùng chung cho hệ thống ở Client
             com.bidding.shared.UserSession.getInstance().setLoggedInUser(user);
 
+            // Chuyển màn hình dựa trên quyền hạn (Role)
             String role = user.getRole();
             if (role.equalsIgnoreCase("Admin"))       SceneManager.switchToAdminDashboard();
             else if (role.equalsIgnoreCase("Seller")) SceneManager.switchToSellerDashboard();
             else                                      SceneManager.switchToDashboard();
         } else {
+            // Hiển thị thông báo lỗi từ Server trả về (sai mật khẩu, tài khoản không tồn tại,...)
             showInlineError(response.get("message").getAsString());
         }
     }
+
     @FXML
     @SuppressWarnings("unused")
     private void handleSignUp(ActionEvent event) {
@@ -85,7 +98,6 @@ public class LogInController {
             SceneManager.switchToSignUp();
         } catch (Exception e) {
             System.err.println("Lỗi chuyển sang màn hình đăng ký: " + e.getMessage());
-            // Log exception instead of printing stack trace
         }
     }
 

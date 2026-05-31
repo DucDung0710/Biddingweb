@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.admin.AdminHistoryController">
+<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.admin.AdminHistoryController">
     <children>
 
         <VBox minWidth="215" prefWidth="215" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 1 0 0;">
@@ -24,7 +31,7 @@
                 </HBox>
                 <HBox fx:id="navAuctions" alignment="CENTER_LEFT" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
                     <Label text="🔨" />
-                    <Label style="-fx-font-size: 13px; -fx-text-fill: #555;" text="Quản lý phiên ĐG" />
+                    <Label style="-fx-font-size: 13px; -fx-text-fill: #555;" text="Quản lý phiên đấu giá" />
                 </HBox>
                 <HBox fx:id="navProducts" alignment="CENTER_LEFT" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
                     <Label text="📦" />
@@ -76,8 +83,8 @@
                         </HBox>
                         <TableView fx:id="tblAuctionHistory" prefHeight="440" style="-fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="colHisId" prefWidth="100" text="Mã phiên ĐG" />
-                                <TableColumn fx:id="colHisProduct" prefWidth="250" text="Sản phẩm đấu giá" />
+                                <TableColumn fx:id="colHisId" prefWidth="116.0" text="Mã phiên đấu giá" />
+                                <TableColumn fx:id="colHisProduct" prefWidth="234.0" text="Sản phẩm đấu giá" />
                                 <TableColumn fx:id="colHisWinner" prefWidth="160" text="Người thắng cuộc" />
                                 <TableColumn fx:id="colHisPrice" prefWidth="140" text="Mức giá chốt" />
                                 <TableColumn fx:id="colHisEndTime" prefWidth="186.66660563151038" text="Thời gian hoàn thành" />

@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.SellerDashboardController">
+<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.seller.SellerDashboardController">
 
-    <!-- ==================== SIDEBAR ==================== -->
     <VBox minWidth="215" prefWidth="215" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 1 0 0;">
 
-        <!-- Logo -->
         <VBox style="-fx-padding: 18 18 14 18; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
             <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="🔨 BidOnline" />
             <Label style="-fx-font-size: 11px; -fx-text-fill: #888888; -fx-padding: 2 0 0 0;" text="Hệ thống đấu giá trực tuyến" />
         </VBox>
 
-        <!-- Nav -->
         <VBox spacing="1" style="-fx-padding: 10 8 10 8;" VBox.vgrow="ALWAYS">
 
             <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="CHÍNH" />
@@ -24,7 +29,7 @@
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #3B6D11; -fx-font-weight: bold;" text="Tổng quan" />
             </HBox>
 
-            <HBox fx:id="navProducts" alignment="CENTER_LEFT" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
+            <HBox alignment="CENTER_LEFT" prefHeight="44.0" prefWidth="198.0" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 15px;" text="📦" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Quản lý sản phẩm" />
             </HBox>
@@ -33,7 +38,6 @@
                 <Label style="-fx-font-size: 15px;" text="📋" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Phiên đấu giá" />
             </HBox>
-
             <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="BÁN HÀNG" />
 
             <HBox fx:id="btnAddProduct" alignment="CENTER_LEFT" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
@@ -52,7 +56,7 @@
                 <Label style="-fx-font-size: 15px;" text="🔔" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Thông báo" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Label fx:id="lblNotifBadge" style="-fx-background-color: #EAF3DE; -fx-text-fill: #3B6D11;-fx-font-size: 10px; -fx-padding: 1 6; -fx-background-radius: 20;" text="0" />
+                <Label fx:id="lblNotifBadge" style="-fx-background-color: #EAF3DE; -fx-text-fill: #3B6D11; -fx-font-size: 10px; -fx-padding: 1 6; -fx-background-radius: 20;" text="0" />
             </HBox>
 
             <HBox fx:id="btnLogout" alignment="CENTER_LEFT" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
@@ -61,33 +65,25 @@
             </HBox>
         </VBox>
 
-        <!-- User Info -->
         <HBox alignment="CENTER_LEFT" spacing="9" style="-fx-padding: 12; -fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0;">
             <Label style="-fx-background-color: #C0DD97; -fx-text-fill: #3B6D11;-fx-background-radius: 50; -fx-min-width: 32; -fx-min-height: 32; -fx-max-width: 32; -fx-max-height: 32;-fx-alignment: center; -fx-font-weight: bold; -fx-font-size: 12px;" text="S" />
             <VBox spacing="2">
-                <Label fx:id="lblUserName" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Tên Seller" />
+                <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Tên Seller" />
                 <Label fx:id="lblUserRole" style="-fx-font-size: 11px; -fx-text-fill: #3B6D11; -fx-font-weight: bold;" text="Seller" />
             </VBox>
         </HBox>
     </VBox>
-    <!-- ==================== END SIDEBAR ==================== -->
-
-
-    <!-- ==================== MAIN CONTENT ==================== -->
     <VBox style="-fx-background-color: #f5f5f5;" HBox.hgrow="ALWAYS">
 
-        <!-- TopBar -->
         <HBox alignment="CENTER_LEFT" prefHeight="50" style="-fx-background-color: white; -fx-border-color: #e0e0e0;-fx-border-width: 0 0 1 0; -fx-padding: 0 20;">
             <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Tổng quan — Seller" />
             <Region HBox.hgrow="ALWAYS" />
             <Button fx:id="btnTopAddProduct" onAction="#handleAddProduct" style="-fx-background-color: #3B6D11; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;-fx-background-radius: 8; -fx-padding: 7 14; -fx-cursor: hand;" text="+ Đăng sản phẩm mới" />
         </HBox>
 
-        <!-- Scrollable content -->
         <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
             <VBox spacing="14" style="-fx-padding: 16 20;">
 
-                <!-- ===== STAT CARDS ===== -->
                 <HBox spacing="10">
 
                     <VBox spacing="4" style="-fx-background-color: white; -fx-background-radius: 10;-fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 12 14;" HBox.hgrow="ALWAYS">
@@ -115,22 +111,18 @@
                     </VBox>
                 </HBox>
 
-                <!-- ===== PRODUCT TABLE PANEL ===== -->
                 <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e8e8e8; -fx-border-radius: 10;">
 
-                    <!-- Panel Header -->
                     <HBox alignment="CENTER_LEFT" prefHeight="46" style="-fx-padding: 0 16; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
                         <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Danh sách sản phẩm đấu giá" />
                     </HBox>
 
-                    <!-- Search + Filter bar -->
                     <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-padding: 10 16;">
                         <TextField fx:id="txtSearch" prefWidth="220" promptText="Tìm sản phẩm..." style="-fx-font-size: 12px; -fx-background-radius: 6;  -fx-border-color: #dddddd; -fx-border-radius: 6; -fx-padding: 5 10;" />
                         <ComboBox fx:id="cmbFilterStatus" prefWidth="160" promptText="Tất cả trạng thái" style="-fx-font-size: 12px;" />
-                        <Button onAction="#handleFilter" style="-fx-font-size: 12px; -fx-background-color: transparent;-fx-border-color: #cccccc; -fx-border-radius: 6;                                        -fx-cursor: hand; -fx-padding: 5 12;" text="Lọc" />
+                        <Button onAction="#handleFilter" style="-fx-font-size: 12px; -fx-background-color: transparent;-fx-border-color: #cccccc; -fx-border-radius: 6;                                         -fx-cursor: hand; -fx-padding: 5 12;" text="Lọc" />
                     </HBox>
 
-                    <!-- TableView -->
                     <TableView fx:id="tblProducts" prefHeight="340" style="-fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colName" prefWidth="175" text="Tên sản phẩm" />
@@ -150,6 +142,4 @@
             </VBox>
         </ScrollPane>
     </VBox>
-    <!-- ==================== END MAIN CONTENT ==================== -->
-
-</HBox>
+    </HBox>
