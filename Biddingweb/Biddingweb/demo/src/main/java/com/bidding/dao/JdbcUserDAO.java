@@ -121,6 +121,22 @@ public class JdbcUserDAO implements UserDAO {
         }
     }
 
+    public Users findById(int id) {
+        String q = "SELECT id, username, email, password, role, balance FROM users WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(q)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRowToUser(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi findById: " + e.getMessage());
+        }
+        return null;
+    }
+
     private Users mapRowToUser(ResultSet rs) throws SQLException {
         Users u = new Users();
         u.setId(rs.getInt("id"));
