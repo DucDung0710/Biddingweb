@@ -1,67 +1,118 @@
-# Biddingweb
+# 📝 ONLINE AUCTION SYSTEM - BIDDING WEB PROJECT
 
-Một hệ thống đấu giá trực tuyến nhỏ (demo) gồm Server, Client (JavaFX) và các module hỗ trợ.
+## 1. Giới thiệu dự án
+Hệ thống Đấu giá trực tuyến (Online Auction System) được xây dựng theo kiến trúc **Client-Server**, sử dụng **Java 21** và **JavaFX**. Dự án tập trung vào tính thực tế, xử lý đồng thời và tối ưu hóa hiệu năng trên nền tảng Cloud.
 
-Tóm tắt ngắn: Ứng dụng mô phỏng nền tảng đấu giá — cho phép người bán đăng sản phẩm, người mua/đấu thầu, và server xử lý phiên đấu giá theo thời gian thực.
+### Đặc điểm kỹ thuật nổi bật:
 
-Công nghệ & môi trường chạy:
-- Java 21
-- Maven để build và download dependency
-- JavaFX cho client (phiên bản 21.x được sử dụng trong dự án này)
-- Hệ điều hành: Windows, macOS, Linux (một vài lệnh chạy JavaFX module-path có thể cần điều chỉnh theo OS)
+- **Cloud Database:** Triển khai MySQL trên **Aiven Cloud**, đảm bảo tính sẵn sàng cao.
+- **Performance:** Tích hợp **HikariCP** để quản lý Connection Pool, giảm lag khi có nhiều phiên đấu giá cùng lúc.
+- **Realtime:** Cập nhật giá thầu tức thời qua **Socket** (mô hình Observer).
 
-Cấu trúc chính (thư mục / module):
-- `Biddingweb/demo` — ứng dụng demo (server + client) với mã nguồn Java và tài nguyên FXML.
-- `scripts/` — các công cụ/kiểm tra hỗ trợ (ví dụ: kiểm tra FXML).
-- `target/` — output build (class files, dependency).
+## 2. Kiến trúc và Công nghệ (MVC & Design Patterns)
+Dự án được thiết kế chuẩn hóa để đáp ứng các tiêu chí chấm điểm kỹ thuật:
 
-Mô tả các package / module chính:
-- `com.bidding.shared` (hoặc module `shared`): chứa các lớp dùng chung giữa client và server (DTO, model, hằng số, utility chung). Dùng để tránh lặp mã và đảm bảo contract giữa các bên.
-- `com.bidding.engine` (hoặc module `engine`): triển khai logic cốt lõi của hệ thống đấu giá (xử lý phiên đấu, cơ chế so khớp giá, tính toán auto-bid, quy tắc business).
-- `com.bidding.service` (hoặc module `service`): lớp service xử lý nghiệp vụ cao hơn, kết nối giữa `engine` và `persistence` (ví dụ: quản lý sản phẩm, người dùng, phiên đấu, giao dịch).
-- `com.bidding.server`: thành phần mạng/Server (socket/http) chịu trách nhiệm lắng nghe kết nối, nhận/điều phối sự kiện, và gửi thông báo thời gian thực đến client.
-- `com.bidding.client` / `com.bidding.app`: giao diện người dùng (JavaFX), controllers, và view (FXML). Chịu trách nhiệm hiển thị danh sách đấu giá, form đăng sản phẩm, và trải nghiệm người dùng.
-- `db` / `scripts` : chứa script tạo schema, dữ liệu mẫu và các tiện ích hỗ trợ triển khai.
+- **Mô hình MVC:** Phân tách rõ ràng giữa **Model** (Entity, DAO), **View** (JavaFX FXML), và **Controller**.
+- **Design Patterns:** **Singleton:** Quản lý kết nối Database và Socket Client. **Factory:** Khởi tạo các loại người dùng (Admin, Seller, Bidder).
+- **Observer:** Cập nhật trạng thái phiên đấu giá và giá thầu realtime.
 
-Lệnh dòng để build và chạy (lưu ý thay đổi đường dẫn JavaFX theo OS nếu cần):
+- **Database:** MySQL 8.x (Aiven) + **DAO Pattern** để quản lý truy vấn.
 
-Build và download dependency:
+### Các module / package chính
+
+- `app` — Client (JavaFX) entrypoint và UI controllers.
+- `server` — Logic Server, Socket handler và entrypoint `ServerMain`.
+- `controller` — JavaFX controllers (ứng xử theo MVC).
+- `model` — Business entities và validation logic.
+- `dao` — Data Access Objects, mapping tới MySQL.
+- `util` — Helper classes (HikariCP config, Socket client, NetworkConfig).
+- `shared` — Các util, DTO, và hằng số dùng chung giữa client & server.
+- `engine` — Logic đấu giá lõi: xử lý bid, so sánh, auto-bidding, anti-sniping.
+- `service` — Lớp trung gian (service layer) kết hợp DAO và engine để thực thi nghiệp vụ.
+
+## 3. Danh sách chức năng (Theo tiêu chí chấm điểm)
+
+### Chức năng bắt buộc (Core):
+
+- [x] **Quản lý người dùng:** Đăng ký, đăng nhập, phân quyền (Role-based Access Control).
+- [x] **Quản lý sản phẩm:** Seller thực hiện CRUD sản phẩm và thiết lập thông số đấu giá.
+- [x] **Đấu giá Realtime:** Đặt giá thầu, kiểm tra tính hợp lệ và cập nhật tức thời cho tất cả client qua Socket.
+- [x] **Xử lý kết thúc:** Tự động đóng phiên khi hết giờ và xác định người thắng cuộc.
+- [x] **Xử lý ngoại lệ:** Kiểm soát lỗi mạng, lỗi nhập liệu và lỗi logic nghiệp vụ.
+
+### Chức năng nâng cao & Sáng tạo (Bonus):
+
+- [x] **Auto-Bidding:** Hệ thống tự động đặt giá thầu dựa trên mức giá tối đa người dùng thiết lập.
+- [x] **Anti-Sniping (Auto-Extension):** Tự động gia hạn thời gian đấu giá (thêm 1-2 phút) nếu có người đặt thầu trong những giây cuối cùng, đảm bảo tính công bằng.
+- [x] **Concurrency Handling:** Đảm bảo tính toàn vẹn dữ liệu (Atomic updates) khi nhiều người cùng bid ở một mili giây.
+
+## 4. Kiểm thử và Quy trình phát triển (Quality Assurance)
+
+- **Unit Test:** Sử dụng **JUnit 5** để kiểm thử logic nghiệp vụ (DAO, Bid Validation).
+- **CI/CD:** Tích hợp **GitHub Actions** để tự động build và kiểm tra mã nguồn sau mỗi lần commit.
+- **Coding Convention:** Tuân thủ quy tắc đặt tên và cấu trúc code Java chuẩn.
+
+## 5. Hướng dẫn cài đặt & Khởi chạy
+
+### Bước 1: Biên dịch (Maven)
+```bash
+mvn clean package
 ```
-mvn -f Biddingweb/demo/pom.xml clean compile
-mvn -f Biddingweb/demo/pom.xml dependency:copy-dependencies
-```
 
-Chạy Server (từ thư mục `Biddingweb/demo`):
-```
+### Bước 2: Chạy Server (Cổng mặc định: 8080)
+```bash
 java -cp "target/classes;target/dependency/*" com.bidding.server.ServerMain
 ```
 
-Chạy Client / Ứng dụng (JavaFX) (Windows example — điều chỉnh `--module-path` cho Linux/macOS):
-```
-java --module-path "%USERPROFILE%\.m2\repository\org\openjfx\javafx-controls\21.0.6\javafx-controls-21.0.6-win.jar;..." --add-modules javafx.controls,javafx.fxml -cp "target/classes;target/dependency/*" com.bidding.app.BiddingApplication
-```
-
-Hoặc chạy script tiện lợi (Windows):
-```
-cd Biddingweb/demo
-run-app.bat
+### Bước 3: Chạy Client (JavaFX)
+```bash
+java --module-path /lib --add-modules javafx.controls,javafx.fxml -cp "target/classes;target/dependency/*" com.bidding.app.BiddingApplication
 ```
 
-Ghi chú hệ điều hành:
-- Trên Linux/macOS, đường phân cách classpath và module-path khác (`:` thay cho `;`).
-- Kiểm tra kỹ `--module-path` cho JavaFX (thư viện platform-specific). Nếu gặp lỗi missing JavaFX, hãy cài JavaFX phù hợp với OS.
+## 6. Cấu trúc thư mục dự án (đã sửa cho khớp với repo)
 
-Danh sách chức năng đã hoàn thành (tóm tắt):
-- Đăng/hiển thị sản phẩm (seller)
-- Danh sách phiên đấu và tham gia đấu giá (bidder)
-- Dashboard admin + quản lý người dùng, sản phẩm, phiên đấu
-- Tích hợp socket/network cơ bản cho thời gian thực
+```
+Biddingweb/
+├── README.md                       # README chính (gốc)
+├── scripts/                        # Các script tiện ích (check_fxml_*.py, validate_fxml_xml.py)
+├── target/                         # Build outputs (cấp repo)
+└── Biddingweb/
+	├── README.md                   # README module/demo
+	├── demo/
+	│   ├── pom.xml
+	│   ├── run-app.bat
+	│   ├── compile_out.txt
+	│   ├── cp.txt
+	│   ├── src/
+	│   │   ├── main/
+	│   │   │   ├── java/
+	│   │   │   │   └── com/bidding/
+	│   │   │   │       ├── app/         # Client (JavaFX) entrypoint & UI
+	│   │   │   │       ├── server/      # Server entrypoint & Socket logic
+	│   │   │   │       ├── controller/  # JavaFX controllers (MVC)
+	│   │   │   │       ├── model/       # Business entities & validation
+	│   │   │   │       ├── dao/         # Data Access Objects
+	│   │   │   │       ├── service/     # Service layer (AuctionService, UserService, WalletService)
+	│   │   │   │       ├── shared/      # Shared DTOs & utilities (UserSession, Item, WalletManager)
+	│   │   │   │       ├── engine/      # Core auction logic (AuctionOperator, anti-sniping)
+	│   │   │   │       ├── util/        # Helpers (HikariCP, NetworkConfig, SocketClient)
+	│   │   │   │       └── classes_test/ # Test helper classes
+	│   │   │   └── resources/
+	│   │   │       ├── admin.view/
+	│   │   │       ├── bidder.view/
+	│   │   │       ├── seller.view/
+	│   │   │       └── uilogin.view/
+	│   └── target/                     # Demo build outputs
+	└── target/
+```
 
-Tài liệu bổ sung / demo:
-- Báo cáo PDF: (thêm link ở đây khi có)
-- Video demo: (thêm link ở đây khi có)
+## 7. Ghi chú về Anti-Sniping / Auto-Extension
 
-Liên hệ / phát triển tiếp: mở issue hoặc PR trên repo để thảo luận tính năng, bugfix hoặc hướng mở rộng (ví dụ tách `shared`, `engine`, `service` thành các module Maven riêng để reuse).
+- Tính năng **Anti-Sniping**: khi có bid trong khoảng cuối cùng (ví dụ 30s trước khi kết thúc), hệ thống sẽ tự động gia hạn thêm một khoảng thời gian cấu hình được (ví dụ +60–120s). Giải pháp được implement trong module `engine` và được phối hợp bởi `service` để đảm bảo atomicity và phát notification qua Socket.
+
+## 8. Tài liệu & Demo
+
+- Báo cáo PDF và video demo: (đính kèm tại thư mục `docs/` nếu có)
 
 ---
-Xem chi tiết hướng dẫn nhanh và phần demo trong [Biddingweb/demo](Biddingweb/demo).
+_Nội dung đã được cập nhật từ mẫu yêu cầu. Nếu muốn đổi văn phong (tiếng Anh/Việt) hoặc thêm link tài liệu, báo mình biết._
