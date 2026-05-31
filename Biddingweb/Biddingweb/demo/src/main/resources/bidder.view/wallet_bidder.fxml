@@ -32,12 +32,6 @@
                 <Label style="-fx-font-size: 15px;" text="🕐" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Lịch sử đấu giá" />
             </HBox>
-            <HBox fx:id="navNotifications" alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
-                <Label style="-fx-font-size: 15px;" text="🔔" />
-                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Thông báo" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Label fx:id="lblNotifBadge" style="-fx-background-color: #E6F1FB; -fx-text-fill: #185FA5;                        -fx-font-size: 10px; -fx-padding: 1 7; -fx-background-radius: 20;" text="3" />
-            </HBox>
             <!-- Ví đang active -->
             <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #E6F1FB; -fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 15px;" text="💰" />
