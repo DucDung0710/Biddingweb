@@ -40,7 +40,7 @@
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Phiên đấu giá" />
             </HBox>
             <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="TÀI KHOẢN" />
-            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+            <HBox fx:id="navTransactionHistory" alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 15px;" text="🕐" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Lịch sử bán" />
             </HBox>
@@ -50,7 +50,7 @@
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #3B6D11; -fx-font-weight: bold;" text="Ví của tôi" />
             </HBox>
             <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="HỆ THỐNG" />
-            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
+            <HBox fx:id="navNotification" alignment="CENTER_LEFT" spacing="10" style="-fx-background-radius: 8; -fx-padding: 9 10; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 15px;" text="🔔" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Thông báo" />
             </HBox>

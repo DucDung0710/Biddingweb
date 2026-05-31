@@ -1,0 +1,91 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Maven: Compile",
+      "type": "shell",
+      "command": "C:\\Users\\ADMIN\\.maven\\maven-3.9.16\\apache-maven-3.9.16\\bin\\mvn.cmd",
+      "args": ["compile", "-q"],
+      "options": {
+        "cwd": "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo",
+        "env": {
+          "JAVA_HOME": "C:\\Users\\ADMIN\\.vscode\\extensions\\redhat.java-1.54.0-win32-x64\\jre\\21.0.10-win32-x86_64",
+          "PATH": "${env:PATH};C:\\Users\\ADMIN\\.vscode\\extensions\\redhat.java-1.54.0-win32-x64\\jre\\21.0.10-win32-x86_64\\bin"
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent"
+      }
+    },
+    {
+      "label": "Maven: Download Dependencies",
+      "type": "shell",
+      "command": "C:\\Users\\ADMIN\\.maven\\maven-3.9.16\\apache-maven-3.9.16\\bin\\mvn.cmd",
+      "args": ["dependency:copy-dependencies", "-q"],
+      "options": {
+        "cwd": "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo",
+        "env": {
+          "JAVA_HOME": "C:\\Users\\ADMIN\\.vscode\\extensions\\redhat.java-1.54.0-win32-x64\\jre\\21.0.10-win32-x86_64",
+          "PATH": "${env:PATH};C:\\Users\\ADMIN\\.vscode\\extensions\\redhat.java-1.54.0-win32-x64\\jre\\21.0.10-win32-x86_64\\bin"
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent"
+      }
+    },
+    {
+      "label": "Run ServerMain",
+      "type": "shell",
+      "command": "C:\\Users\\ADMIN\\.vscode\\extensions\\redhat.java-1.54.0-win32-x64\\jre\\21.0.10-win32-x86_64\\bin\\java.exe",
+      "args": [
+        "-cp",
+        "target/classes;target/dependency/*",
+        "com.bidding.server.ServerMain"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo"
+      },
+      "dependsOn": ["Maven: Compile", "Maven: Download Dependencies"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Run BiddingApplication",
+      "type": "shell",
+      "command": "C:\\Users\\ADMIN\\.vscode\\extensions\\redhat.java-1.54.0-win32-x64\\jre\\21.0.10-win32-x86_64\\bin\\java.exe",
+      "args": [
+        "--module-path",
+        "${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-controls\\21.0.6\\javafx-controls-21.0.6-win.jar;${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-fxml\\21.0.6\\javafx-fxml-21.0.6-win.jar;${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-graphics\\21.0.6\\javafx-graphics-21.0.6-win.jar;${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-base\\21.0.6\\javafx-base-21.0.6-win.jar",
+        "--add-modules",
+        "javafx.controls,javafx.fxml,javafx.graphics",
+        "-cp",
+        "target/classes;target/dependency/*",
+        "com.bidding.app.BiddingApplication"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo"
+      },
+      "dependsOn": ["Maven: Compile", "Maven: Download Dependencies"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Run Demo App",
+      "type": "shell",
+      "command": "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo\\run-app.bat",
+      "options": {
+        "cwd": "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}

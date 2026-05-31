@@ -1,5 +1,6 @@
 package com.bidding.controller.admin;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class AdminProductController {
     @FXML private TableColumn<Item, String> colProdName;
     @FXML private TableColumn<Item, String> colProdCategory;
     @FXML private TableColumn<Item, String> colProdStatus;
-    @FXML private TableColumn<Item, Double> colProdPrice;
+    @FXML private TableColumn<Item, BigDecimal> colProdPrice;
     @FXML private TableColumn<Item, Void> colProdAction;
 
     private final ObservableList<Item> masterData = FXCollections.observableArrayList();
@@ -57,7 +58,7 @@ public class AdminProductController {
 
 
         // 1. Khởi tạo cấu trúc các cột dữ liệu
-        colProdName.setCellValueFactory(new PropertyValueFactory<>("ItemName"));
+        colProdName.setCellValueFactory(new PropertyValueFactory<>("itemName"));
         colProdCategory.setCellValueFactory(new PropertyValueFactory<>("description"));
         colProdPrice.setCellValueFactory(new PropertyValueFactory<>("firstprice"));
         colProdStatus.setCellValueFactory(new PropertyValueFactory<>("status"));

@@ -1,36 +1,29 @@
-module demo {
+module com.bidding.demo {
     requires javafx.controls;
     requires javafx.fxml;
-    requires transitive javafx.graphics;
-    requires java.sql;
-    requires javafx.base;
-    requires transitive com.google.gson;
+    requires javafx.graphics;
+    requires java.base;
+    requires transitive java.sql;
     requires com.zaxxer.hikari;
+    requires com.google.gson;
 
+    opens com.bidding.app to javafx.fxml;
+    opens com.bidding.controller to javafx.fxml;
+    opens com.bidding.controller.admin to javafx.fxml;
+    opens com.bidding.controller.bidder to javafx.fxml;
+    opens com.bidding.controller.seller to javafx.fxml;
+    opens com.bidding.controller.wallet to javafx.fxml;
 
-
-    // 1. Cấu hình các gói Tiện ích & Engine
-    exports com.bidding.util;
-    exports com.bidding.engine;
-    exports com.bidding.shared;
-    opens com.bidding.util to javafx.graphics, javafx.fxml;
-    opens com.bidding.engine to javafx.fxml;
-    opens com.bidding.shared to javafx.fxml;
-
-    // 2. Cấu hình gói Main App
     exports com.bidding.app;
-    opens com.bidding.app to javafx.fxml, javafx.graphics;
-
-    // 3. Cấu hình các gói Controllers (Mở cho FXML và Graphics)
-    exports com.bidding.controller;
-    opens com.bidding.controller to javafx.fxml, javafx.graphics;
-
-    exports com.bidding.controller.bidder;
-    opens com.bidding.controller.bidder to javafx.fxml, javafx.graphics;
-
     exports com.bidding.controller.admin;
-    opens com.bidding.controller.admin to javafx.fxml, javafx.graphics;
-
+    exports com.bidding.controller.bidder;
+    exports com.bidding.controller.seller;
+    exports com.bidding.controller;
+    exports com.bidding.service;
+    exports com.bidding.dao;
+    exports com.bidding.shared;
+    exports com.bidding.util;
+    exports com.bidding.database;
+    exports com.bidding.server;
     exports com.bidding.model;
-    opens com.bidding.model to javafx.base, javafx.fxml, com.google.gson;
 }

@@ -2,14 +2,27 @@ package com.bidding.controller.seller;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import com.bidding.service.AuctionService;
+import com.bidding.shared.Item;
+import com.bidding.shared.UserSession;
+import com.bidding.shared.Users;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 public class SellerDashboardController {
 
@@ -27,6 +40,18 @@ public class SellerDashboardController {
 
     @FXML
     private HBox navOverview;
+
+    @FXML
+    private HBox btnAddProduct;
+
+    @FXML
+    private HBox navAuctions;
+
+    @FXML
+    private HBox navTransactionHistory;
+
+    @FXML
+    private HBox navNotification;
 
     @FXML
     private HBox btnLogout;
@@ -59,28 +84,28 @@ public class SellerDashboardController {
     private Label lblStatPending;
 
     @FXML
-    private TableView<?> tblProducts;
+    private TableView<Item> tblProducts;
 
     @FXML
-    private TableColumn<?, ?> colName;
+    private TableColumn<Item, String> colName;
 
     @FXML
-    private TableColumn<?, ?> colType;
+    private TableColumn<Item, String> colType;
 
     @FXML
-    private TableColumn<?, ?> colStartPrice;
+    private TableColumn<Item, String> colStartPrice;
 
     @FXML
-    private TableColumn<?, ?> colCurrentPrice;
+    private TableColumn<Item, String> colCurrentPrice;
 
     @FXML
-    private TableColumn<?, ?> colEndTime;
+    private TableColumn<Item, String> colEndTime;
 
     @FXML
-    private TableColumn<?, ?> colStatus;
+    private TableColumn<Item, String> colStatus;
 
     @FXML
-    private TableColumn<?, ?> colActions;
+    private TableColumn<Item, String> colActions;
 
     // ==========================================
     // 3. LOGIC XỬ LÝ KHỞI TẠO & CẬP NHẬT THÔNG TIN
@@ -90,6 +115,54 @@ public class SellerDashboardController {
     public void initialize() {
         // Hàm tự động chạy khi file FXML được nạp thành công
         // Bạn có thể thêm logic lấy danh sách sản phẩm hoặc cấu hình bảng tại đây
+        // Gán sự kiện click cho các mục sidebar để tương tác
+        try {
+            if (navOverview != null) {
+                navOverview.setOnMouseClicked(e -> handleNavOverview());
+            }
+            if (btnAddProduct != null) {
+                btnAddProduct.setOnMouseClicked(e -> {
+                    System.out.println("Sidebar: btnAddProduct clicked");
+                    handleAddProduct(null);
+                });
+            }
+            if (navAuctions != null) {
+                navAuctions.setOnMouseClicked(e -> {
+                    System.out.println("Sidebar: navAuctions clicked");
+                    handleNavAuctions();
+                });
+            }
+            if (navTransactionHistory != null) {
+                navTransactionHistory.setOnMouseClicked(e -> {
+                    System.out.println("Sidebar: navTransactionHistory clicked");
+                    com.bidding.util.SceneManager.switchToSellerTransactionHistory();
+                });
+            }
+            if (navNotification != null) {
+                navNotification.setOnMouseClicked(e -> {
+                    System.out.println("Sidebar: navNotification clicked");
+                    com.bidding.util.SceneManager.switchToSellerNotifications();
+                });
+            }
+            if (btnLogout != null) {
+                btnLogout.setOnMouseClicked(e -> handleOut(null));
+            }
+        } catch (Exception ex) {
+            System.err.println("SellerDashboardController initialize error: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        // Thiết lập cell factories cho các cột (hiển thị thuộc tính Item)
+        try {
+            colName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getItemName()));
+            colType.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getType()));
+            colStartPrice.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getFirstprice() != null ? c.getValue().getFirstprice().toString() : "0"));
+            colCurrentPrice.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCurrentPrice() != null ? c.getValue().getCurrentPrice().toString() : "0"));
+            colEndTime.setCellValueFactory(c -> new SimpleStringProperty(""));
+            colStatus.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getStatus()));
+        } catch (Exception e) {
+            System.err.println("Không thể gán cell factories cho TableView: " + e.getMessage());
+        }
     }
 
     /**
@@ -130,7 +203,50 @@ public class SellerDashboardController {
     
     @FXML
     private void handleAddProduct(ActionEvent event) {
-        // Xử lý sự kiện thêm sản phẩm mới
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/seller.view/product_form.fxml"));
+            Parent root = loader.load();
+
+            ProductFormController formController = loader.getController();
+            formController.setOnSaveCallback(this::reloadProducts);
+
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.setTitle("Đăng sản phẩm mới");
+            dialog.setScene(new Scene(root));
+            dialog.showAndWait();
+        } catch (Exception e) {
+            System.err.println("Lỗi mở form thêm sản phẩm: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void reloadProducts() {
+        try {
+            Users currentUser = UserSession.getInstance().getLoggedInUser();
+            if (currentUser == null) {
+                System.out.println("Không có user đang đăng nhập.");
+                return;
+            }
+            java.util.List<Item> items = AuctionService.getInstance().getSellerItems(currentUser.getId());
+            ObservableList<Item> obs = FXCollections.observableArrayList(items);
+            @SuppressWarnings("unchecked")
+            TableView<Item> tv = (TableView<Item>) this.tblProducts;
+            tv.setItems(obs);
+            System.out.println("Đã tải lại " + items.size() + " sản phẩm cho seller.");
+        } catch (Exception ex) {
+            System.err.println("Lỗi khi tải sản phẩm: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    private void handleNavOverview() {
+        com.bidding.util.SceneManager.switchToSellerDashboard();
+    }
+
+    private void handleNavAuctions() {
+        // Chuyển tạm tới trang quản lý sản phẩm (hiện chưa có màn hình auctions riêng)
+        com.bidding.util.SceneManager.switchToSellerProductManagement();
     }
 
     @FXML
@@ -142,5 +258,6 @@ public class SellerDashboardController {
     private void handleOut(MouseEvent event) {
         // Xử lý sự kiện đăng xuất khi click chuột vào chữ Đăng xuất
         System.out.println("Đang đăng xuất hệ thống...");
+        com.bidding.util.SceneManager.switchToLogin();
     }
 }

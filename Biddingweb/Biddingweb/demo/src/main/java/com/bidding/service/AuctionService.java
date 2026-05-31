@@ -1,12 +1,12 @@
 package com.bidding.service;
 
+import java.util.List;
+
 import com.bidding.engine.AuctionOperator;
 import com.bidding.shared.Item;
 import com.bidding.shared.ItemManager;
 import com.bidding.shared.Users;
 import com.bidding.shared.WalletManager;
-
-import java.util.List;
 
 /**
  * AuctionService - Bridge giữa GUI Controllers và Backend Engine

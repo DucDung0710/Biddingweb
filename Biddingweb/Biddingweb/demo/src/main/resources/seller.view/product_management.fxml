@@ -11,7 +11,7 @@
 <?import javafx.scene.paint.LinearGradient?>
 <?import javafx.scene.paint.Stop?>
 
-<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.ProductManagementController">
+<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.seller.ProductManagementController">
 
     <VBox minWidth="230" prefWidth="230" style="-fx-background-color: white; -fx-border-color: #eef0f2; -fx-border-width: 0 1 0 0;">
 
@@ -57,14 +57,14 @@
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #4a5568;" text="Đăng sản phẩm mới" />
             </HBox>
 
-            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-radius: 6; -fx-padding: 10 12; -fx-cursor: hand;">
+            <HBox fx:id="navTransactionHistory" alignment="CENTER_LEFT" spacing="12" style="-fx-background-radius: 6; -fx-padding: 10 12; -fx-cursor: hand;">
                 <Label text="🕐" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #4a5568;" text="Lịch sử giao dịch" />
             </HBox>
 
             <Label style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #a0aec0; -fx-padding: 16 12 6 12;" text="TÀI KHOẢN" />
 
-            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-radius: 6; -fx-padding: 10 12; -fx-cursor: hand;">
+            <HBox fx:id="navNotification" alignment="CENTER_LEFT" spacing="12" style="-fx-background-radius: 6; -fx-padding: 10 12; -fx-cursor: hand;">
                 <Label text="🔔" />
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #4a5568;" text="Thông báo" />
                 <Region HBox.hgrow="ALWAYS" />
@@ -96,7 +96,7 @@
                     <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" text="Quản lý sản phẩm" />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="btnAddNewProduct" style="-fx-background-color: #3B6D11; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 10 18; -fx-cursor: hand;" text="+ Đăng sản phẩm mới" />
+                <Button fx:id="btnAddNewProduct" onAction="#handleAddNewProduct" style="-fx-background-color: #3B6D11; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 10 18; -fx-cursor: hand;" text="+ Đăng sản phẩm mới" />
             </HBox>
         </VBox>
 
@@ -109,16 +109,16 @@
         </HBox>
 
         <HBox spacing="24" style="-fx-padding: 0 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
-            <VBox alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-border-color: #0b5ed7; -fx-border-width: 0 0 2 0; -fx-cursor: hand;">
+            <VBox fx:id="tabAll" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-border-color: #0b5ed7; -fx-border-width: 0 0 2 0; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #3B6D11;" text="Tất cả (5)" />
             </VBox>
-            <VBox alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
+            <VBox fx:id="tabActive" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="Đang diễn ra (3)" />
             </VBox>
-            <VBox alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
+            <VBox fx:id="tabUpcoming" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="Sắp bắt đầu (1)" />
             </VBox>
-            <VBox alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
+            <VBox fx:id="tabEnded" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
                 <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="Đã kết thúc (1)" />
             </VBox>
         </HBox>
@@ -159,9 +159,9 @@
                         </HBox>
                     </VBox>
                     <HBox alignment="CENTER" spacing="6" style="-fx-padding: 0 10 0 20;">
-                        <Button style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Xem" />
-                        <Button style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Sửa" />
-                        <Button style="-fx-background-color: white; -fx-border-color: #fca5a5; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-text-fill: #dc3545; -fx-cursor: hand;" text="Xóa" />
+                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Xem" />
+                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Sửa" />
+                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #fca5a5; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-text-fill: #dc3545; -fx-cursor: hand;" text="Xóa" />
                     </HBox>
                 </HBox>
 
@@ -197,9 +197,9 @@
                         </HBox>
                     </VBox>
                     <HBox alignment="CENTER" spacing="6" style="-fx-padding: 0 10 0 20;">
-                        <Button style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Xem" />
-                        <Button style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Sửa" />
-                        <Button style="-fx-background-color: white; -fx-border-color: #fca5a5; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-text-fill: #dc3545; -fx-cursor: hand;" text="Xóa" />
+                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Xem" />
+                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-cursor: hand;" text="Sửa" />
+                        <Button onAction="#handleProductCardAction" style="-fx-background-color: white; -fx-border-color: #fca5a5; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6 12; -fx-text-fill: #dc3545; -fx-cursor: hand;" text="Xóa" />
                     </HBox>
                 </HBox>
 

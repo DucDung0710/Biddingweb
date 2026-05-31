@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.bidding.dao.JdbcItemDAO;
 
 public class ItemManager {
     private final Map<Integer, List<Item>> allItems = new HashMap<>();
@@ -15,7 +16,21 @@ public class ItemManager {
         newItem.setStatus(Item.STATUS_PENDING);
         newItem.setCurrentPrice(newItem.getFirstprice());
         allItems.computeIfAbsent(userId, k -> new ArrayList<>()).add(newItem);
-        System.out.println("Đã đăng ký mặt hàng: " + itemName + " (ID: " + newItem.getItemId() + ") cho User: " + userId);
+        System.out.println("Đã đăng ký mặt hàng (in-memory): " + itemName + " (ID: " + newItem.getItemId() + ") cho User: " + userId);
+
+        // Try persisting to DB via JdbcItemDAO; best-effort (non-blocking for UI)
+        try {
+            JdbcItemDAO dao = new JdbcItemDAO();
+            boolean ok = dao.insert(newItem);
+            if (ok) {
+                System.out.println("Đã lưu mặt hàng vào DB: ID=" + newItem.getItemId());
+            } else {
+                System.err.println("Không thể lưu mặt hàng vào DB: ID=" + newItem.getItemId());
+            }
+        } catch (Exception ex) {
+            System.err.println("Lỗi khi ghi item vào DB: " + ex.getMessage());
+        }
+
         return newItem.getItemId();
     }
 

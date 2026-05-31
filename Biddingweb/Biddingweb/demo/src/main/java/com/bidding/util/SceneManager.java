@@ -23,7 +23,12 @@ public class SceneManager {
                 System.err.println("Lỗi: Stage chưa được thiết lập trong SceneManager!");
                 return;
             }
-            FXMLLoader fxmlLoader = new FXMLLoader(SceneManager.class.getResource(fxmlPath));
+            java.net.URL res1 = SceneManager.class.getResource(fxmlPath);
+            System.err.println("SceneManager: getResource('" + fxmlPath + "') -> " + res1);
+            java.net.URL res2 = SceneManager.class.getClassLoader().getResource(fxmlPath.startsWith("/") ? fxmlPath.substring(1) : fxmlPath);
+            System.err.println("SceneManager: classLoader.getResource('" + (fxmlPath.startsWith("/") ? fxmlPath.substring(1) : fxmlPath) + "') -> " + res2);
+
+            FXMLLoader fxmlLoader = new FXMLLoader(res1 != null ? res1 : res2);
             Parent root = fxmlLoader.load();
             Scene scene = stage.getScene();
 
@@ -38,7 +43,7 @@ public class SceneManager {
             stage.centerOnScreen();
         } catch (IOException e) {
             System.err.println("Không thể tải hoặc tìm thấy file FXML tại đường dẫn: " + fxmlPath);
-            // Log exception instead of printing stack trace
+            e.printStackTrace();
         }
     }
 
@@ -133,6 +138,14 @@ public class SceneManager {
     }
 
     public static void switchToSellerProductManagement() {
-        navigate("/seller.view/seller_product_management.fxml");
+        navigate("/seller.view/product_management.fxml");
+    }
+
+    public static void switchToSellerTransactionHistory() {
+        navigate("/seller.view/transaction_history.fxml");
+    }
+
+    public static void switchToSellerNotifications() {
+        navigate("/seller.view/notification.fxml");
     }
 }

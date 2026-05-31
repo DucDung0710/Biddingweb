@@ -1,25 +1,22 @@
 package com.bidding.controller.bidder;
 
-import com.bidding.service.WalletService;
+import java.util.List;
+
 import com.bidding.dao.WalletTransactionDAO;
+import com.bidding.service.WalletService;
 import com.bidding.shared.UserSession;
-import com.bidding.util.SessionStore;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.Label;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class WalletBidderController extends BaseBidderController {
 
@@ -30,7 +27,7 @@ public class WalletBidderController extends BaseBidderController {
     @FXML private ComboBox<String> cmbDepositMethod;
     @FXML private VBox paneCardMethod;
     @FXML private VBox paneAdminMethod;
-    @FXML private TextField txtCardCode;
+    @FXML @SuppressWarnings("unused") private TextField txtCardCode;
     @FXML private TextField txtDepositAmount;
     @FXML private Label lblDepositResult;
     @FXML private Button btnDeposit;
@@ -42,7 +39,7 @@ public class WalletBidderController extends BaseBidderController {
     @FXML private TableColumn<TransactionRow, String> colTxStatus;
     @FXML private TableColumn<TransactionRow, String> colTxNote;
 
-    private WalletService walletService = new WalletService();
+    private final WalletService walletService = new WalletService();
     private int currentUserId;
 
     @FXML
@@ -160,11 +157,11 @@ public class WalletBidderController extends BaseBidderController {
     }
 
     public static class TransactionRow {
-        private String time;
-        private String type;
-        private double amount;
-        private String status;
-        private String note;
+        private final String time;
+        private final String type;
+        private final double amount;
+        private final String status;
+        private final String note;
 
         public TransactionRow(String time, String type, double amount, String status, String note) {
             this.time = time;

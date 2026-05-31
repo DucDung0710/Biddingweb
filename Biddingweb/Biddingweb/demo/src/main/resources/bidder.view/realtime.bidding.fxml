@@ -11,7 +11,10 @@
             <Button onAction="#handleBack" style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-font-size: 13px; -fx-cursor: hand; -fx-text-fill: #555555;" text="← Quay lại" />
             <Label fx:id="lblAuctionTitle" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 0 0 0 8;" text="MacBook Pro M3 14&quot; — Đấu giá trực tiếp" />
             <Region HBox.hgrow="ALWAYS" />
-            <HBox alignment="CENTER_LEFT" spacing="6" />
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Label fx:id="lblLiveDot" style="-fx-font-size: 12px; -fx-text-fill: #3B6D11; -fx-font-weight: bold;" text="●" />
+                <Label fx:id="lblLiveCount" style="-fx-font-size: 12px; -fx-text-fill: #555555; -fx-padding: 0 0 0 8;" text="Live · 0 bidders" />
+            </HBox>
         </HBox>
 
         <HBox style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">

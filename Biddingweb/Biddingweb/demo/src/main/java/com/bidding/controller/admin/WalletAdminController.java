@@ -1,10 +1,7 @@
 package com.bidding.controller.admin;
 
 import javafx.scene.control.TableCell;
-import javafx.util.Callback;
-
 import com.bidding.util.SceneManager;
-import com.bidding.util.SessionStore;
 import com.bidding.service.WalletService;
 import com.bidding.dao.WalletDepositRequestDAO;
 import javafx.fxml.FXML;
@@ -13,7 +10,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.util.Callback;
 
 import java.util.List;
 
@@ -33,7 +29,7 @@ public class WalletAdminController {
     @FXML private TableColumn<DepositRequestRow, String> colReqStatus;
     @FXML private TableColumn<DepositRequestRow, String> colReqAction;
 
-    private WalletService walletService = new WalletService();
+    private final WalletService walletService = new WalletService();
 
     @FXML
     public void initialize() {
@@ -63,44 +59,30 @@ public class WalletAdminController {
         colReqStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         // Tạo nút Duyệt và Từ chối cho cột Hành động
-        colReqAction.setCellFactory(new Callback<TableColumn<DepositRequestRow, String>, TableCell<DepositRequestRow, String>>() {
+        colReqAction.setCellFactory(param -> new TableCell<DepositRequestRow, String>() {
+            private final Button btnApprove = new Button("✓ Duyệt");
+            private final Button btnReject = new Button("✗ Từ chối");
+            private final HBox pane = new HBox(10, btnApprove, btnReject);
+
+            {
+                btnApprove.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-cursor: hand;");
+                btnReject.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;");
+
+                btnApprove.setOnAction(event -> {
+                    DepositRequestRow rowData = getTableView().getItems().get(getIndex());
+                    approveRequest(rowData.getRequestId());
+                });
+
+                btnReject.setOnAction(event -> {
+                    DepositRequestRow rowData = getTableView().getItems().get(getIndex());
+                    rejectRequest(rowData.getRequestId());
+                });
+            }
+
             @Override
-            public TableCell<DepositRequestRow, String> call(final TableColumn<DepositRequestRow, String> param) {
-                final TableCell<DepositRequestRow, String> cell = new TableCell<DepositRequestRow, String>() {
-
-                    private final Button btnApprove = new Button("✓ Duyệt");
-                    private final Button btnReject = new Button("✗ Từ chối");
-                    private final HBox pane = new HBox(10, btnApprove, btnReject); // Khoảng cách giữa 2 nút là 10px
-
-                    {
-                        // Style cơ bản cho các nút (tùy chọn)
-                        btnApprove.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-cursor: hand;");
-                        btnReject.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;");
-
-                        // Sự kiện khi bấm nút Duyệt
-                        btnApprove.setOnAction(event -> {
-                            DepositRequestRow rowData = getTableView().getItems().get(getIndex());
-                            approveRequest(rowData.getRequestId()); // Gọi hàm duyệt có sẵn
-                        });
-
-                        // Sự kiện khi bấm nút Từ chối
-                        btnReject.setOnAction(event -> {
-                            DepositRequestRow rowData = getTableView().getItems().get(getIndex());
-                            rejectRequest(rowData.getRequestId()); // Gọi hàm từ chối có sẵn
-                        });
-                    }
-
-                    @Override
-                    protected void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            setGraphic(pane); // Hiển thị HBox chứa 2 nút lên table cell
-                        }
-                    }
-                };
-                return cell;
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : pane);
             }
         });
     }
@@ -161,12 +143,11 @@ public class WalletAdminController {
     }
 
     public static class DepositRequestRow {
-        private int requestId;
-        private String userName;
-        private double amount;
-        private String createdAt;
-        private String status;
-        private int id;
+        private final int requestId;
+        private final String userName;
+        private final double amount;
+        private final String createdAt;
+        private final String status;
 
         public DepositRequestRow(int requestId, String userName, double amount, String createdAt, String status, int id) {
             this.requestId = requestId;
@@ -174,7 +155,6 @@ public class WalletAdminController {
             this.amount = amount;
             this.createdAt = createdAt;
             this.status = status;
-            this.id = id;
         }
 
         public int getRequestId() { return requestId; }
