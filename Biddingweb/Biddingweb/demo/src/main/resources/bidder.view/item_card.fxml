@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox fx:id="itemRoot" prefWidth="220" prefHeight="200" spacing="8" alignment="TOP_LEFT"
+      style="-fx-background-color: #FFFFFF; -fx-background-radius: 15;
+             -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.bidding.controller.bidder.ItemCardController">
+
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <Label fx:id="lblTitle" text="Tên sản phẩm" wrapText="true"
+           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" />
+
+    <VBox spacing="1">
+        <Label text="Giá hiện tại:" style="-fx-font-size: 11px; -fx-text-fill: #888888;" />
+        <Label fx:id="lblCurrentPrice" text="0 ₫" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #27ae60;" />
+    </VBox>
+
+    <VBox spacing="1" VBox.vgrow="ALWAYS">
+        <Label text="Thời gian còn lại:" style="-fx-font-size: 11px; -fx-text-fill: #999999;" />
+        <Label fx:id="lblTimeRemaining" text="00:00:00" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;" />
+    </VBox>
+
+    <Button fx:id="btnBid" text="Đặt giá nhanh" maxWidth="Infinity"
+            style="-fx-background-color: #3498db; -fx-text-fill: #FFFFFF;
+                   -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;" />
+</VBox>

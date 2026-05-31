@@ -1,89 +1,157 @@
 package com.bidding.shared;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import com.bidding.dao.JdbcItemDAO;
 
 public class ItemManager {
-    // Kho chứa tất cả mặt hàng của hệ thống (Key: userID, Value: Đối tượng Item)
-    private HashMap<String, Item> allItems = new HashMap<>();
+    private final Map<Integer, List<Item>> allItems = new HashMap<>();
+    private int nextItemId = 1;
 
-    // Hành động: Đăng ký mặt hàng mới khi có Seller mới đăng bán
-    public void registerNewItem(String userId, String itemName, String description, double price) {
-        if (!allItems.containsKey(userId)) {
-            allItems.put(userId, new Item(itemName, description, price));
+    public int registerNewItem(int userId, String itemName, String type, String description, double price) {
+        Item newItem = new Item(nextItemId++, userId, itemName, type != null ? type : "GENERAL", description, BigDecimal.valueOf(price));
+        newItem.setStatus(Item.STATUS_PENDING);
+        newItem.setCurrentPrice(newItem.getFirstprice());
+        allItems.computeIfAbsent(userId, k -> new ArrayList<>()).add(newItem);
+        System.out.println("Đã đăng ký mặt hàng (in-memory): " + itemName + " (ID: " + newItem.getItemId() + ") cho User: " + userId);
+
+        // Try persisting to DB via JdbcItemDAO; best-effort (non-blocking for UI)
+        try {
+            JdbcItemDAO dao = new JdbcItemDAO();
+            boolean ok = dao.insert(newItem);
+            if (ok) {
+                System.out.println("Đã lưu mặt hàng vào DB: ID=" + newItem.getItemId());
+            } else {
+                System.err.println("Không thể lưu mặt hàng vào DB: ID=" + newItem.getItemId());
+            }
+        } catch (Exception ex) {
+            System.err.println("Lỗi khi ghi item vào DB: " + ex.getMessage());
         }
+
+        return newItem.getItemId();
     }
 
-    // Hành động: Tìm mặt hàng dựa trên ID người bán
-    public Item getItemByUserId(String userId) {
-        return allItems.get(userId);
-    }
-
-    // Hành động: Cập nhật thông tin mặt hàng 
-    public void updateItem(String userId, String newItemName, String newDescription) {
-        Item item = getItemByUserId(userId);
-        if (item != null) {
-            item.setItemName(newItemName);
-            item.setDescription(newDescription);
-            item.setStatus("Pending"); // Cập nhật trạng thái về "Pending" sau khi chỉnh sửa
-            System.out.println("Cập nhật mặt hàng thành công! Mặt hàng sẽ được Admin duyệt lại.");
+    public Item getItemById(int itemId) {
+        for (List<Item> items : allItems.values()) {
+            for (Item item : items) {
+                if (item.getItemId() == itemId) {
+                    return item;
+                }
+            }
         }
+        return null;
     }
 
-    public void reviewItem(Users currentUser, String userId, boolean approve) {
-    // BƯỚC 1: Kiểm tra xem có ai đang đăng nhập không
-    if (currentUser == null) {
-        System.out.println("Lỗi: Bạn phải đăng nhập để thực hiện thao tác này!");
-        return;
+    public Item getItemByUserId(int userId) {
+        List<Item> items = allItems.getOrDefault(userId, new ArrayList<>());
+        return items.isEmpty() ? null : items.get(0);
     }
 
-    // Kiểm tra quyền 
-    // Lưu ý: getRole() đã viết trong class Users
-    if (!currentUser.getRole().equalsIgnoreCase("Admin")) {
-        System.out.println("Lỗi: Chỉ Admin mới có quyền phê duyệt sản phẩm!");
-        return;
+    public List<Item> getItemsByUserId(int userId) {
+        return new ArrayList<>(allItems.getOrDefault(userId, new ArrayList<>()));
     }
 
-    // Nếu đúng là Admin thì mới thực hiện thay đổi trạng thái
-    Item item = getItemByUserId(userId); // Hàm tìm item theo ID trong list
-    if (item != null) {
+    public void updateItem(int userId, int itemId, String newItemName, String newDescription) {
+        Item item = getItemById(itemId);
+        if (item == null) {
+            System.out.println("Lỗi: Không tìm thấy mặt hàng mã " + itemId + ".");
+            return;
+        }
+        if (item.getUserId() != userId) {
+            System.out.println("Lỗi: Bạn chỉ có thể cập nhật sản phẩm của chính mình.");
+            return;
+        }
+        if (Item.STATUS_SOLD.equalsIgnoreCase(item.getStatus())) {
+            System.out.println("Lỗi: Không thể cập nhật sản phẩm đã được bán.");
+            return;
+        }
+        item.setItemName(newItemName);
+        item.setDescription(newDescription);
+        item.setStatus(Item.STATUS_PENDING);
+        item.setCurrentPrice(item.getFirstprice());
+        System.out.println("Cập nhật mặt hàng [" + itemId + "] thành công! Mặt hàng sẽ được Admin duyệt lại.");
+    }
+
+    public boolean reviewItem(Users currentUser, int itemId, boolean approve) {
+        if (currentUser == null) {
+            System.out.println("Lỗi: Bạn phải đăng nhập để thực hiện thao tác này!");
+            return false;
+        }
+        if (!currentUser.getRole().equalsIgnoreCase("Admin")) {
+            System.out.println("Lỗi: Chỉ Admin mới có quyền phê duyệt sản phẩm!");
+            return false;
+        }
+        Item item = getItemById(itemId);
+        if (item == null) {
+            System.out.println("Lỗi: Không tìm thấy sản phẩm này.");
+            return false;
+        }
         if (approve) {
-            item.setStatus("APPROVED");
-            System.out.println("Sản phẩm đã được duyệt và cho phép bán.");
+            item.setStatus(Item.STATUS_APPROVED);
+            System.out.println("Sản phẩm [" + item.getItemName() + "] đã ĐƯỢC DUYỆT.");
+            return true;
         } else {
-            item.setStatus("REJECTED");
-            System.out.println("Sản phẩm đã bị từ chối.");
-            if (allItems.containsKey(userId)) {
-                allItems.remove(userId); // Xóa sản phẩm khỏi hệ thống nếu bị từ chối
+            item.setStatus(Item.STATUS_REJECTED);
+            System.out.println("Sản phẩm [" + item.getItemName() + "] đã BỊ TỪ CHỐI.");
+            return false;
+        }
+    }
+
+    public void deleteItemById(int itemId) {
+        for (List<Item> items : allItems.values()) {
+            if (items.removeIf(item -> item.getItemId() == itemId)) {
+                return;
             }
         }
     }
-     else {
-        System.out.println("Lỗi: Không tìm thấy sản phẩm này.");
-    }
-}
-    
- // Hành động: Xóa mặt hàng khi người bán bị xóa hoặc Admin từ chối sản phẩm   
-    public void deleteItemsByUserId(String userId) {
-        if (allItems.containsKey(userId)) {
-            allItems.remove(userId);
-            System.out.println("Đã xóa tất cả mặt hàng liên quan đến người dùng ID: " + userId);
+
+    public void deleteItemsByUserId(int userId) {
+        if (allItems.remove(userId) != null) {
+            System.out.println("Đã xóa toàn bộ tất cả mặt hàng liên quan đến người dùng ID: " + userId);
+        } else {
+            System.out.println("Thông báo: Người dùng ID " + userId + " không có mặt hàng nào để xóa.");
         }
     }
 
-    public void updateItemPriceByAdmin(Users currentUser, String itemId, double newPrice) {
-    // 1. Kiểm tra xem người đang thao tác có phải Admin không
-    if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin")) {
-        System.out.println("Lỗi: Bạn không có quyền thực hiện thao tác này!");
-        return;
+    public List<Item> getAllItemsInSystem() {
+        List<Item> totalItems = new ArrayList<>();
+        for (List<Item> sellerList : allItems.values()) {
+            totalItems.addAll(sellerList);
         }
+        return totalItems;
+    }
 
-    // 2. Nếu đúng là Admin, gọi ItemManager để đổi giá
-    Item item = getItemByUserId(itemId);
-    if (item != null) {
-        item.setFirstprice(newPrice);
+    public List<Item> getItemsByStatus(String status) {
+        List<Item> result = new ArrayList<>();
+        for (Item item : getAllItemsInSystem()) {
+            if (status != null && status.equalsIgnoreCase(item.getStatus())) {
+                result.add(item);
+            }
         }
-     else {
-        System.out.println("Lỗi: Không tìm thấy sản phẩm này.");
-     }
+        return result;
+    }
+
+    public void markItemInAuction(int itemId) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            item.setStatus(Item.STATUS_IN_AUCTION);
+        }
+    }
+
+    public void markItemSold(int itemId) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            item.setStatus(Item.STATUS_SOLD);
+        }
+    }
+
+    public void markItemUnsold(int itemId) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            item.setStatus(Item.STATUS_UNSOLD);
+        }
     }
 }

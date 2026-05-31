@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.seller.SellerDashboardController">
+
+    <VBox minWidth="215" prefWidth="215" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 1 0 0;">
+
+        <VBox style="-fx-padding: 18 18 14 18; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+            <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="🔨 BidOnline" />
+            <Label style="-fx-font-size: 11px; -fx-text-fill: #888888; -fx-padding: 2 0 0 0;" text="Hệ thống đấu giá trực tuyến" />
+        </VBox>
+
+        <VBox spacing="1" style="-fx-padding: 10 8 10 8;" VBox.vgrow="ALWAYS">
+
+            <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="CHÍNH" />
+
+            <HBox fx:id="navOverview" alignment="CENTER_LEFT" spacing="9" style="-fx-background-color: #EAF3DE; -fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="📊" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #3B6D11; -fx-font-weight: bold;" text="Tổng quan" />
+            </HBox>
+
+            <HBox fx:id="navAuctions" alignment="CENTER_LEFT" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="📦" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Quản lý sản phẩm" />
+            </HBox>
+            <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="BÁN HÀNG" />
+
+            <HBox fx:id="btnAddProduct" alignment="CENTER_LEFT" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="➕" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Đăng sản phẩm mới" />
+            </HBox>
+
+            <HBox fx:id="navTransactionHistory" alignment="CENTER_LEFT" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="🕐" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Lịch sử giao dịch" />
+            </HBox>
+
+            <Label style="-fx-font-size: 10px; -fx-text-fill: #aaaaaa; -fx-padding: 8 10 4 10;" text="TÀI KHOẢN" />
+
+            <HBox fx:id="btnLogout" alignment="CENTER_LEFT" spacing="9" style="-fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 15px;" text="🚪" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #555555;" text="Đăng xuất" />
+            </HBox>
+        </VBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="9" style="-fx-padding: 12; -fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0;">
+            <Label fx:id="lblAvatar" style="-fx-background-color: #C0DD97; -fx-text-fill: #3B6D11;-fx-background-radius: 50; -fx-min-width: 32; -fx-min-height: 32; -fx-max-width: 32; -fx-max-height: 32;-fx-alignment: center; -fx-font-weight: bold; -fx-font-size: 12px;" text="S" />
+            <VBox spacing="2">
+                <Label fx:id="lblUserName" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Tên Seller" />
+                <Label fx:id="lblUserRole" style="-fx-font-size: 11px; -fx-text-fill: #3B6D11; -fx-font-weight: bold;" text="Seller" />
+            </VBox>
+        </HBox>
+    </VBox>
+    <VBox style="-fx-background-color: #f5f5f5;" HBox.hgrow="ALWAYS">
+
+        <HBox alignment="CENTER_LEFT" prefHeight="50" style="-fx-background-color: white; -fx-border-color: #e0e0e0;-fx-border-width: 0 0 1 0; -fx-padding: 0 20;">
+            <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Tổng quan — Seller" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnTopAddProduct" onAction="#handleAddProduct" style="-fx-background-color: #3B6D11; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;-fx-background-radius: 8; -fx-padding: 7 14; -fx-cursor: hand;" text="+ Đăng sản phẩm mới" />
+        </HBox>
+
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+            <VBox spacing="14" style="-fx-padding: 16 20;">
+
+                <HBox spacing="10">
+
+                    <VBox spacing="4" style="-fx-background-color: white; -fx-background-radius: 10;-fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 12 14;" HBox.hgrow="ALWAYS">
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Sản phẩm đang đấu giá" />
+                        <Label fx:id="lblStatActive" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="5" />
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #aaaaaa;" text="Đang hoạt động" />
+                    </VBox>
+
+                    <VBox spacing="4" style="-fx-background-color: white; -fx-background-radius: 10;-fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 12 14;" HBox.hgrow="ALWAYS">
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Phiên đã kết thúc" />
+                        <Label fx:id="lblStatFinished" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="12" />
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #aaaaaa;" text="Tổng lịch sử" />
+                    </VBox>
+
+                    <VBox spacing="4" style="-fx-background-color: white; -fx-background-radius: 10;-fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 12 14;" HBox.hgrow="ALWAYS">
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Doanh thu tháng này" />
+                        <Label fx:id="lblStatRevenue" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="48.2M" />
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #3B6D11;" text="VNĐ" />
+                    </VBox>
+
+                    <VBox spacing="4" style="-fx-background-color: white; -fx-background-radius: 10;-fx-border-color: #e8e8e8; -fx-border-radius: 10; -fx-padding: 12 14;" HBox.hgrow="ALWAYS">
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;" text="Chờ thanh toán" />
+                        <Label fx:id="lblStatPending" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="3" />
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #854F0B;" text="Cần xử lý" />
+                    </VBox>
+                </HBox>
+
+                <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e8e8e8; -fx-border-radius: 10;">
+
+                    <HBox alignment="CENTER_LEFT" prefHeight="46" style="-fx-padding: 0 16; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
+                        <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Danh sách sản phẩm đấu giá" />
+                    </HBox>
+
+                    <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-padding: 10 16;">
+                        <TextField fx:id="txtSearch" prefWidth="220" promptText="Tìm sản phẩm..." style="-fx-font-size: 12px; -fx-background-radius: 6;  -fx-border-color: #dddddd; -fx-border-radius: 6; -fx-padding: 5 10;" />
+                        <ComboBox fx:id="cmbFilterStatus" prefWidth="160" promptText="Tất cả trạng thái" style="-fx-font-size: 12px;" />
+                        <Button onAction="#handleFilter" style="-fx-font-size: 12px; -fx-background-color: transparent;-fx-border-color: #cccccc; -fx-border-radius: 6;                                         -fx-cursor: hand; -fx-padding: 5 12;" text="Lọc" />
+                    </HBox>
+
+                    <TableView fx:id="tblProducts" prefHeight="340" style="-fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colName" prefWidth="175" text="Tên sản phẩm" />
+                            <TableColumn fx:id="colType" prefWidth="90" text="Loại" />
+                            <TableColumn fx:id="colStartPrice" prefWidth="120" text="Giá khởi điểm" />
+                            <TableColumn fx:id="colCurrentPrice" prefWidth="120" text="Giá hiện tại" />
+                            <TableColumn fx:id="colEndTime" prefWidth="110" text="Kết thúc" />
+                            <TableColumn fx:id="colStatus" prefWidth="95" text="Trạng thái" />
+                            <TableColumn fx:id="colActions" prefWidth="125.99991861979163" text="Hành động" />
+                        </columns>
+                        <placeholder>
+                            <Label style="-fx-text-fill: #aaaaaa; -fx-font-size: 13px;" text="Chưa có sản phẩm nào. Nhấn '+ Đăng sản phẩm mới' để bắt đầu." />
+                        </placeholder>
+                    </TableView>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </VBox>
+    </HBox>

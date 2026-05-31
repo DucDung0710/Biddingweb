@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+
+<HBox prefHeight="660" prefWidth="1100" style="-fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.seller.ProductManagementController">
+
+    <VBox minWidth="230" prefWidth="230" style="-fx-background-color: white; -fx-border-color: #eef0f2; -fx-border-width: 0 1 0 0;">
+
+        <VBox style="-fx-padding: 20 18 16 20; -fx-border-color: #eef0f2; -fx-border-width: 0 0 1 0;">
+            <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="BidOnline" />
+            <Label style="-fx-font-size: 11px; -fx-text-fill: #8c94a0; -fx-padding: 3 0 0 0;" text="Hệ thống đấu giá trực tuyến" />
+        </VBox>
+
+        <VBox spacing="2" style="-fx-padding: 12 10;" VBox.vgrow="ALWAYS">
+
+            <Label style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #a0aec0; -fx-padding: 10 12 6 12;" text="CHÍNH" />
+
+            <HBox fx:id="navOverview" alignment="CENTER_LEFT" spacing="12" style="-fx-background-radius: 6; -fx-padding: 10 12; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #4a5568;" text="📊" />
+                <Label text="Tổng quan" />
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: #EAF3DE; -fx-background-radius: 8; -fx-padding: 8 10; -fx-cursor: hand;">
+                <Label text="📦" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #3B6D11; -fx-font-weight: bold;" text="Quản lý sản phẩm">
+               <textFill>
+                  <LinearGradient endX="1.0" endY="1.0">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="0.23137255012989044" green="0.4274509847164154" blue="0.06666667014360428" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </LinearGradient>
+               </textFill></Label>
+            </HBox>
+
+            <Label style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #a0aec0; -fx-padding: 16 12 6 12;" text="BÁN HÀNG" />
+
+            <HBox fx:id="btnNavAddProduct" alignment="CENTER_LEFT" spacing="12" style="-fx-background-radius: 6; -fx-padding: 10 12; -fx-cursor: hand;">
+                <Label text="➕" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #4a5568;" text="Đăng sản phẩm mới" />
+            </HBox>
+
+            <HBox fx:id="navTransactionHistory" alignment="CENTER_LEFT" spacing="12" style="-fx-background-radius: 6; -fx-padding: 10 12; -fx-cursor: hand;">
+                <Label text="🕐" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #4a5568;" text="Lịch sử giao dịch" />
+            </HBox>
+
+            <Label style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #a0aec0; -fx-padding: 16 12 6 12;" text="TÀI KHOẢN" />
+
+            <HBox fx:id="btnLogout" alignment="CENTER_LEFT" spacing="12" style="-fx-background-radius: 6; -fx-padding: 10 12; -fx-cursor: hand;">
+                <Label text="🚪" />
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #4a5568;" text="Đăng xuất" />
+            </HBox>
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <HBox alignment="CENTER_LEFT" spacing="9" style="-fx-padding: 12 6 4 6; -fx-border-color: #eef0f2; -fx-border-width: 1 0 0 0;">
+                <Label style="-fx-background-color: #C0DD97; -fx-text-fill: #3B6D11; -fx-background-radius: 50; -fx-min-width: 32; -fx-min-height: 32; -fx-max-width: 32; -fx-max-height: 32; -fx-alignment: center; -fx-font-weight: bold; -fx-font-size: 12px;" text="S" />
+                <VBox spacing="2">
+                    <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="Tên Seller" />
+                    <Label style="-fx-font-size: 11px; -fx-text-fill: #3B6D11; -fx-font-weight: bold;" text="Seller" />
+                </VBox>
+            </HBox>
+
+        </VBox>
+    </VBox>
+    <VBox style="-fx-background-color: #fafbfe;" HBox.hgrow="ALWAYS">
+
+        <VBox style="-fx-padding: 24 24 10 24;">
+            <HBox alignment="CENTER_LEFT">
+                <VBox spacing="4">
+                    <Label style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" text="Quản lý sản phẩm" />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnAddNewProduct" onAction="#handleAddNewProduct" style="-fx-background-color: #3B6D11; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 10 18; -fx-cursor: hand;" text="+ Đăng sản phẩm mới" />
+            </HBox>
+        </VBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 12 24;">
+            <Region prefHeight="36" prefWidth="36" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6;" />
+            <ComboBox fx:id="cmbType" prefHeight="36" prefWidth="160" promptText="Tất cả loại" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px;" />
+            <ComboBox fx:id="cmbStatus" prefHeight="36" prefWidth="180" promptText="Tất cả trạng thái" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="lblProductCount" style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="0 sản phẩm" />
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 0 24 12 24;">
+            <VBox fx:id="tabActive" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="Đang diễn ra (3)" />
+            </VBox>
+            <VBox fx:id="tabUpcoming" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="Sắp bắt đầu (1)" />
+            </VBox>
+            <VBox fx:id="tabEnded" alignment="CENTER" style="-fx-padding: 0 0 8 0; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 13px; -fx-text-fill: #64748b;" text="Đã kết thúc (1)" />
+            </VBox>
+        </HBox>
+
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+            <VBox fx:id="productCardsContainer" spacing="12" style="-fx-padding: 16 24;" />
+        </ScrollPane>
+    </VBox>
+    </HBox>

@@ -1,17 +1,24 @@
 package com.bidding.shared;
 
-public abstract class Users implements AuctionObserver {
+/**
+ * Lớp Users đại diện cho một người dùng trong hệ thống đấu giá.
+ */
+public class Users implements AuctionObserver {
     private String username;
     private String password;
-    private String id;
+    private int id;
     private String email;
     protected String role;
+    private double balance;
 
-    public Users(String username, String password, String id, String email) {
+    public Users(String username, String password, int id, String email) {
         this.username = username;
         this.password = password;
         this.id = id;
         this.email = email;
+    }
+
+    public Users() {
     }
 
     public String getUsername() {
@@ -30,11 +37,11 @@ public abstract class Users implements AuctionObserver {
         this.password = password;
     }
 
-     public String getId(){
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -49,42 +56,57 @@ public abstract class Users implements AuctionObserver {
     public String getRole() {
         return role;
     }
+
     public void setRole(String role) {
         this.role = role;
     }
 
-    @Override
-    public void update(String message) {
-        // Ở đây bạn có thể thêm logic để xử lý thông báo, ví dụ: hiển thị trên UI hoặc lưu vào lịch sử thông báo của người dùng
-        System.out.println("Thông báo cho " + username + ": " + message);
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
     }
 
     @Override
-    public String getUserId() {
+    public void onNewBid(int auctionId, int bidderId, double bidAmount, boolean isAutoBid, String message) {
+        System.out.println("Thông báo đấu giá cho " + username + ": " + message);
+    }
+
+    @Override
+    public void onAuctionEnded(int auctionId, int winnerId, double finalPrice, String message) {
+        System.out.println("Kết quả đấu giá cho " + username + ": " + message);
+    }
+
+    @Override
+    public void onAuctionCancelled(int auctionId, String reason) {
+        System.out.println("Đấu giá bị hủy cho " + username + ": " + reason);
+    }
+
+    @Override
+    public int getUserId() {
         return id;
     }
-
 }
 
-// Các lớp con kế thừa từ Users, đại diện cho các loại người dùng cụ thể
 class Bidder extends Users {
-    public Bidder(String username, String password, String id, String email) {
+    public Bidder(String username, String password, int id, String email) {
         super(username, password, id, email);
         this.role = "Bidder";
     }
 }
 
 class Seller extends Users {
-    public Seller(String username, String password, String id, String email) {
+    public Seller(String username, String password, int id, String email) {
         super(username, password, id, email);
         this.role = "Seller";
     }
 }
 
 class Admin extends Users {
-    public Admin(String username, String password, String id, String email) {
+    public Admin(String username, String password, int id, String email) {
         super(username, password, id, email);
         this.role = "Admin";
     }
-
 }

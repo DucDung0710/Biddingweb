@@ -1,85 +1,89 @@
 package com.bidding.shared;
 
-public class Balance {
-    private Users user;
-    private double currentBalance;
-    private double lockedBalance; // Số tiền đang bị khóa (ví dụ: khi đặt cọc)
+import java.math.BigDecimal;
 
-    public Balance(Users user, double initialBalance) {
+public class Balance {
+    private final Users user;
+    private BigDecimal currentBalance;
+    private BigDecimal lockedBalance;
+
+    public Balance(Users user, BigDecimal initialBalance) {
+        if (user == null) {
+            throw new IllegalArgumentException("Người dùng không hợp lệ.");
+        }
+        if (initialBalance == null || initialBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Số dư ban đầu phải là số không âm.");
+        }
         this.user = user;
         this.currentBalance = initialBalance;
-        this.lockedBalance = 0;
+        this.lockedBalance = BigDecimal.ZERO;
     }
 
-    // Phương thức nạp tiền
-    public void deposit(double amount) {
-        if (amount > 0) {
-            this.currentBalance += amount;
-            System.out.println("Nạp thành công: " + amount);
-        } else {
-            System.out.println("Số tiền nạp không hợp lệ!");
-        }
+    public synchronized void deposit(BigDecimal amount) {
+        validatePositiveAmount(amount, "Số tiền nạp phải lớn hơn 0.");
+        currentBalance = currentBalance.add(amount);
+        System.out.println("Nạp thành công: " + amount);
     }
 
-    // Phương thức rút tiền
-    public boolean withdraw(double amount) {
-        if (amount > 0 && this.currentBalance >= amount) {
-            this.currentBalance -= amount;
+    public synchronized boolean withdraw(BigDecimal amount) {
+        validatePositiveAmount(amount, "Số tiền rút phải lớn hơn 0.");
+        if (currentBalance.compareTo(amount) >= 0) {
+            currentBalance = currentBalance.subtract(amount);
             System.out.println("Rút thành công: " + amount);
-            return true; // Rút thành công
-        } else {
-            System.out.println("Số dư không đủ hoặc số tiền không hợp lệ!");
-            return false; // Rút thất bại
+            return true;
         }
+        return false;
     }
 
-    public double getAmount() {
+    public synchronized BigDecimal getAmount() {
         return currentBalance;
     }
 
-    public double getLockedAmount() {
+    public synchronized BigDecimal getLockedAmount() {
         return lockedBalance;
     }
 
-   
-    public void lockAmount(double amount) {
-        if (amount > 0 && this.currentBalance >= amount) {
-            this.currentBalance -= amount;
-            this.lockedBalance += amount;
-            System.out.println("Đã khóa số tiền: " + amount);
-        } else {
-            System.out.println("Số dư không đủ hoặc số tiền không hợp lệ để khóa!");
+    public synchronized void lockAmount(BigDecimal amount) {
+        validatePositiveAmount(amount, "Số tiền khóa phải lớn hơn 0.");
+        if (currentBalance.compareTo(amount) < 0) {
+            throw new IllegalArgumentException("Số dư không đủ để khóa số tiền yêu cầu.");
         }
+        currentBalance = currentBalance.subtract(amount);
+        lockedBalance = lockedBalance.add(amount);
+        System.out.println("Đã khóa số tiền: " + amount);
     }
 
-    public void unlockAmount(double amount) {
-        if (amount > 0 && this.lockedBalance >= amount ) {
-            this.lockedBalance -= amount;
-            this.currentBalance += amount;
-            System.out.println("Đã mở khóa số tiền: " + amount);
-        } else {
-            System.out.println("Số tiền khóa không đủ hoặc số tiền không hợp lệ để mở khóa!");
+    public synchronized void unlockAmount(BigDecimal amount) {
+        validatePositiveAmount(amount, "Số tiền mở khóa phải lớn hơn 0.");
+        if (lockedBalance.compareTo(amount) < 0) {
+            throw new IllegalArgumentException("Số tiền khóa không đủ để mở khóa.");
         }
+        lockedBalance = lockedBalance.subtract(amount);
+        currentBalance = currentBalance.add(amount);
+        System.out.println("Đã mở khóa số tiền: " + amount);
     }
 
-    public double commitLockedAmount(double amount) {
-        if (amount > 0 && this.lockedBalance >= amount ) {
-            this.lockedBalance -= amount;
-            System.out.println("Đã thanh toán số tiền: " + amount);
-            return amount; // Trả về số tiền đã cam kết để xử lý thanh toán
-        } else {
-            System.out.println("Số tiền khóa không đủ hoặc số tiền không hợp lệ để cam kết!");
+    public synchronized BigDecimal commitLockedAmount(BigDecimal amount) {
+        validatePositiveAmount(amount, "Số tiền cam kết phải lớn hơn 0.");
+        if (lockedBalance.compareTo(amount) < 0) {
+            throw new IllegalArgumentException("Số tiền khóa không đủ để cam kết.");
         }
-        return 0; // Trả về 0 nếu không thể cam kết
+        lockedBalance = lockedBalance.subtract(amount);
+        System.out.println("Đã thanh toán số tiền: " + amount);
+        return amount;
+    }
+
+    private void validatePositiveAmount(BigDecimal amount, String errorMessage) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(errorMessage);
+        }
     }
 
     public Users getUser() {
         return user;
     }
-    public String getUserId() {
+
+    public int getUserId() {
         return user.getId();
     }
-
-
 }
-

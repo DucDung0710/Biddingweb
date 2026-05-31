@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefWidth="480.0" spacing="18.0" style="-fx-background-color: white; -fx-padding: 20 24;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.admin.AdminAddUserController">
+
+    <!-- Tiêu đề Form -->
+    <VBox spacing="4.0" style="-fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0; -fx-padding: 0 0 12 0;">
+        <children>
+            <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Thêm người dùng mới" />
+            <Label style="-fx-font-size: 12px; -fx-text-fill: #888888;" text="Vui lòng điền đầy đủ thông tin tài khoản dưới đây." />
+        </children>
+    </VBox>
+
+    <!-- Thông báo lỗi -->
+    <Label fx:id="lblError" managed="false" style="-fx-text-fill: #A32D2D; -fx-font-size: 12px; -fx-wrap-text: true;" text="" visible="false" />
+
+    <!-- Khu vực nhập liệu -->
+    <GridPane hgap="12.0" vgap="14.0">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="100.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+        <children>
+
+            <!-- Trường: Họ và tên -->
+            <VBox spacing="5.0" GridPane.rowIndex="0">
+                <children>
+                    <Label style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #555555;" text="Họ và tên *" />
+                    <TextField fx:id="txtFullName" promptText="Nhập đầy đủ họ và tên" style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #dddddd; -fx-border-radius: 6; -fx-padding: 7 10;" />
+                </children>
+            </VBox>
+
+            <!-- Trường: Email -->
+            <VBox spacing="5.0" GridPane.rowIndex="1">
+                <children>
+                    <Label style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #555555;" text="Địa chỉ Email *" />
+                    <TextField fx:id="txtEmail" promptText="viethung@example.com" style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #dddddd; -fx-border-radius: 6; -fx-padding: 7 10;" />
+                </children>
+            </VBox>
+
+            <!-- Dòng chứa Vai trò và Trạng thái -->
+            <HBox spacing="12.0" GridPane.rowIndex="3">
+                <children>
+                    <!-- Vai trò -->
+                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                        <children>
+                            <Label style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #555555;" text="Vai trò hệ thống *" />
+                            <ComboBox fx:id="cmbRole" prefWidth="2000.0" promptText="Chọn vai trò" style="-fx-font-size: 13px; -fx-padding: 4 6;">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Bidder" />
+                                        <String fx:value="Seller" />
+                                        <String fx:value="Admin" />
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
+                        </children>
+                    </VBox>
+
+                    <!-- Trạng thái -->
+                    <VBox spacing="5.0" HBox.hgrow="ALWAYS" />
+                </children>
+            </HBox>
+
+            <!-- Trường: Mật khẩu ban đầu -->
+            <VBox spacing="5.0" GridPane.rowIndex="4">
+                <children>
+                    <Label style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #555555;" text="Mật khẩu khởi tạo *" />
+                    <PasswordField fx:id="txtPassword" promptText="Tối thiểu 6 ký tự" style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #dddddd; -fx-border-radius: 6; -fx-padding: 7 10;" />
+                </children>
+            </VBox>
+        </children>
+    </GridPane>
+
+    <!-- Khu vực nút bấm cuối Form -->
+    <HBox alignment="CENTER_RIGHT" spacing="10.0" style="-fx-padding: 10 0 0 0;">
+        <children>
+            <Button fx:id="btnCancel" onAction="#handleCancel" style="-fx-background-color: transparent; -fx-border-color: #cccccc; -fx-border-radius: 6; -fx-text-fill: #666666; -fx-font-size: 13px; -fx-cursor: hand; -fx-padding: 7 16;" text="Hủy bỏ" />
+            <Button fx:id="btnSave" onAction="#handleSaveUser" style="-fx-background-color: #A32D2D; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 7 20;" text="Lưu người dùng" />
+        </children>
+    </HBox>
+
+</VBox>

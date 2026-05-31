@@ -1,35 +1,37 @@
-// File: UserSession.java
 package com.bidding.shared;
 
-public class UserSession {
-    private Users loggedInUser = null;
+import com.bidding.shared.Users;
 
-    // Cất user vào session (Khi đăng nhập thành công)
-    public void setLoggedInUser(Users user) {
-        this.loggedInUser = user;
+public class UserSession {
+    private static UserSession instance;
+    private Users loggedInUser;
+
+    private UserSession() {}
+
+    public static synchronized UserSession getInstance() {
+        if (instance == null) {
+            instance = new UserSession();
+        }
+        return instance;
     }
 
-    // Lấy user ra để dùng cho các hàm makeAdmin, deleteUser...
     public Users getLoggedInUser() {
         return loggedInUser;
     }
 
-    // Kiểm tra xem có ai đang đăng nhập không
-    public boolean isLoggedIn() {
-        return loggedInUser != null;
+    public void setLoggedInUser(Users loggedInUser) {
+        this.loggedInUser = loggedInUser;
     }
 
-    // Hủy session (Khi đăng xuất)
-    public void clearSession() {
+    public void clear() {
         this.loggedInUser = null;
     }
 
-    public void logout() {
-        if (this.loggedInUser != null) {
-            System.out.println("Tạm biệt " + loggedInUser.getUsername() + "!");
-            this.loggedInUser = null; // Xóa thông tin người dùng khỏi phiên làm việc
-        } else {
-            System.out.println("Lỗi: Hiện tại không có người dùng nào đăng nhập.");
-        }
+    /**
+     * Convenience static method for controllers to log out the current user.
+     */
+    public static void logout() {
+        UserSession session = getInstance();
+        session.clear();
     }
 }

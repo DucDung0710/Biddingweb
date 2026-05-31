@@ -1,0 +1,55 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+        "type": "java",
+        "name": "BiddingApplication",
+        "request": "launch",
+        "mainClass": "com.bidding.demo/com.bidding.app.BiddingApplication",
+        "projectName": "demo"
+    },
+    {
+        "type": "java",
+        "name": "ServerMain",
+        "request": "launch",
+        "mainClass": "com.bidding.demo/com.bidding.server.ServerMain",
+        "projectName": "demo"
+    },
+    {
+        "type": "java",
+        "name": "ServerMain",
+        "request": "launch",
+        "mainClass": "com.bidding.server.ServerMain",
+        "cwd": "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo",
+        "classPaths": [
+            "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo\\target\\classes",
+            "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo\\target\\dependency\\*"
+        ]
+    },
+    {
+        "type": "java",
+        "name": "Launch BiddingApplication",
+        "request": "launch",
+        "mainClass": "com.bidding.app.BiddingApplication",
+        "cwd": "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo",
+        "classPaths": [
+            "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo\\target\\classes",
+            "${workspaceFolder}\\Biddingweb\\Biddingweb\\demo\\target\\dependency\\*"
+        ],
+        "modulePaths": [
+            "${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-controls\\21.0.6\\javafx-controls-21.0.6-win.jar",
+            "${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-fxml\\21.0.6\\javafx-fxml-21.0.6-win.jar",
+            "${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-graphics\\21.0.6\\javafx-graphics-21.0.6-win.jar",
+            "${env:USERPROFILE}\\.m2\\repository\\org\\openjfx\\javafx-base\\21.0.6\\javafx-base-21.0.6-win.jar"
+        ],
+        "vmArgs": "--add-modules javafx.controls,javafx.fxml,javafx.graphics --enable-native-access=javafx.graphics",
+        "console": "integratedTerminal"
+    }
+],
+  "compounds": [
+    {
+      "name": "ServerMain + BiddingApplication",
+      "configurations": ["ServerMain", "Launch BiddingApplication"]
+    }
+  ]
+}

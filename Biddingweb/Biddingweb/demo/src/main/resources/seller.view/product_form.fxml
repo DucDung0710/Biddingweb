@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="460" prefWidth="500" spacing="0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bidding.controller.seller.ProductFormController">
+
+    <HBox alignment="CENTER_LEFT" prefHeight="55" style="-fx-padding: 0 24; -fx-border-color: #e8e8e8; -fx-border-width: 0 0 1 0;">
+        <Label fx:id="lblFormTitle" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" text="Thêm sản phẩm mới" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="btnClose" onAction="#handleClose" style="-fx-background-color: transparent; -fx-font-size: 18px; -fx-text-fill: #9ca3af; -fx-cursor: hand;" text="✕" />
+    </HBox>
+
+    <HBox spacing="24" style="-fx-padding: 24;" VBox.vgrow="ALWAYS">
+        
+        <VBox alignment="TOP_CENTER" prefWidth="180" spacing="12">
+            <Label style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-font-weight: bold;" text="Hình ảnh sản phẩm *" />
+            
+            <StackPane prefHeight="180" prefWidth="180" style="-fx-border-color: #d1d5db; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 8; -fx-background-color: #f9fafb;">
+                <ImageView fx:id="imgProductPreview" fitHeight="170" fitWidth="170" preserveRatio="true" />
+                <Label fx:id="lblUploadPlaceholder" mouseTransparent="true" style="-fx-text-fill: #9ca3af; -fx-font-size: 12px; -fx-text-alignment: center;" text="Chưa có hình ảnh&#10;(Click để chọn ảnh)" />
+            </StackPane>
+            
+            <Button fx:id="btnUploadImage" onAction="#handleUploadImage" maxWidth="Infinity" style="-fx-background-color: white; -fx-border-color: #3B6D11; -fx-border-radius: 6; -fx-text-fill: #3B6D11; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12;" text="Chọn hình ảnh" />
+        </VBox>
+
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" HBox.hgrow="ALWAYS">
+            <VBox spacing="16">
+                <GridPane hgap="14" vgap="14">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="125" prefWidth="125" maxWidth="125" hgrow="NEVER" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                    </columnConstraints>
+
+                    <Label style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-font-weight: bold;" text="Tên sản phẩm *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <TextField fx:id="txtName" promptText="Nhập tên sản phẩm..." style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-padding: 8 12;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                    <Label style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-font-weight: bold;" text="Loại sản phẩm *" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <ComboBox fx:id="cmbType" maxWidth="Infinity" promptText="Chọn loại..." style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #d1d5db; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                    <Label style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-font-weight: bold;" text="Mô tả" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.valignment="TOP" />
+                    <TextArea fx:id="txtDescription" prefHeight="80" promptText="Nhập mô tả chi tiết về sản phẩm..." style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #d1d5db; -fx-border-radius: 6;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                    <Label style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-font-weight: bold;" text="Giá khởi điểm (₫) *" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                    <TextField fx:id="txtStartPrice" promptText="VD: 5000000" style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-padding: 8 12;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                    <Label style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-font-weight: bold;" text="Ngày bắt đầu *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                    <DatePicker fx:id="dpStartDate" maxWidth="Infinity" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                    <Label style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-font-weight: bold;" text="Giờ bắt đầu *" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                        <TextField fx:id="txtStartHour" prefWidth="65" promptText="HH" alignment="CENTER" style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-padding: 7 10;" />
+                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" text=":" />
+                        <TextField fx:id="txtStartMinute" prefWidth="65" promptText="MM" alignment="CENTER" style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-padding: 7 10;" />
+                    </HBox>
+
+                    <Label style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-font-weight: bold;" text="Ngày kết thúc *" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                    <DatePicker fx:id="dpEndDate" maxWidth="Infinity" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+                    <Label style="-fx-font-size: 13px; -fx-text-fill: #4b5563; -fx-font-weight: bold;" text="Giờ kết thúc *" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                    <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                        <TextField fx:id="txtEndHour" prefWidth="65" promptText="HH" alignment="CENTER" style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-padding: 7 10;" />
+                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" text=":" />
+                        <TextField fx:id="txtEndMinute" prefWidth="65" promptText="MM" alignment="CENTER" style="-fx-font-size: 13px; -fx-background-radius: 6; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-padding: 7 10;" />
+                    </HBox>
+                </GridPane>
+
+                <Label fx:id="lblError" managed="false" style="-fx-text-fill: #dc2626; -fx-font-size: 12px;" text="" visible="false" />
+            </VBox>
+        </ScrollPane>
+    </HBox>
+
+    <HBox alignment="CENTER_RIGHT" spacing="12" style="-fx-padding: 14 24; -fx-border-color: #e8e8e8; -fx-border-width: 1 0 0 0; -fx-background-color: #f9fafb; -fx-background-radius: 0 0 8 8;">
+        <Button fx:id="btnCancel" onAction="#handleClose" prefHeight="36" prefWidth="80" style="-fx-font-size: 13px; -fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand; -fx-text-fill: #374151; -fx-font-weight: bold;" text="Hủy" />
+        <Button fx:id="btnSave" onAction="#handleSave" prefHeight="36" prefWidth="130" style="-fx-font-size: 13px; -fx-background-color: #3B6D11; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;" text="Lưu sản phẩm" />
+    </HBox>
+
+</VBox>
