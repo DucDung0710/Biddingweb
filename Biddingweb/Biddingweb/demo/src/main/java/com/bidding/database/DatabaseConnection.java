@@ -158,6 +158,15 @@ public class DatabaseConnection {
                 + "FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE"
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
+        String sqlDepositRequests = "CREATE TABLE IF NOT EXISTS wallet_deposit_requests ("
+                + "id INT AUTO_INCREMENT PRIMARY KEY, "
+                + "user_id INT NOT NULL, "
+                + "amount DOUBLE NOT NULL, "
+                + "status VARCHAR(50) DEFAULT 'PENDING', "
+                + "created_at VARCHAR(50), "
+                + "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
         // Thực thi tạo bảng đồng loạt bằng một Connection duy nhất nhằm tiết kiệm chi phí tạo mạng
         try (Connection connection = getConnection();
              Statement stmt = connection.createStatement()) {
@@ -169,6 +178,7 @@ public class DatabaseConnection {
             stmt.execute(sqlAuto);
             stmt.execute(sqlWalletTx);
             stmt.execute(sqlHolds);
+            stmt.execute(sqlDepositRequests);
 
             ensureUsersEmailColumn(connection);
             System.out.println("🚀 [HikariCP] Kết nối MySQL Cloud thành công & Trọn bộ cấu trúc bảng đã sẵn sàng!");
